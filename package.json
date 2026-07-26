@@ -1,0 +1,32 @@
+{
+  "name": "enn-website",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "weekly-pdfs": "node scripts/create-weekly-pdfs.js",
+    "db:migrate": "node scripts/db-migrate.js",
+    "db:migrate:patches": "node scripts/db-migrate-patches.js",
+    "db:seed": "node scripts/db-seed.js"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "google-tts-api": "^2.0.2",
+    "next": "^15.3.3",
+    "pg": "^8.22.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "pdf-lib": "^1.17.1",
+    "typescript": "^5.8.3"
+  }
+}

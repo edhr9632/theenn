@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Helps YouTube embeds: Error 153 if Referrer-Policy strips cross-origin referrers (e.g. same-origin). -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>Press Release | Education News Network</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto:wght@300;400;500;600;700&family=Great+Vibes&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="site-masthead sticky-top">
+    <!-- Top utility bar -->
+    <div class="top-bar text-white py-2">
+      <div class="container-fluid px-3 px-lg-4">
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-md-between gap-2 gap-md-3">
+          <div
+            class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-2 gap-md-3"
+          >
+            <span class="top-bar-live small fw-semibold text-uppercase">
+              Live <span class="text-white-50">•</span>
+              <span id="top-date" class="text-white-50 fw-normal"></span>
+            </span>
+            <div
+              class="top-bar-social d-flex align-items-center flex-wrap justify-content-center gap-1"
+              aria-label="Social media"
+            >
+              <a href="#" class="top-bar-social-link" aria-label="Facebook">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"
+                  />
+                </svg>
+              </a>
+              <a href="#" class="top-bar-social-link" aria-label="X (Twitter)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"
+                  />
+                </svg>
+              </a>
+              <a href="#" class="top-bar-social-link" aria-label="LinkedIn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 2.165-1.193c-1.58 0-2.764 1.032-2.764 3.252v4.144h2.4z"
+                  />
+                </svg>
+              </a>
+              <a href="#" class="top-bar-social-link" aria-label="Instagram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.555-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.999 0h.001zm6.373 11.945c-.24.425-.44.774-.748 1.056-.279.29-.634.48-1.101.748-.444.254-.914.398-1.62.442-.889.041-1.13.049-3.299.049s-2.41-.01-3.299-.049c-.706-.045-1.177-.188-1.62-.442a3.147 3.147 0 0 1-.748-.748 3.324 3.324 0 0 1-.442-1.102c-.043-.706-.049-1.13-.049-3.299 0-2.168.006-2.409.049-3.299.044-.706.188-1.176.442-1.62.24-.425.44-.773.748-1.056.279-.29.634-.48 1.101-.748.444-.254.914-.398 1.62-.442.889-.041 1.13-.049 3.299-.049s2.41.01 3.299.049c.706.045 1.177.188 1.62.442.425.24.774.44 1.056.748.29.279.48.634.748 1.101.254.444.398.914.442 1.62.041.889.049 1.13.049 3.299s-.01 2.409-.049 3.299c-.045.706-.188 1.177-.442 1.62z"
+                  />
+                  <path
+                    d="M8 4.466c-1.943 0-3.516 1.573-3.516 3.516 0 1.943 1.573 3.516 3.516 3.516 1.943 0 3.516-1.573 3.516-3.516 0-1.943-1.573-3.516-3.516-3.516zm0 5.784c-1.251 0-2.268-1.017-2.268-2.268 0-1.251 1.017-2.268 2.268-2.268 1.251 0 2.268 1.017 2.268 2.268 0 1.251-1.017 2.268-2.268 2.268z"
+                  />
+                  <path d="M11.872 3.164a.82.82 0 1 0-1.639 0 .82.82 0 0 0 1.639 0z" />
+                </svg>
+              </a>
+              <a href="#" class="top-bar-social-link" aria-label="YouTube">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.063l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.003-.171-.003c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.947l.007-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.002A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="top-bar-links small text-center text-md-end flex-shrink-0">
+            <a href="#" class="link-light link-underline-opacity-0 link-underline-opacity-100-hover">Subscribe</a>
+            <span class="text-white-50 mx-2">|</span>
+            <a href="#" class="link-light link-underline-opacity-0 link-underline-opacity-100-hover">Newsletter</a>
+            <span class="text-white-50 mx-2">|</span>
+            <a href="#" class="link-light link-underline-opacity-0 link-underline-opacity-100-hover">Sign in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main header -->
+    <header class="main-header border-bottom bg-white">
+      <nav class="navbar navbar-expand-lg navbar-light py-2">
+        <div class="container">
+          <a class="navbar-brand d-flex align-items-center me-lg-4 py-0" href="index.html" aria-label="Education News Network home">
+            <img class="site-logo site-logo--header" src="images/Enn_logo1.png" alt="Education News Network" />
+          </a>
+
+          <button
+            class="navbar-toggler border-0 shadow-none"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNav"
+            aria-controls="mainNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav mx-lg-auto mb-2 mb-lg-0 gap-lg-1 text-center text-lg-start">
+              <li class="nav-item">
+                <a class="nav-link px-3 fw-medium" href="index.html">Home</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle px-3 fw-medium active"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  aria-current="page"
+                  >News</a
+                >
+                <ul class="dropdown-menu border-0 shadow">
+                  <li><a class="dropdown-item" href="news.html">Daily News</a></li>
+                  <li><a class="dropdown-item" href="weekly-news.html">Weekly News</a></li>
+                  <li><a class="dropdown-item" href="trending-news.html">Trending News</a></li>
+                  <li><a class="dropdown-item active" aria-current="page" href="press-release.html">Press Release</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a
+                  class="nav-link dropdown-toggle px-3 fw-medium"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  >Events</a
+                >
+                <ul class="dropdown-menu border-0 shadow">
+                  <li><a class="dropdown-item" href="events.html">Featured events</a></li>
+                  <li><a class="dropdown-item" href="events-speakers.html">Speakers</a></li>
+                  <li><a class="dropdown-item" href="events-sponsors.html">Sponsors</a></li>
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link px-3 fw-medium" href="about.html">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link px-3 fw-medium" href="contact.html">Contact</a>
+              </li>
+            </ul>
+
+            <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-2 ms-lg-3 mt-3 mt-lg-0 pt-3 pt-lg-0 border-top border-lg-0">
+              <button
+                type="button"
+                class="btn btn-link text-decoration-none p-2"
+                aria-label="Search"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="22"
+                  height="22"
+                  fill="currentColor"
+                  class="bi bi-search text-navy"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
+                  />
+                </svg>
+              </button>
+              <a href="#" class="btn btn-subscribe px-4 py-2 rounded-pill fw-semibold">Subscribe</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Breaking ticker -->
+    <div class="breaking-bar text-white py-2 overflow-hidden">
+      <p class="visually-hidden">
+        Breaking news ticker: Geneva summit; markets at record high; central bank holds rates; AI safety
+        roundtable in Brussels.
+      </p>
+      <div class="container-fluid px-0">
+        <div class="d-flex align-items-center">
+          <span class="breaking-label flex-shrink-0 px-3 py-1 ms-0 fw-bold small text-uppercase"
+            >● Breaking</span
+          >
+          <div class="ticker-wrap flex-grow-1">
+            <div class="ticker-track small" aria-hidden="true">
+              <span class="ticker-segment">
+                <span class="ticker-item"
+                  >BREAKING: Geneva summit opens with 90 nations in attendance</span
+                >
+                <span class="ticker-dot">•</span>
+                <span class="ticker-item">Markets close at record high as investors weigh policy</span>
+                <span class="ticker-dot">•</span>
+                <span class="ticker-item">Central bank holds rates steady; analysts see stability ahead</span>
+                <span class="ticker-dot">•</span>
+                <span class="ticker-item">Tech leaders gather for AI safety roundtable in Brussels</span>
+                <span class="ticker-dot">•</span>
+              </span>
+              <span class="ticker-segment">
+                <span class="ticker-item"
+                  >BREAKING: Geneva summit opens with 90 nations in attendance</span
+                >
+                <span class="ticker-dot">•</span>
+                <span class="ticker-item">Markets close at record high as investors weigh policy</span>
+                <span class="ticker-dot">•</span>
+                <span class="ticker-item">Central bank holds rates steady; analysts see stability ahead</span>
+                <span class="ticker-dot">•</span>
+                <span class="ticker-item">Tech leaders gather for AI safety roundtable in Brussels</span>
+                <span class="ticker-dot">•</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Main -->
+    <main class="news-page">
+      <section class="news-hero" aria-labelledby="news-hero-heading">
+        <div class="container">
+          <p class="news-hero-eyebrow text-uppercase mb-2 mb-lg-3">Newsroom</p>
+          <h1 id="news-hero-heading" class="news-hero-title serif-headline mb-3 mb-lg-4">News &amp; Reporting</h1>
+          <p class="news-hero-deck mb-0">
+            Independent coverage of policy, markets, education, and global affairs — fact-checked reporting and analysis
+            from our newsroom.
+          </p>
+        </div>
+      </section>
+
+      <div class="news-filter-bar">
+        <div class="container">
+          <nav class="d-flex flex-wrap align-items-center gap-1 gap-md-2 py-1" aria-label="News categories">
+            <a class="news-filter-pill" href="news.html">Daily</a>
+            <a class="news-filter-pill" href="weekly-news.html">Weekly</a>
+            <a class="news-filter-pill" href="trending-news.html">Trending</a>
+            <a class="news-filter-pill is-active" href="press-release.html" aria-current="page">Press release</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="container py-4 py-lg-5">
+        <header class="news-list-header mb-4 pb-2 border-bottom border-secondary border-opacity-25">
+          <h2 class="news-list-title serif-headline mb-2">Press Release</h2>
+          <p class="news-list-sub text-secondary mb-0">Official statements and announcements from organizations we cover.</p>
+        </header>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          <div class="col">
+            <article class="news-archive-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column position-relative">
+              <div class="news-archive-media ratio ratio-4x3 position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=900&q=80"
+                  class="object-fit-cover position-absolute top-0 start-0 w-100 h-100"
+                  alt="Newsroom with monitors"
+                />
+                <span class="news-card-video-badge">▶ Video</span>
+              </div>
+              <div class="news-archive-body d-flex flex-column flex-grow-1 p-3 p-md-4">
+                <span class="news-archive-cat text-uppercase small fw-semibold">World</span>
+                <h3 class="news-archive-headline serif-headline mt-2 mb-2">
+                  <a href="news-article.html" class="news-archive-title-link text-decoration-none text-navy stretched-link"
+                    >Global Summit Opens in Geneva With Climate at the Center</a
+                  >
+                </h3>
+                <p class="news-archive-excerpt small text-secondary flex-grow-1 mb-3">
+                  Leaders outline emissions targets and financing for vulnerable regions as the opening sessions set the
+                  tone for negotiations.
+                </p>
+                <p class="news-archive-meta small text-muted mb-0 mt-auto">Anika Sharma · 6 min read</p>
+              </div>
+            </article>
+          </div>
+          <div class="col">
+            <article class="news-archive-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column position-relative">
+              <div class="news-archive-media ratio ratio-4x3 position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=900&q=80"
+                  class="object-fit-cover position-absolute top-0 start-0 w-100 h-100"
+                  alt="Trading floor"
+                />
+              </div>
+              <div class="news-archive-body d-flex flex-column flex-grow-1 p-3 p-md-4">
+                <span class="news-archive-cat text-uppercase small fw-semibold">Markets</span>
+                <h3 class="news-archive-headline serif-headline mt-2 mb-2">
+                  <a href="news-article.html" class="news-archive-title-link text-decoration-none text-navy stretched-link"
+                    >Markets Rally as Central Bank Holds Rates Steady</a
+                  >
+                </h3>
+                <p class="news-archive-excerpt small text-secondary flex-grow-1 mb-3">
+                  Investors weigh forward guidance as major indices extend gains into the close across European and
+                  U.S. sessions.
+                </p>
+                <p class="news-archive-meta small text-muted mb-0 mt-auto">Marcus Reed · 5 min read</p>
+              </div>
+            </article>
+          </div>
+          <div class="col">
+            <article class="news-archive-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column position-relative">
+              <div class="news-archive-media ratio ratio-4x3 position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=80"
+                  class="object-fit-cover position-absolute top-0 start-0 w-100 h-100"
+                  alt="Conference panel"
+                />
+              </div>
+              <div class="news-archive-body d-flex flex-column flex-grow-1 p-3 p-md-4">
+                <span class="news-archive-cat text-uppercase small fw-semibold">Policy</span>
+                <h3 class="news-archive-headline serif-headline mt-2 mb-2">
+                  <a href="news-article.html" class="news-archive-title-link text-decoration-none text-navy stretched-link"
+                    >Experts Debate Regulation of Cross-Border Data Flows</a
+                  >
+                </h3>
+                <p class="news-archive-excerpt small text-secondary flex-grow-1 mb-3">
+                  A multilateral forum weighs privacy, security, and competition as cloud providers expand global
+                  footprints.
+                </p>
+                <p class="news-archive-meta small text-muted mb-0 mt-auto">James Okonkwo · 6 min read</p>
+              </div>
+            </article>
+          </div>
+          <div class="col">
+            <article class="news-archive-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column position-relative">
+              <div class="news-archive-media ratio ratio-4x3 position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=900&q=80"
+                  class="object-fit-cover position-absolute top-0 start-0 w-100 h-100"
+                  alt="Wind turbines"
+                />
+              </div>
+              <div class="news-archive-body d-flex flex-column flex-grow-1 p-3 p-md-4">
+                <span class="news-archive-cat text-uppercase small fw-semibold">Climate</span>
+                <h3 class="news-archive-headline serif-headline mt-2 mb-2">
+                  <a href="news-article.html" class="news-archive-title-link text-decoration-none text-navy stretched-link"
+                    >Nations Accelerate Carbon Targets After Record Summer</a
+                  >
+                </h3>
+                <p class="news-archive-excerpt small text-secondary flex-grow-1 mb-3">
+                  Ministers outline new benchmarks for industry and transport as monitoring data shows sharper warming
+                  trends.
+                </p>
+                <p class="news-archive-meta small text-muted mb-0 mt-auto">Sofia Rinaldi · 7 min read</p>
+              </div>
+            </article>
+          </div>
+          <div class="col">
+            <article class="news-archive-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column position-relative">
+              <div class="news-archive-media ratio ratio-4x3 position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=900&q=80"
+                  class="object-fit-cover position-absolute top-0 start-0 w-100 h-100"
+                  alt="Stadium"
+                />
+              </div>
+              <div class="news-archive-body d-flex flex-column flex-grow-1 p-3 p-md-4">
+                <span class="news-archive-cat text-uppercase small fw-semibold">Sports</span>
+                <h3 class="news-archive-headline serif-headline mt-2 mb-2">
+                  <a href="news-article.html" class="news-archive-title-link text-decoration-none text-navy stretched-link"
+                    >World Championships Draw Record Audiences in Prime Time</a
+                  >
+                </h3>
+                <p class="news-archive-excerpt small text-secondary flex-grow-1 mb-3">
+                  Broadcasters cite new camera angles and real-time analytics as viewers follow athletes across multiple
+                  venues.
+                </p>
+                <p class="news-archive-meta small text-muted mb-0 mt-auto">Marcus Lee · 5 min read</p>
+              </div>
+            </article>
+          </div>
+          <div class="col">
+            <article class="news-archive-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column position-relative">
+              <div class="news-archive-media ratio ratio-4x3 position-relative">
+                <img
+                  src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=900&q=80"
+                  class="object-fit-cover position-absolute top-0 start-0 w-100 h-100"
+                  alt="City skyline"
+                />
+              </div>
+              <div class="news-archive-body d-flex flex-column flex-grow-1 p-3 p-md-4">
+                <span class="news-archive-cat text-uppercase small fw-semibold">Cities</span>
+                <h3 class="news-archive-headline serif-headline mt-2 mb-2">
+                  <a href="news-article.html" class="news-archive-title-link text-decoration-none text-navy stretched-link"
+                    >Metro Areas Pilot Congestion Pricing With Transit Credits</a
+                  >
+                </h3>
+                <p class="news-archive-excerpt small text-secondary flex-grow-1 mb-3">
+                  City halls pair road-use fees with expanded bus lanes and cycling corridors to shift peak-hour travel
+                  downtown.
+                </p>
+                <p class="news-archive-meta small text-muted mb-0 mt-auto">Elena Park · 8 min read</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer text-white mt-auto">
+      <div class="footer-main py-5">
+        <div class="container">
+          <div class="row g-4 g-lg-5">
+            <div class="col-lg-5 col-md-6 col-12">
+              <div class="footer-brand d-flex align-items-start">
+                <a href="index.html" class="footer-logo-box" aria-label="Education News Network home">
+                  <img class="site-logo site-logo--footer" src="images/Enn_logo1.png" alt="Education News Network" />
+                </a>
+              </div>
+              <p class="footer-about-text mb-0">
+                Independent journalism for a connected world. Daily reporting, deep analysis, and the
+                conversations that shape what comes next.
+              </p>
+            </div>
+
+            <div class="col-lg-2 col-md-6 col-6">
+              <h2 class="footer-col-title">News</h2>
+              <ul class="list-unstyled footer-link-list mb-0 mt-3">
+                <li><a href="news.html" class="footer-link">Daily News</a></li>
+                <li><a href="press-release.html" class="footer-link">Press Release</a></li>
+              </ul>
+            </div>
+
+            <div class="col-lg-2 col-md-6 col-6">
+              <h2 class="footer-col-title">Events</h2>
+              <ul class="list-unstyled footer-link-list mb-0 mt-3">
+                <li><a href="events.html" class="footer-link">Featured events</a></li>
+                <li><a href="events-speakers.html" class="footer-link">Speakers</a></li>
+                <li><a href="events-sponsors.html" class="footer-link">Sponsors</a></li>
+                <li><a href="about.html" class="footer-link">About Us</a></li>
+                <li><a href="contact.html" class="footer-link">Contact</a></li>
+              </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-12">
+              <h2 class="footer-col-title">Newsletter</h2>
+              <p class="footer-about-text mt-3 mb-3">
+                The day&apos;s most important stories, delivered every morning.
+              </p>
+              <form class="footer-newsletter-form" action="#" method="post">
+                <div class="input-group footer-input-group">
+                  <input
+                    type="email"
+                    class="form-control footer-email-input"
+                    placeholder="your@email.com"
+                    autocomplete="email"
+                    aria-label="Email for newsletter"
+                  />
+                  <button type="submit" class="btn footer-newsletter-btn" aria-label="Subscribe to newsletter">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                      <path
+                        d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.116Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </form>
+              <div class="footer-social d-flex flex-wrap gap-2 mt-4">
+                <a href="#" class="footer-social-btn" aria-label="Facebook">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/></svg>
+                </a>
+                <a href="#" class="footer-social-btn" aria-label="Twitter">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/></svg>
+                </a>
+                <a href="#" class="footer-social-btn" aria-label="LinkedIn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 2.165-1.193c-1.58 0-2.764 1.032-2.764 3.252v4.144h2.4z"/></svg>
+                </a>
+                <a href="#" class="footer-social-btn" aria-label="Instagram">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                    <path
+                      d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.917 3.917 0 0 0-1.417.923A3.927 3.927 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.916 3.916 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.555-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.926 3.926 0 0 0-.923-1.417A3.911 3.911 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.999 0h.001zm6.373 11.945c-.24.425-.44.774-.748 1.056-.279.29-.634.48-1.101.748-.444.254-.914.398-1.62.442-.889.041-1.13.049-3.299.049s-2.41-.01-3.299-.049c-.706-.045-1.177-.188-1.62-.442a3.147 3.147 0 0 1-.748-.748 3.324 3.324 0 0 1-.442-1.102c-.043-.706-.049-1.13-.049-3.299 0-2.168.006-2.409.049-3.299.044-.706.188-1.176.442-1.62.24-.425.44-.773.748-1.056.279-.29.634-.48 1.101-.748.444-.254.914-.398 1.62-.442.889-.041 1.13-.049 3.299-.049s2.41.01 3.299.049c.706.045 1.177.188 1.62.442.425.24.774.44 1.056.748.29.279.48.634.748 1.101.254.444.398.914.442 1.62.041.889.049 1.13.049 3.299s-.01 2.409-.049 3.299c-.045.706-.188 1.177-.442 1.62z"
+                    />
+                    <path
+                      d="M8 4.466c-1.943 0-3.516 1.573-3.516 3.516 0 1.943 1.573 3.516 3.516 3.516 1.943 0 3.516-1.573 3.516-3.516 0-1.943-1.573-3.516-3.516-3.516zm0 5.784c-1.251 0-2.268-1.017-2.268-2.268 0-1.251 1.017-2.268 2.268-2.268 1.251 0 2.268 1.017 2.268 2.268 0 1.251-1.017 2.268-2.268 2.268z"
+                    />
+                    <path d="M11.872 3.164a.82.82 0 1 0-1.639 0 .82.82 0 0 0 1.639 0z" />
+                  </svg>
+                </a>
+                <a href="#" class="footer-social-btn" aria-label="YouTube">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.063l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.003-.171-.003c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.947l.007-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.002A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="container py-3">
+          <div
+            class="d-flex flex-column flex-md-row justify-content-md-between align-items-center align-items-md-center gap-2 small footer-bottom-inner"
+          >
+            <span class="footer-bottom-copy">© 2026 Pulse Today Media. All rights reserved.</span>
+            <div class="footer-bottom-links">
+              <a href="#" class="footer-bottom-link">Privacy</a>
+              <a href="#" class="footer-bottom-link">Terms</a>
+              <a href="#" class="footer-bottom-link">Ethics</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      (function () {
+        var el = document.getElementById("top-date");
+        if (!el) return;
+        var d = new Date();
+        var opts = { weekday: "long", month: "long", day: "numeric" };
+        el.textContent = d.toLocaleDateString("en-US", opts).toUpperCase();
+      })();
+    </script>
+  </body>
+</html>
