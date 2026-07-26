@@ -2,7 +2,7 @@ import {
   getDailyBriefScript,
   getDailyBriefStories,
 } from "@/lib/dailyAudio";
-import { synthesizeMp3Cached } from "@/lib/ttsMp3";
+import { synthesizeMp3Cached, toArrayBuffer } from "@/lib/ttsMp3";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,12 +18,13 @@ export async function GET() {
     const stories = getDailyBriefStories(5);
     const script = getDailyBriefScript(stories);
     const mp3 = await synthesizeMp3Cached("daily-education-brief", script);
+    const body = toArrayBuffer(mp3);
 
-    return new Response(mp3, {
+    return new Response(body, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
-        "Content-Length": String(mp3.length),
+        "Content-Length": String(body.byteLength),
         "Content-Disposition": 'inline; filename="enn-daily-education-brief.mp3"',
         "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
         "X-ENN-Audio": "daily-education-brief",

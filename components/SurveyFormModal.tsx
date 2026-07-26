@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getSurveyOpenUrl, SURVEY_LABEL } from "@/lib/survey";
+import { getSurveyOpenUrl, SURVEY_LABEL, DEFAULT_SURVEY_FORM_URL } from "@/lib/survey";
 
 type SurveyFormModalProps = {
   embedUrl?: string;
@@ -30,7 +30,7 @@ export function useSurveyForm(embedUrl?: string, directUrl?: string, alwaysShow 
       return;
     }
     if (alwaysShow) {
-      window.open(SURVEY_FALLBACK_URL, "_blank", "noopener,noreferrer");
+      window.open(DEFAULT_SURVEY_FORM_URL, "_blank", "noopener,noreferrer");
     }
   };
 

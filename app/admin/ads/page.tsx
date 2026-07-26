@@ -14,10 +14,11 @@ import {
 } from "@/lib/siteAds";
 
 const ACCENT_OPTIONS: { value: SiteAdSlide["accent"]; label: string }[] = [
-  { value: "spotify", label: "Spotify green" },
-  { value: "navy", label: "ENN navy" },
+  { value: "navy", label: "ET Magazine blue" },
+  { value: "enn", label: "ENN navy" },
+  { value: "red", label: "EDHR dark" },
   { value: "sky", label: "Sky blue" },
-  { value: "red", label: "YouTube red" },
+  { value: "spotify", label: "Spotify green" },
 ];
 
 const emptySlide = (): SiteAdSlide => ({
@@ -29,8 +30,8 @@ const emptySlide = (): SiteAdSlide => ({
   followUrl: DEFAULT_SITE_AD_SLIDES[0].followUrl,
   bannerImageUrl: "",
   logoUrl: "",
-  brandColor: "#080808",
-  accent: "spotify",
+  brandColor: "#1A6BC8",
+  accent: "navy",
 });
 
 export default function AdminAdsPage() {

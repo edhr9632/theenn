@@ -128,6 +128,65 @@ function countWords(value: string) {
   return value.trim().split(/\s+/).filter(Boolean).length;
 }
 
+const PROMPT_ICON_COLORS = ["#7c3aed", "#2563eb", "#db2777", "#0891b2", "#ca8a04", "#059669"] as const;
+
+function PromptGlyph({ index }: { index: number }) {
+  const icons = [
+    // graduation
+    <path key="g" d="M12 3L2 8l10 5 10-5-10-5zm0 8.5L4.5 8.2v4.3L12 16l7.5-3.5V8.2L12 11.5zM6 14.2v3.3L12 21l6-3.5v-3.3" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round" />,
+    // people
+    <path key="p" d="M16 19v-1.2A3.8 3.8 0 0 0 12.2 14H7.8A3.8 3.8 0 0 0 4 17.8V19M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8 8v-1.1a3 3 0 0 0-2.1-2.8M15.1 5.2a3 3 0 0 1 0 5.6" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" />,
+    // heart
+    <path key="h" d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.6 12 20 12 20z" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round" />,
+    // building
+    <path key="b" d="M4 20h16M6 20V8l6-4 6 4v12M10 12h.01M14 12h.01M10 16h.01M14 16h.01" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />,
+    // book
+    <path key="k" d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v16H6.5A2.5 2.5 0 0 0 4 21.5V5.5zm8-2.5h5.5A2.5 2.5 0 0 1 20 5.5v16a2.5 2.5 0 0 0-2.5-2.5H12" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinejoin="round" />,
+    // plane
+    <path key="a" d="M10.5 12.5L4 9.5l1-2 7.5 2.2L18 4l2 1-3.5 8.5 2.2 7.5-2 1-3-6.5-6.5 3.5-1-2 5.3-2.5z" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinejoin="round" />,
+  ];
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      {icons[index % icons.length]}
+    </svg>
+  );
+}
+
+function LightningIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M13 2L4 14h7l-1 8 10-14h-7l0-6z" />
+    </svg>
+  );
+}
+
+function GlobeGraphic() {
+  return (
+    <div className="ask-enn-fp-globe" aria-hidden="true">
+      <svg viewBox="0 0 280 280" className="ask-enn-fp-globe-svg">
+        <defs>
+          <radialGradient id="askEnnGlobeCore" cx="50%" cy="45%" r="55%">
+            <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.95" />
+            <stop offset="55%" stopColor="#6366f1" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#312e81" stopOpacity="0.35" />
+          </radialGradient>
+          <linearGradient id="askEnnOrbit" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a78bfa" />
+            <stop offset="100%" stopColor="#38bdf8" />
+          </linearGradient>
+        </defs>
+        <circle cx="140" cy="140" r="78" fill="url(#askEnnGlobeCore)" />
+        <ellipse cx="140" cy="140" rx="108" ry="42" fill="none" stroke="url(#askEnnOrbit)" strokeWidth="1.6" opacity="0.7" transform="rotate(-18 140 140)" />
+        <ellipse cx="140" cy="140" rx="118" ry="48" fill="none" stroke="url(#askEnnOrbit)" strokeWidth="1.2" opacity="0.45" transform="rotate(32 140 140)" />
+        <ellipse cx="140" cy="140" rx="98" ry="36" fill="none" stroke="#c4b5fd" strokeWidth="1" opacity="0.55" transform="rotate(70 140 140)" />
+        <circle cx="210" cy="92" r="5" fill="#e0e7ff" />
+        <circle cx="78" cy="186" r="3.5" fill="#93c5fd" />
+        <circle cx="188" cy="198" r="4" fill="#a5b4fc" />
+      </svg>
+    </div>
+  );
+}
+
 export default function AskEnnOverlay() {
   const pathname = usePathname();
   const hiddenOnRoute =
@@ -325,6 +384,13 @@ export default function AskEnnOverlay() {
 
   return open ? (
     <div className="ask-enn-fp-overlay" role="dialog" aria-modal="true" aria-label="Ask ENN">
+      <div className="ask-enn-fp-atmosphere" aria-hidden="true">
+        <span className="ask-enn-fp-wave ask-enn-fp-wave--a" />
+        <span className="ask-enn-fp-wave ask-enn-fp-wave--b" />
+        <span className="ask-enn-fp-wave ask-enn-fp-wave--c" />
+      </div>
+      {!hasChat ? <GlobeGraphic /> : null}
+
       <header className="ask-enn-fp-topbar">
         <div className="ask-enn-fp-brand">
           <Image
@@ -353,16 +419,21 @@ export default function AskEnnOverlay() {
                 </span>
               </h1>
               <p className="ask-enn-fp-lead mb-0">
-                Get news and articles with accuracy from Education News Network journalism
+                Get news and articles with accuracy from Education News Network journalism.
               </p>
             </div>
 
             {searchForm(false)}
 
             <div className="ask-enn-fp-trending-block">
-              <p className="ask-enn-fp-trending-label mb-0">Trending prompts:</p>
+              <p className="ask-enn-fp-trending-label mb-0">
+                <span className="ask-enn-fp-trending-bolt" aria-hidden="true">
+                  <LightningIcon />
+                </span>
+                Trending prompts:
+              </p>
               <div className="ask-enn-fp-trending" role="list">
-                {trending.map((prompt) => (
+                {trending.map((prompt, index) => (
                   <button
                     key={prompt.query}
                     type="button"
@@ -372,10 +443,13 @@ export default function AskEnnOverlay() {
                     disabled={loading}
                     aria-label={`Ask: ${prompt.label}`}
                   >
-                    <span className="ask-enn-fp-trending-icon">
-                      <SparkleIcon size={14} />
+                    <span
+                      className="ask-enn-fp-trending-icon"
+                      style={{ backgroundColor: `${PROMPT_ICON_COLORS[index % PROMPT_ICON_COLORS.length]}18`, color: PROMPT_ICON_COLORS[index % PROMPT_ICON_COLORS.length] }}
+                    >
+                      <PromptGlyph index={index} />
                     </span>
-                    <span>{prompt.label}</span>
+                    <span className="ask-enn-fp-trending-text">{prompt.label}</span>
                   </button>
                 ))}
               </div>

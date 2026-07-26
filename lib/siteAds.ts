@@ -8,7 +8,7 @@ export type SiteAdSlide = {
   bannerImageUrl: string;
   logoUrl?: string;
   brandColor?: string;
-  accent: "spotify" | "navy" | "red" | "sky";
+  accent: "spotify" | "navy" | "red" | "sky" | "enn";
   primaryLabel?: string;
   secondaryLabel?: string;
 };
@@ -21,76 +21,58 @@ export type SiteAdsConfig = {
 
 export const SITE_ADS_STORAGE_KEY = "enn_admin_site_ads";
 export const SITE_ADS_VERSION_KEY = "enn_admin_site_ads_version";
-export const SITE_ADS_VERSION = "v6-official-logos-sized";
+export const SITE_ADS_VERSION = "v10-et-msa-edhr-banners";
 
-const DEFAULT_LISTEN =
-  process.env.NEXT_PUBLIC_SPOTIFY_SHOW_URL?.trim() ||
-  "https://open.spotify.com/search/Education%20News%20Network";
-
-const DEFAULT_FOLLOW =
-  process.env.NEXT_PUBLIC_SPOTIFY_FOLLOW_URL?.trim() || DEFAULT_LISTEN;
-
-/** 2 minutes per slide */
-export const ADS_AUTOPLAY_MS = 120000;
+/** Seconds between slides in the header carousel */
+export const ADS_AUTOPLAY_MS = 5000;
 
 export function createAdSlideId() {
   return `ad-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+/** Header partner ads — ET, MSA, EDHR banner images. */
 export const DEFAULT_SITE_AD_SLIDES: SiteAdSlide[] = [
   {
-    id: "ad-spotify-1",
-    kicker: "Now On Spotify",
-    headline: "Today's Top Stories : Daily News Updates",
-    subtext: "Daily News Updates",
-    listenUrl: DEFAULT_LISTEN,
-    followUrl: DEFAULT_FOLLOW,
-    bannerImageUrl: "",
-    accent: "spotify",
-    primaryLabel: "Listen Now",
-    secondaryLabel: "Follow Now",
-  },
-  {
-    id: "ad-et-magazine-2",
+    id: "ad-et-magazine",
     kicker: "ET Magazine",
-    headline: "Education Today magazine — insights for schools and leaders",
-    subtext: "Feature stories, policy briefs, and city editions",
-    listenUrl: "/weekly-news",
-    followUrl: "/subscribe",
-    bannerImageUrl: "",
+    headline: "India's leading education magazine — subscribe now",
+    subtext: "Explore premium Education Today magazine",
+    listenUrl: "/subscribe",
+    followUrl: "/weekly-news",
+    bannerImageUrl: "/images/ads/et-subscribe-banner.jpg",
     logoUrl: "/images/brands/et-logo.webp",
     brandColor: "#1A6BC8",
     accent: "navy",
-    primaryLabel: "Read Magazine",
-    secondaryLabel: "Subscribe",
+    primaryLabel: "Subscribe Now",
+    secondaryLabel: "Read Magazine",
   },
   {
-    id: "ad-msa-3",
+    id: "ad-msa",
     kicker: "MSA School Admission",
-    headline: "Open admissions guidance for parents and schools",
-    subtext: "Timelines, checklists, and counselling support",
+    headline: "Looking for school admission? Visit MSA",
+    subtext: "Discover schools, compare options, and apply with ease",
     listenUrl: "https://myschooladmission.com/",
     followUrl: "/contact",
-    bannerImageUrl: "",
+    bannerImageUrl: "/images/ads/msa-banner.png",
     logoUrl: "/images/brands/msa-logo.png",
     brandColor: "#00AEEF",
     accent: "sky",
-    primaryLabel: "Explore Admissions",
+    primaryLabel: "Visit MSA",
     secondaryLabel: "Contact Us",
   },
   {
-    id: "ad-edhr-4",
+    id: "ad-edhr",
     kicker: "EDHR",
-    headline: "Education HR resources for schools and institutions",
-    subtext: "Hiring, talent development, and leadership pipelines",
+    headline: "Exclusive platform for principals & directors",
+    subtext: "Education Directors & Heads Recruitment",
     listenUrl: "https://www.edhr.in/",
     followUrl: "/contact",
-    bannerImageUrl: "",
+    bannerImageUrl: "/images/ads/edhr-banner.png",
     logoUrl: "/images/brands/edhr-logo.png",
     brandColor: "#080808",
     accent: "red",
-    primaryLabel: "Learn More",
-    secondaryLabel: "Get in Touch",
+    primaryLabel: "Register Now",
+    secondaryLabel: "Get In Touch",
   },
 ];
 
@@ -107,7 +89,7 @@ function normalizeConfig(raw: Partial<SiteAdsConfig>): SiteAdsConfig {
   return {
     enabled: raw.enabled !== false,
     autoplayMs:
-      typeof raw.autoplayMs === "number" && raw.autoplayMs >= ADS_AUTOPLAY_MS
+      typeof raw.autoplayMs === "number" && raw.autoplayMs >= 3000
         ? raw.autoplayMs
         : ADS_AUTOPLAY_MS,
     slides: slides.slice(0, 8).map((slide, index) => {
@@ -119,7 +101,7 @@ function normalizeConfig(raw: Partial<SiteAdsConfig>): SiteAdsConfig {
         subtext: slide.subtext || fallback.subtext,
         listenUrl: slide.listenUrl || fallback.listenUrl,
         followUrl: slide.followUrl || fallback.followUrl,
-        bannerImageUrl: slide.bannerImageUrl || "",
+        bannerImageUrl: slide.bannerImageUrl || fallback.bannerImageUrl || "",
         logoUrl: slide.logoUrl || fallback.logoUrl,
         brandColor: slide.brandColor || fallback.brandColor,
         accent: slide.accent || fallback.accent,
@@ -152,7 +134,6 @@ export function readSiteAds(): SiteAdsConfig {
     const parsed = JSON.parse(raw) as Partial<SiteAdsConfig>;
     const normalized = normalizeConfig(parsed);
 
-    // Always keep ads visible unless admin explicitly turns them off after this version.
     if (!normalized.slides.length) return resetSiteAdsToDefaults();
 
     return normalized;

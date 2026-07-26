@@ -39,12 +39,15 @@ body {
 .spotify-ad-bar {
   background: #fff;
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  width: 100%;
 }
 
 .spotify-ad-shell {
   display: flex;
-  justify-content: center;
-  padding: 0.55rem 1rem;
+  justify-content: stretch;
+  width: 100%;
+  max-width: none;
+  padding: 0;
   background: #fff;
 }
 
@@ -53,15 +56,16 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem 1.75rem;
-  width: min(100%, 72rem);
-  /* Match ET / MSA / EDHR logo frame (4.75rem) + vertical padding */
+  width: 100%;
   min-height: 6.15rem;
-  padding: 0.7rem 1.15rem 0.7rem 0.85rem;
-  border-radius: 0.9rem;
+  padding: 0.85rem clamp(1rem, 3vw, 2.5rem);
+  border-radius: 0;
   color: #0f172a;
   background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border: none;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: none;
 }
 
 .spotify-ad-banner--spotify {
@@ -97,6 +101,29 @@ body {
   background-repeat: no-repeat;
   justify-content: flex-end;
   padding-right: 1.25rem;
+}
+
+.spotify-ad-banner--image-full {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  line-height: 0;
+  text-decoration: none;
+  background: #0b1f3a;
+}
+
+.spotify-ad-banner-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: clamp(7rem, 16vw, 11rem);
+  object-fit: cover;
+  object-position: center center;
 }
 
 .spotify-ad-left {
@@ -225,7 +252,8 @@ body {
 
 .spotify-ad-slider {
   position: relative;
-  width: min(100%, 72rem);
+  width: 100%;
+  max-width: none;
   overflow: hidden;
   padding-bottom: 0.15rem;
   min-height: 5.75rem;
@@ -410,6 +438,63 @@ body {
   color: var(--ad-brand);
 }
 
+/* ENN — Education News Network */
+.ad-layout-enn {
+  gap: 1rem 1.35rem;
+  --ad-brand: #001a33;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, #3669b4 14%, white) 0%, #fff 42%),
+    #fff;
+  border-color: color-mix(in srgb, var(--ad-brand) 14%, white);
+}
+
+.ad-layout-enn .ad-brand-logo {
+  background: #fff;
+  border: 1px solid rgba(0, 26, 51, 0.1);
+}
+
+.ad-enn-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ad-enn-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1a4099;
+}
+
+.ad-enn-headline {
+  font-family: Georgia, "Libre Baskerville", serif;
+  font-size: clamp(1.05rem, 0.95rem + 0.45vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ad-brand);
+}
+
+.ad-enn-sub {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.ad-enn-actions .spotify-ad-btn--enn:not(.spotify-ad-btn--secondary) {
+  background: linear-gradient(180deg, #2a5bb8 0%, #1a4099 55%, #001a33 100%);
+}
+
+.ad-enn-actions .spotify-ad-btn--secondary {
+  border-color: color-mix(in srgb, var(--ad-brand) 28%, white);
+  color: var(--ad-brand);
+}
+
+.spotify-ad-btn--enn {
+  background: linear-gradient(180deg, #2a5bb8 0%, #1a4099 55%, #001a33 100%);
+}
+
 /* MSA — same logo frame size as ET */
 .ad-layout-msa {
   gap: 1rem 1.2rem;
@@ -550,6 +635,7 @@ body {
 
 @media (max-width: 767.98px) {
   .ad-layout-et,
+  .ad-layout-enn,
   .ad-layout-msa,
   .ad-layout-edhr {
     flex-wrap: wrap;
@@ -564,7 +650,11 @@ body {
 
 @media (max-width: 767.98px) {
   .spotify-ad-shell {
-    padding: 0.45rem 0.7rem;
+    padding: 0;
+  }
+
+  .spotify-ad-banner-img {
+    max-height: 7.25rem;
   }
 
   .spotify-ad-banner {
@@ -572,7 +662,11 @@ body {
     align-items: stretch;
     gap: 0.85rem;
     min-height: 0;
-    padding: 0.75rem 0.85rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .spotify-ad-banner--image-full {
+    padding: 0;
   }
 
   .spotify-ad-banner--spotify {
@@ -8982,26 +9076,99 @@ body.weekly-pdf-open {
   }
 }
 
-/* Ask ENN — full-page overlay (clean, Firstpost-style + ENN accents) */
+/* Ask ENN — full-page overlay (welcome mock: waves + globe + prompt cards) */
 .ask-enn-fp-overlay {
   position: fixed;
   inset: 0;
   z-index: 2400;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 8%, rgba(167, 139, 250, 0.28), transparent 58%),
+    radial-gradient(ellipse 55% 45% at 12% 20%, rgba(125, 211, 252, 0.32), transparent 55%),
+    linear-gradient(180deg, #eef4ff 0%, #f7f5ff 42%, #ffffff 100%);
   overflow: hidden;
 }
 
+.ask-enn-fp-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.ask-enn-fp-wave {
+  position: absolute;
+  left: -12%;
+  width: 124%;
+  height: 42%;
+  border-radius: 50%;
+  filter: blur(2px);
+  opacity: 0.55;
+  animation: askEnnWaveDrift 14s ease-in-out infinite;
+}
+
+.ask-enn-fp-wave--a {
+  top: 8%;
+  background: linear-gradient(90deg, rgba(147, 197, 253, 0.35), rgba(196, 181, 253, 0.28), rgba(255, 255, 255, 0));
+}
+
+.ask-enn-fp-wave--b {
+  top: 28%;
+  height: 48%;
+  background: linear-gradient(90deg, rgba(196, 181, 253, 0.22), rgba(125, 211, 252, 0.3), rgba(255, 255, 255, 0));
+  animation-delay: -4s;
+  opacity: 0.45;
+}
+
+.ask-enn-fp-wave--c {
+  top: 52%;
+  height: 55%;
+  background: linear-gradient(90deg, rgba(224, 231, 255, 0.5), rgba(237, 233, 254, 0.35), transparent);
+  animation-delay: -8s;
+  opacity: 0.4;
+}
+
+@keyframes askEnnWaveDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(1.5%, -1.2%, 0) scale(1.03); }
+}
+
+.ask-enn-fp-globe {
+  position: absolute;
+  top: clamp(3.5rem, 8vh, 5.5rem);
+  right: clamp(0.5rem, 4vw, 3rem);
+  width: clamp(9rem, 22vw, 16rem);
+  height: clamp(9rem, 22vw, 16rem);
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.92;
+  animation: askEnnGlobeFloat 8s ease-in-out infinite;
+}
+
+.ask-enn-fp-globe-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 18px 40px rgba(99, 102, 241, 0.28));
+}
+
+@keyframes askEnnGlobeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.55rem); }
+}
+
 .ask-enn-fp-topbar {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 1.15rem clamp(1.25rem, 4vw, 2.5rem);
   flex-shrink: 0;
-  background: #fff;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  background: transparent;
+  border-bottom: 0;
 }
 
 .ask-enn-fp-brand {
@@ -9017,22 +9184,34 @@ body.weekly-pdf-open {
 }
 
 .ask-enn-fp-close {
-  border: 0;
-  background: transparent;
-  color: #111;
-  font-size: 1.35rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #334155;
+  font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0.1rem 0.25rem;
-  font-weight: 300;
+  padding: 0;
+  font-weight: 400;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .ask-enn-fp-close:hover {
-  opacity: 0.6;
+  background: #fff;
+  transform: translateY(-1px);
+  opacity: 1;
 }
 
 .ask-enn-fp-shell {
+  position: relative;
+  z-index: 2;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -9076,9 +9255,9 @@ body.weekly-pdf-open {
 }
 
 .ask-enn-fp-hero {
-  width: min(58rem, 100%);
+  width: min(52rem, 100%);
   margin: auto;
-  padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 4vw, 2.5rem) clamp(2rem, 4vw, 3rem);
+  padding: clamp(1rem, 3vw, 2rem) clamp(1.25rem, 4vw, 2.5rem) clamp(2rem, 4vw, 3rem);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -9086,22 +9265,22 @@ body.weekly-pdf-open {
 
 .ask-enn-fp-hero-intro {
   text-align: center;
-  margin-bottom: 1.65rem;
+  margin-bottom: 1.75rem;
 }
 
 .ask-enn-fp-title {
-  font-family: var(--font-playfair), Georgia, "Times New Roman", serif;
-  font-size: clamp(1.85rem, 3.2vw, 2.45rem);
-  font-weight: 400;
-  color: #111;
-  letter-spacing: -0.02em;
+  font-family: "Roboto", system-ui, sans-serif;
+  font-size: clamp(1.9rem, 3.6vw, 2.75rem);
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.03em;
   line-height: 1.15;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.65rem;
 }
 
 .ask-enn-fp-title-accent {
-  font-weight: 500;
-  background: linear-gradient(90deg, var(--accent-blue-tag) 0%, var(--primary-blue) 55%, var(--navy) 100%);
+  font-weight: 800;
+  background: linear-gradient(100deg, #2563eb 0%, #7c3aed 55%, #9333ea 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -9109,64 +9288,62 @@ body.weekly-pdf-open {
 }
 
 .ask-enn-fp-sparkle {
-  margin-left: 0.08rem;
-  font-size: 0.9em;
+  margin-left: 0.12rem;
+  font-size: 0.72em;
   background: none;
-  -webkit-text-fill-color: var(--accent-blue-tag);
-  color: var(--accent-blue-tag);
+  -webkit-text-fill-color: #8b5cf6;
+  color: #8b5cf6;
+  vertical-align: super;
 }
 
 .ask-enn-fp-lead {
-  max-width: 36rem;
+  max-width: 34rem;
   margin: 0 auto;
   font-family: "Roboto", system-ui, sans-serif;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: #9ca3af;
+  font-size: clamp(0.92rem, 1.4vw, 1.05rem);
+  line-height: 1.55;
+  color: #64748b;
 }
 
 .ask-enn-fp-search-wrap {
-  width: 100%;
-  margin-bottom: 2rem;
+  width: min(40rem, 100%);
+  margin: 0 auto 1.85rem;
 }
 
 .ask-enn-fp-search-wrap--compact {
+  width: 100%;
   margin-bottom: 0;
 }
 
 .ask-enn-fp-search-gradient {
-  padding: 1px;
-  border-radius: 10px;
-  background: linear-gradient(
-    90deg,
-    var(--navy) 0%,
-    var(--primary-blue) 35%,
-    var(--steel-blue) 65%,
-    var(--accent-blue-tag) 100%
-  );
+  padding: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(100deg, #60a5fa 0%, #a78bfa 45%, #c084fc 100%);
+  box-shadow: 0 14px 40px rgba(99, 102, 241, 0.18);
 }
 
 .ask-enn-fp-search-gradient--compact {
-  border-radius: 10px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
 }
 
 .ask-enn-fp-search-inner {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  min-height: 3rem;
-  padding: 0.6rem 0.85rem;
+  min-height: 3.35rem;
+  padding: 0.55rem 0.65rem 0.55rem 1.15rem;
   background: #fff;
-  border-radius: 9px;
+  border-radius: 999px;
 }
 
 .ask-enn-fp-search-gradient--compact .ask-enn-fp-search-inner {
-  min-height: 2.75rem;
-  border-radius: 9px;
+  min-height: 2.85rem;
+  border-radius: 999px;
 }
 
 .ask-enn-fp-search-icon {
-  color: var(--accent-blue-tag);
+  color: #8b5cf6;
   flex-shrink: 0;
   display: inline-flex;
 }
@@ -9178,41 +9355,44 @@ body.weekly-pdf-open {
   outline: none;
   background: transparent;
   font-family: "Roboto", system-ui, sans-serif;
-  font-size: 0.88rem;
-  color: #111;
+  font-size: 0.98rem;
+  color: #0f172a;
 }
 
 .ask-enn-fp-search-input::placeholder {
-  color: #b0b8c4;
+  color: #94a3b8;
 }
 
 .ask-enn-fp-search-send {
+  width: 2.55rem;
+  height: 2.55rem;
   border: 0;
-  background: transparent;
-  color: #6b7280;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  padding: 0.15rem;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
 }
 
 .ask-enn-fp-search-send:disabled {
-  opacity: 0.35;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .ask-enn-fp-search-send:not(:disabled):hover {
-  color: var(--navy);
+  filter: brightness(1.06);
+  transform: translateY(-1px);
 }
 
 .ask-enn-fp-limit {
-  margin-top: 0.55rem;
+  margin-top: 0.7rem;
   text-align: center;
-  font-family: "Roboto", system-ui, sans-serif;
-  font-size: 0.72rem;
-  color: #b0b8c4;
+  font-size: 0.8rem;
+  color: #94a3b8;
 }
 
 .ask-enn-fp-limit.is-over {
@@ -9221,43 +9401,56 @@ body.weekly-pdf-open {
 
 .ask-enn-fp-trending-block {
   text-align: left;
+  width: 100%;
 }
 
 .ask-enn-fp-trending-label {
-  font-family: var(--font-playfair), Georgia, serif;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 0.92rem;
-  color: #374151;
-  margin-bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "Roboto", system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #0f172a;
+  margin-bottom: 0.85rem;
+}
+
+.ask-enn-fp-trending-bolt {
+  display: inline-flex;
+  color: #7c3aed;
 }
 
 .ask-enn-fp-trending {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
 .ask-enn-fp-trending-btn {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: 0.75rem;
   width: 100%;
-  border: 0;
-  border-radius: 10px;
-  background: #f3f4f6;
-  padding: 0.72rem 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.95rem 1rem;
   text-align: left;
   font-family: "Roboto", system-ui, sans-serif;
-  font-size: 0.8rem;
-  line-height: 1.38;
-  color: #111827;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: #1e293b;
   cursor: pointer;
-  transition: background 0.15s ease;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ask-enn-fp-trending-btn:hover:not(:disabled) {
-  background: #eceef2;
+  background: #fff;
+  border-color: rgba(124, 58, 237, 0.28);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(99, 102, 241, 0.12);
 }
 
 .ask-enn-fp-trending-btn:disabled {
@@ -9266,9 +9459,18 @@ body.weekly-pdf-open {
 }
 
 .ask-enn-fp-trending-icon {
-  color: var(--accent-blue-tag);
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  margin-top: 0.1rem;
+}
+
+.ask-enn-fp-trending-text {
+  min-width: 0;
+  padding-top: 0.2rem;
 }
 
 .ask-enn-fp-messages {
@@ -9464,8 +9666,20 @@ body.weekly-pdf-open {
     grid-template-columns: 1fr;
   }
 
+  .ask-enn-fp-globe {
+    width: 7.5rem;
+    height: 7.5rem;
+    top: 4.25rem;
+    right: -0.5rem;
+    opacity: 0.55;
+  }
+
   .ask-enn-fp-hero {
     padding-bottom: 1.75rem;
+  }
+
+  .ask-enn-fp-title {
+    font-size: clamp(1.65rem, 7vw, 2.1rem);
   }
 
   .ask-enn-story-viewer {

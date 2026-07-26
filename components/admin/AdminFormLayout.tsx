@@ -11,7 +11,7 @@ type AdminFormLayoutProps = {
   backLabel?: string;
   children: ReactNode;
   submitLabel?: string;
-  onSubmit?: (e: FormEvent) => void;
+  onSubmit?: (e: FormEvent<HTMLFormElement>) => void;
   showSeo?: boolean;
   wide?: boolean;
   cardSubtitle?: string;

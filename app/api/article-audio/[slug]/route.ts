@@ -1,7 +1,7 @@
 import { newsArticles } from "@/lib/data";
 import { buildArticleNewsScript } from "@/lib/articleAudio";
 import { getPublishedNewsDetail } from "@/lib/newsDb";
-import { safeAudioFileName, synthesizeMp3FromText } from "@/lib/ttsMp3";
+import { safeAudioFileName, synthesizeMp3FromText, toArrayBuffer } from "@/lib/ttsMp3";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,11 +34,11 @@ export async function GET(_request: Request, context: RouteContext) {
     const mp3 = await synthesizeMp3FromText(script);
     const filename = `enn-${safeAudioFileName(article.slug)}-news-briefing.mp3`;
 
-    return new Response(new Uint8Array(mp3), {
+    return new Response(toArrayBuffer(mp3), {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
-        "Content-Length": String(mp3.length),
+        "Content-Length": String(mp3.byteLength),
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "private, max-age=3600",
       },
