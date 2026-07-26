@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import TopDate from "./TopDate";
 import PromoAnnouncementBar from "./PromoAnnouncementBar";
-import SpotifyHeaderAd from "./SpotifyHeaderAd";
 import SurveyFormModal from "./SurveyFormModal";
 import SiteSearchButton from "./SiteSearchButton";
 import { getSurveyConfig, hasSurveyTarget } from "@/lib/survey";
@@ -32,7 +31,6 @@ export default function SiteMasthead({ activeNav, newsActive, podcastActive }: S
 
   return (
     <div className="site-masthead">
-      <SpotifyHeaderAd />
       <PromoAnnouncementBar />
 
       <div className="site-masthead-sticky sticky-top">
