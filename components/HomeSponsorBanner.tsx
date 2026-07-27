@@ -15,6 +15,8 @@ export default function HomeSponsorBanner({ banner }: HomeSponsorBannerProps) {
             title="TV Schedule coming soon"
             message="Add the Knowledge Plus banner in the admin panel when ready."
             className="sponsor-coming-soon"
+            ctaLabel="Subscribe"
+            ctaHref="https://www.educationtoday.co/magazines/upcoming-magazines/subscribe"
           />
         </div>
       </section>
