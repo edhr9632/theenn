@@ -94,7 +94,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const router = useRouter();
   const [ready, setReady] = useState(false);
-  const [userEmail, setUserEmail] = useState("admin@ennnews.com");
+  const [userEmail, setUserEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [eventsOpen, setEventsOpen] = useState(false);
   const isLogin = pathname === "/admin/login";

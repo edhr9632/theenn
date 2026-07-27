@@ -7,8 +7,9 @@ import { ADMIN_DEMO_CREDENTIALS } from "@/lib/admin";
 import { isAdminAuthenticated, writeAdminSession } from "@/lib/adminAuth";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState(ADMIN_DEMO_CREDENTIALS.email);
-  const [password, setPassword] = useState(ADMIN_DEMO_CREDENTIALS.password);
+  // Do not prefill demo credentials in the UI.
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,14 +88,7 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            <div className="admin-login-demo">
-              <span className="admin-login-demo-label">Demo access</span>
-              <p className="mb-0">
-                <strong>{ADMIN_DEMO_CREDENTIALS.email}</strong>
-                <span className="admin-login-demo-sep"> · </span>
-                <strong>{ADMIN_DEMO_CREDENTIALS.password}</strong>
-              </p>
-            </div>
+            {/* Demo credentials removed from UI (they remain only for validation). */}
 
             {error ? <p className="admin-login-error mb-0">{error}</p> : null}
 
