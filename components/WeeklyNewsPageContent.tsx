@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import SiteMasthead from "@/components/SiteMasthead";
-import { weeklyIssues } from "@/lib/weeklyIssues";
+import ComingSoonBlock from "@/components/ComingSoonBlock";
 import {
   DEFAULT_WEEKLY_CITIES,
   readWeeklyCities,
@@ -83,15 +83,9 @@ function IssueCard({ issue }: { issue: AdminWeeklyIssue }) {
   );
 }
 
-const seedIssues: AdminWeeklyIssue[] = weeklyIssues.map((issue) => ({
-  ...issue,
-  cityId: "city-bengaluru",
-  cityName: "Bengaluru",
-}));
-
 export default function WeeklyNewsPageContent() {
   const [cities, setCities] = useState<WeeklyCity[]>(DEFAULT_WEEKLY_CITIES);
-  const [issues, setIssues] = useState<AdminWeeklyIssue[]>(seedIssues);
+  const [issues, setIssues] = useState<AdminWeeklyIssue[]>([]);
   const [cityId, setCityId] = useState(DEFAULT_WEEKLY_CITIES[0]?.id ?? "");
 
   useEffect(() => {
@@ -170,7 +164,10 @@ export default function WeeklyNewsPageContent() {
 
         {!featured ? (
           <div className="container py-5">
-            <p className="text-secondary mb-0">No weekly editions for {selectedCity?.name ?? "this city"} yet.</p>
+            <ComingSoonBlock
+              title="Weekly news coming soon"
+              message="Add city magazine editions in the admin Weekly News panel — they will appear here automatically."
+            />
           </div>
         ) : (
           <>

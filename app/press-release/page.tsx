@@ -15,6 +15,7 @@ export default function PressReleasePage() {
       subtitle="Official announcements from Education News Network."
       newsActive="press"
       activeFilter="press"
+      section="press"
     />
   );
 }

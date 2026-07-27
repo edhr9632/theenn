@@ -1,4 +1,3 @@
-import { newsArticles } from "@/lib/data";
 import { buildArticleNewsScript } from "@/lib/articleAudio";
 import { getPublishedNewsDetail } from "@/lib/newsDb";
 import { safeAudioFileName, synthesizeMp3FromText, toArrayBuffer } from "@/lib/ttsMp3";
@@ -17,8 +16,7 @@ async function resolveArticleForAudio(slug: string) {
   } catch {
     /* database unavailable */
   }
-
-  return newsArticles.find((item) => item.slug === slug) ?? null;
+  return null;
 }
 
 export async function GET(_request: Request, context: RouteContext) {

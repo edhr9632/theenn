@@ -15,6 +15,7 @@ export default function DailyNewsPage() {
       subtitle="The day's most important stories."
       newsActive="daily"
       activeFilter="daily"
+      section="daily"
     />
   );
 }

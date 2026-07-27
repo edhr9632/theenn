@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import SiteMasthead from "@/components/SiteMasthead";
+import ComingSoonBlock from "@/components/ComingSoonBlock";
 import { eventEditions, getCategoriesForYear, getEventYears, speakers } from "@/lib/data";
 
 export default function SpeakersPage() {
@@ -101,34 +102,38 @@ export default function SpeakersPage() {
           </div>
 
           <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4">Featured speakers</h2>
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
-            {filteredSpeakers.map((speaker) => (
-              <div key={`${speaker.name}-${speaker.year}-${speaker.category}`} className="col">
-                <a
-                  href={speaker.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="events-grid-card events-speaker-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column text-center text-xl-start text-decoration-none"
-                >
-                  <div className="ratio ratio-1x1 position-relative">
-                    <Image src={speaker.image} alt={speaker.name} fill className="object-fit-cover" sizes="25vw" />
-                  </div>
-                  <div className="p-3 p-md-4 d-flex flex-column flex-grow-1">
-                    <h3 className="events-speaker-name serif-headline h6 mb-1">{speaker.name}</h3>
-                    <p className="events-speaker-role text-secondary mb-2">{speaker.role}</p>
-                    <p className="events-speaker-meta small mb-2">
-                      {speaker.year} · {speaker.category}
-                    </p>
-                    <p className="events-speaker-event small text-muted mb-0">{eventTitleById.get(speaker.eventId)}</p>
-                    <span className="events-video-link mt-3">Watch on YouTube →</span>
-                  </div>
-                </a>
-              </div>
-            ))}
-          </div>
           {filteredSpeakers.length === 0 ? (
-            <p className="small text-muted mt-4 mb-0">No speakers found for this filter.</p>
-          ) : null}
+            <ComingSoonBlock
+              title="Speakers coming soon"
+              message="Add speakers in the admin panel — they will appear here automatically."
+            />
+          ) : (
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+              {filteredSpeakers.map((speaker) => (
+                <div key={`${speaker.name}-${speaker.year}-${speaker.category}`} className="col">
+                  <a
+                    href={speaker.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="events-grid-card events-speaker-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column text-center text-xl-start text-decoration-none"
+                  >
+                    <div className="ratio ratio-1x1 position-relative">
+                      <Image src={speaker.image} alt={speaker.name} fill className="object-fit-cover" sizes="25vw" />
+                    </div>
+                    <div className="p-3 p-md-4 d-flex flex-column flex-grow-1">
+                      <h3 className="events-speaker-name serif-headline h6 mb-1">{speaker.name}</h3>
+                      <p className="events-speaker-role text-secondary mb-2">{speaker.role}</p>
+                      <p className="events-speaker-meta small mb-2">
+                        {speaker.year} · {speaker.category}
+                      </p>
+                      <p className="events-speaker-event small text-muted mb-0">{eventTitleById.get(speaker.eventId)}</p>
+                      <span className="events-video-link mt-3">Watch on YouTube →</span>
+                    </div>
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </>

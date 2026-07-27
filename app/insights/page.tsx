@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SiteMasthead from "@/components/SiteMasthead";
 import NewsArchiveCard from "@/components/NewsArchiveCard";
-import { newsArticles } from "@/lib/data";
+import ComingSoonBlock from "@/components/ComingSoonBlock";
+import { isDbConfigured } from "@/lib/db";
+import { getNewsBySection } from "@/lib/newsDb";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -12,8 +14,26 @@ export const metadata: Metadata = buildPageMetadata({
   keywords: ["education insights", "school analysis", "education policy", "ENN insights"],
 });
 
-export default function InsightsPage() {
-  const insights = newsArticles.slice(0, 9);
+export const dynamic = "force-dynamic";
+
+export default async function InsightsPage() {
+  let insights: Awaited<ReturnType<typeof getNewsBySection>> = [];
+  if (isDbConfigured()) {
+    try {
+      const [daily, trending] = await Promise.all([
+        getNewsBySection("daily", 6),
+        getNewsBySection("trending", 6),
+      ]);
+      const seen = new Set<string>();
+      insights = [...trending, ...daily].filter((item) => {
+        if (seen.has(item.slug)) return false;
+        seen.add(item.slug);
+        return true;
+      }).slice(0, 9);
+    } catch (error) {
+      console.error("[InsightsPage]", error);
+    }
+  }
 
   return (
     <>
@@ -31,18 +51,27 @@ export default function InsightsPage() {
           </div>
         </section>
         <div className="container py-4 py-lg-5">
-          <div className="row g-4">
-            {insights.map((article) => (
-              <div key={article.slug} className="col-md-6 col-lg-4">
-                <NewsArchiveCard article={article} />
+          {!insights.length ? (
+            <ComingSoonBlock
+              title="Insights coming soon"
+              message="Published education analysis from the admin panel will appear here."
+            />
+          ) : (
+            <>
+              <div className="row g-4">
+                {insights.map((article) => (
+                  <div key={article.slug} className="col-md-6 col-lg-4">
+                    <NewsArchiveCard article={article} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <p className="text-center mt-4 mb-0">
-            <Link href="/news" className="btn btn-outline-primary">
-              Browse all news
-            </Link>
-          </p>
+              <p className="text-center mt-4 mb-0">
+                <Link href="/news" className="btn btn-outline-primary">
+                  Browse all news
+                </Link>
+              </p>
+            </>
+          )}
         </div>
       </main>
     </>

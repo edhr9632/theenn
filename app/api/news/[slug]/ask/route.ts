@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { answerFromArticle, toArticleAskContext } from "@/lib/articleAskAi";
-import { newsArticles } from "@/lib/data";
 import { getPublishedNewsDetail } from "@/lib/newsDb";
 
 type RouteContext = {
@@ -16,10 +15,7 @@ async function loadArticleContext(slug: string) {
   } catch {
     /* db unavailable */
   }
-
-  const fromStatic = newsArticles.find((item) => item.slug === slug);
-  if (!fromStatic) return null;
-  return toArticleAskContext(fromStatic, "");
+  return null;
 }
 
 export async function POST(request: Request, context: RouteContext) {

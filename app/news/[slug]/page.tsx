@@ -8,7 +8,6 @@ import ArticleShareBar from "@/components/ArticleShareBar";
 import ArticleAskAiFloat from "@/components/ArticleAskAiFloat";
 import ArticleFaqSection from "@/components/ArticleFaqSection";
 import ArticleComments from "@/components/ArticleComments";
-import { newsArticles } from "@/lib/data";
 import {
   buildArticleFaqs,
   buildArticleSuggestedQuestions,
@@ -17,6 +16,7 @@ import {
 import { listApprovedComments } from "@/lib/commentsDb";
 import { getNewsBySection, getPublishedNewsDetail } from "@/lib/newsDb";
 import { buildPageMetadata } from "@/lib/seo";
+import type { NewsArticle } from "@/lib/data";
 import type { NewsSection } from "@/lib/newsTypes";
 
 export const dynamic = "force-dynamic";
@@ -36,24 +36,11 @@ const SECTION_NAV: Record<
 async function resolveArticle(slug: string) {
   try {
     const fromDb = await getPublishedNewsDetail(slug);
-    if (fromDb) return { source: "db" as const, ...fromDb };
+    if (fromDb) return fromDb;
   } catch {
     /* database unavailable */
   }
-
-  const fromStatic = newsArticles.find((item) => item.slug === slug);
-  if (!fromStatic) return null;
-
-  return {
-    source: "static" as const,
-    article: fromStatic,
-    content: "",
-    section: "daily" as NewsSection,
-    publishDateIso: null,
-    featuredVideo: "",
-    imageUrl: fromStatic.image,
-    imageAlt: fromStatic.imageAlt,
-  };
+  return null;
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -78,31 +65,7 @@ function ArticleBody({ content }: { content: string }) {
 
   return (
     <div className="article-content">
-      <p>
-        Leaders from across continents convened as negotiators outlined emissions targets, adaptation finance,
-        and the pace of industrial transition — themes that will shape classrooms, workforce programs, and public
-        media coverage in the months ahead.
-      </p>
-      <h2 className="article-subhead serif-headline h4 mt-4 mb-3">What this means for education</h2>
-      <p>
-        District leaders and faculty coaches are watching implementation timelines as closely as headline targets.
-        Independent reporting remains essential to explain how pledges translate into policy, funding, and classroom
-        practice.
-      </p>
-      <blockquote className="article-pullquote my-4 my-lg-5">
-        <p className="article-pullquote-text serif-headline mb-2">
-          &ldquo;Public understanding is not a side issue — it is how any agreement survives the next election
-          cycle.&rdquo;
-        </p>
-        <footer className="article-pullquote-cite small text-muted mb-0">— Dr. Elena Vasquez, summit delegate</footer>
-      </blockquote>
-      <p className="mb-0">
-        Follow{" "}
-        <Link href="/news" className="article-inline-link">
-          Daily News
-        </Link>{" "}
-        for continuing coverage.
-      </p>
+      <p className="mb-0 text-secondary">Full article content will appear here once published from the admin panel.</p>
     </div>
   );
 }
@@ -115,15 +78,13 @@ export default async function NewsArticlePage({ params }: Props) {
   const { article, content, section, publishDateIso, featuredVideo, imageUrl, imageAlt } = resolved;
   const sectionNav = SECTION_NAV[section];
 
-  let related = newsArticles.filter((item) => item.slug !== slug).slice(0, 3);
+  let related: NewsArticle[] = [];
   let comments: Awaited<ReturnType<typeof listApprovedComments>> = [];
-  if (resolved.source === "db") {
-    try {
-      const sectionArticles = await getNewsBySection(section, 4);
-      related = sectionArticles.filter((item) => item.slug !== slug).slice(0, 3);
-    } catch {
-      /* keep static fallback */
-    }
+  try {
+    const sectionArticles = await getNewsBySection(section, 4);
+    related = sectionArticles.filter((item) => item.slug !== slug).slice(0, 3);
+  } catch {
+    /* related unavailable */
   }
 
   try {
@@ -180,23 +141,12 @@ export default async function NewsArticlePage({ params }: Props) {
                   imageAlt={imageAlt}
                 />
 
-                {content ? (
-                  <>
-                    {article.excerpt ? (
-                      <div className="article-lede-block mb-4">
-                        <p className="article-lede mb-0">{article.excerpt}</p>
-                      </div>
-                    ) : null}
-                    <ArticleBody content={content} />
-                  </>
-                ) : (
-                  <>
-                    <div className="article-lede-block mb-4">
-                      <p className="article-lede mb-0">{article.excerpt}</p>
-                    </div>
-                    <ArticleBody content="" />
-                  </>
-                )}
+                {article.excerpt ? (
+                  <div className="article-lede-block mb-4">
+                    <p className="article-lede mb-0">{article.excerpt}</p>
+                  </div>
+                ) : null}
+                <ArticleBody content={content} />
               </article>
             </div>
             <ArticleSidebar related={related} />

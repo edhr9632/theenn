@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import SiteMasthead from "@/components/SiteMasthead";
+import ComingSoonBlock from "@/components/ComingSoonBlock";
 import { eventEditions, getCategoriesForYear, getEventYears, sponsors } from "@/lib/data";
 
 export default function SponsorsPage() {
@@ -101,34 +102,38 @@ export default function SponsorsPage() {
           </div>
 
           <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4">Featured sponsors</h2>
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
-            {filteredSponsors.map((sponsor) => (
-              <div key={`${sponsor.name}-${sponsor.year}-${sponsor.category}`} className="col">
-                <a
-                  href={sponsor.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="events-grid-card events-speaker-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column text-center text-xl-start text-decoration-none"
-                >
-                  <div className="ratio ratio-1x1 position-relative">
-                    <Image src={sponsor.image} alt={sponsor.name} fill className="object-fit-cover" sizes="25vw" />
-                  </div>
-                  <div className="p-3 p-md-4 d-flex flex-column flex-grow-1">
-                    <h3 className="events-speaker-name serif-headline h6 mb-1">{sponsor.name}</h3>
-                    <p className="events-speaker-role text-secondary mb-2">{sponsor.tier}</p>
-                    <p className="events-speaker-meta small mb-2">
-                      {sponsor.year} · {sponsor.category}
-                    </p>
-                    <p className="events-speaker-event small text-muted mb-0">{eventTitleById.get(sponsor.eventId)}</p>
-                    <span className="events-video-link mt-3">Watch on YouTube →</span>
-                  </div>
-                </a>
-              </div>
-            ))}
-          </div>
           {filteredSponsors.length === 0 ? (
-            <p className="small text-muted mt-4 mb-0">No sponsors found for this filter.</p>
-          ) : null}
+            <ComingSoonBlock
+              title="Sponsors coming soon"
+              message="Add sponsors in the admin panel — they will appear here automatically."
+            />
+          ) : (
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+              {filteredSponsors.map((sponsor) => (
+                <div key={`${sponsor.name}-${sponsor.year}-${sponsor.category}`} className="col">
+                  <a
+                    href={sponsor.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="events-grid-card events-speaker-card h-100 bg-white rounded-3 shadow-sm overflow-hidden d-flex flex-column text-center text-xl-start text-decoration-none"
+                  >
+                    <div className="ratio ratio-1x1 position-relative">
+                      <Image src={sponsor.image} alt={sponsor.name} fill className="object-fit-cover" sizes="25vw" />
+                    </div>
+                    <div className="p-3 p-md-4 d-flex flex-column flex-grow-1">
+                      <h3 className="events-speaker-name serif-headline h6 mb-1">{sponsor.name}</h3>
+                      <p className="events-speaker-role text-secondary mb-2">{sponsor.tier}</p>
+                      <p className="events-speaker-meta small mb-2">
+                        {sponsor.year} · {sponsor.category}
+                      </p>
+                      <p className="events-speaker-event small text-muted mb-0">{eventTitleById.get(sponsor.eventId)}</p>
+                      <span className="events-video-link mt-3">Watch on YouTube →</span>
+                    </div>
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </>

@@ -1,13 +1,18 @@
 import Link from "next/link";
 import SiteMasthead from "@/components/SiteMasthead";
 import NewsArchiveCard from "@/components/NewsArchiveCard";
-import { newsArticles } from "@/lib/data";
+import ComingSoonBlock from "@/components/ComingSoonBlock";
+import { isDbConfigured } from "@/lib/db";
+import { getNewsBySection } from "@/lib/newsDb";
+import type { NewsArticle } from "@/lib/data";
+import type { NewsSection } from "@/lib/newsTypes";
 
 type NewsListPageProps = {
   title: string;
   subtitle: string;
   newsActive: "daily" | "weekly" | "trending" | "press";
   activeFilter: string;
+  section: Extract<NewsSection, "daily" | "trending" | "press">;
 };
 
 const filters = [
@@ -24,7 +29,19 @@ const eyebrowByFilter: Record<NewsListPageProps["newsActive"], string> = {
   press: "Press Release",
 };
 
-export function NewsListPage({ title, subtitle, newsActive, activeFilter }: NewsListPageProps) {
+async function loadArticles(section: NewsListPageProps["section"]): Promise<NewsArticle[]> {
+  if (!isDbConfigured()) return [];
+  try {
+    return await getNewsBySection(section);
+  } catch (error) {
+    console.error("[NewsListPage]", error);
+    return [];
+  }
+}
+
+export async function NewsListPage({ title, subtitle, newsActive, activeFilter, section }: NewsListPageProps) {
+  const articles = await loadArticles(section);
+
   return (
     <>
       <SiteMasthead activeNav="news" newsActive={newsActive} />
@@ -57,13 +74,20 @@ export function NewsListPage({ title, subtitle, newsActive, activeFilter }: News
         </div>
 
         <div className="container py-4 py-lg-5">
-          <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {newsArticles.map((article) => (
-              <div key={article.slug} className="col">
-                <NewsArchiveCard article={article} />
-              </div>
-            ))}
-          </div>
+          {!articles.length ? (
+            <ComingSoonBlock
+              title={`${title} coming soon`}
+              message="Published stories from the admin panel will appear here automatically."
+            />
+          ) : (
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+              {articles.map((article) => (
+                <div key={article.slug} className="col">
+                  <NewsArchiveCard article={article} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </>

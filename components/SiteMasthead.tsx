@@ -10,23 +10,13 @@ import { getSurveyConfig, hasSurveyTarget } from "@/lib/survey";
 type SiteMastheadProps = {
   activeNav?: "home" | "news" | "podcasts" | "events" | "about" | "contact" | "panel" | "insights";
   newsActive?: "daily" | "weekly" | "trending" | "press";
-  podcastActive?: "knowledge-plus" | "enn-daily-brief" | "classroom-voices";
+  /** @deprecated Podcasts nav is a single link; kept for older page props. */
+  podcastActive?: string;
+  /** Optional breaking ticker lines from the backend. Hidden when empty. */
+  breakingItems?: string[];
 };
 
-const breakingItems = [
-  "National Education Policy 2026 rollout calendar released",
-  "Universities post record endowment inflows this quarter",
-  "42 countries adopt mandatory clinical training programs for educators",
-  "State boards announce new digital literacy standards for grades 6–12",
-];
-
-const podcastLinks = [
-  { href: "/podcasts/knowledge-plus", label: "Knowledge Plus", key: "knowledge-plus" },
-  { href: "/podcasts/enn-daily-brief", label: "ENN Daily Brief", key: "enn-daily-brief" },
-  { href: "/podcasts/classroom-voices", label: "Classroom Voices", key: "classroom-voices" },
-] as const;
-
-export default function SiteMasthead({ activeNav, newsActive, podcastActive }: SiteMastheadProps) {
+export default function SiteMasthead({ activeNav, newsActive, breakingItems = [] }: SiteMastheadProps) {
   const surveyConfig = getSurveyConfig();
   const hasSurvey = hasSurveyTarget(surveyConfig);
 
@@ -115,24 +105,14 @@ export default function SiteMasthead({ activeNav, newsActive, podcastActive }: S
                       <li><Link className={`dropdown-item${newsActive === "press" ? " active" : ""}`} href="/press-release">Press Release</Link></li>
                     </ul>
                   </li>
-                  <li className="nav-item dropdown">
-                    <button
-                      type="button"
-                      className={`nav-link dropdown-toggle px-3 fw-medium bg-transparent border-0${activeNav === "podcasts" ? " active" : ""}`}
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
+                  <li className="nav-item">
+                    <Link
+                      className={`nav-link px-3 fw-medium${activeNav === "podcasts" ? " active" : ""}`}
+                      href="/podcasts"
+                      aria-current={activeNav === "podcasts" ? "page" : undefined}
                     >
                       Podcasts
-                    </button>
-                    <ul className="dropdown-menu border-0 shadow">
-                      {podcastLinks.map((item) => (
-                        <li key={item.key}>
-                          <Link className={`dropdown-item${podcastActive === item.key ? " active" : ""}`} href={item.href}>
-                            {item.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                    </Link>
                   </li>
                   <li className="nav-item">
                     <Link className={`nav-link px-3 fw-medium${activeNav === "panel" ? " active" : ""}`} href="/panel-discussions">
@@ -178,28 +158,30 @@ export default function SiteMasthead({ activeNav, newsActive, podcastActive }: S
           </nav>
         </header>
 
-        <div className="breaking-bar text-white py-2 overflow-hidden">
-          <p className="visually-hidden">Breaking news ticker</p>
-          <div className="container-fluid px-0">
-            <div className="d-flex align-items-center">
-              <span className="breaking-label flex-shrink-0 px-3 py-1 ms-0 fw-bold small text-uppercase">● Breaking</span>
-              <div className="ticker-wrap flex-grow-1">
-                <div className="ticker-track small" aria-hidden="true">
-                  {[0, 1].map((i) => (
-                    <span key={i} className="ticker-segment">
-                      {breakingItems.map((item) => (
-                        <span key={`${i}-${item}`}>
-                          <span className="ticker-item">{item}</span>
-                          <span className="ticker-dot">•</span>
-                        </span>
-                      ))}
-                    </span>
-                  ))}
+        {breakingItems.length > 0 ? (
+          <div className="breaking-bar text-white py-2 overflow-hidden">
+            <p className="visually-hidden">Breaking news ticker</p>
+            <div className="container-fluid px-0">
+              <div className="d-flex align-items-center">
+                <span className="breaking-label flex-shrink-0 px-3 py-1 ms-0 fw-bold small text-uppercase">● Breaking</span>
+                <div className="ticker-wrap flex-grow-1">
+                  <div className="ticker-track small" aria-hidden="true">
+                    {[0, 1].map((i) => (
+                      <span key={i} className="ticker-segment">
+                        {breakingItems.map((item) => (
+                          <span key={`${i}-${item}`}>
+                            <span className="ticker-item">{item}</span>
+                            <span className="ticker-dot">•</span>
+                          </span>
+                        ))}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

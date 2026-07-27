@@ -1,12 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { panelDiscussions } from "@/lib/data";
 import { useRef } from "react";
+import type { PanelDiscussionItem } from "@/lib/homeTypes";
 import SectionBroadcastHeader from "./SectionBroadcastHeader";
 import PanelDiscussionCard from "./PanelDiscussionCard";
+import ComingSoonBlock from "./ComingSoonBlock";
 
-export default function PanelDiscussions() {
+type PanelDiscussionsProps = {
+  panels?: PanelDiscussionItem[];
+};
+
+export default function PanelDiscussions({ panels = [] }: PanelDiscussionsProps) {
   const trackRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: number) => {
@@ -33,20 +38,38 @@ export default function PanelDiscussions() {
           className="mb-4"
         />
 
-        <div className="panel-disco-carousel position-relative">
-          <button type="button" className="panel-disco-nav panel-disco-nav--prev btn border-0 rounded-circle shadow" aria-label="Scroll panels left" onClick={() => scroll(-1)}>
-            <span aria-hidden="true">‹</span>
-          </button>
-          <button type="button" className="panel-disco-nav panel-disco-nav--next btn border-0 rounded-circle shadow" aria-label="Scroll panels right" onClick={() => scroll(1)}>
-            <span aria-hidden="true">›</span>
-          </button>
+        {!panels.length ? (
+          <ComingSoonBlock
+            compact
+            title="Panel discussions coming soon"
+            message="Add panels in the admin panel when ready."
+          />
+        ) : (
+          <div className="panel-disco-carousel position-relative">
+            <button
+              type="button"
+              className="panel-disco-nav panel-disco-nav--prev btn border-0 rounded-circle shadow"
+              aria-label="Scroll panels left"
+              onClick={() => scroll(-1)}
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+            <button
+              type="button"
+              className="panel-disco-nav panel-disco-nav--next btn border-0 rounded-circle shadow"
+              aria-label="Scroll panels right"
+              onClick={() => scroll(1)}
+            >
+              <span aria-hidden="true">›</span>
+            </button>
 
-          <div className="panel-disco-track" ref={trackRef} tabIndex={0} aria-label="Panel discussions carousel">
-            {panelDiscussions.map((panel) => (
-              <PanelDiscussionCard key={panel.episode} panel={panel} />
-            ))}
+            <div className="panel-disco-track" ref={trackRef} tabIndex={0} aria-label="Panel discussions carousel">
+              {panels.map((panel) => (
+                <PanelDiscussionCard key={panel.episode} panel={panel} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

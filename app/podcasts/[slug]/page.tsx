@@ -28,7 +28,5 @@ export default async function PodcastShowPage({ params }: PageProps) {
   const show = getPodcastBySlug(slug);
   if (!show) notFound();
 
-  const podcastActive = slug as "knowledge-plus" | "enn-daily-brief" | "classroom-voices";
-
-  return <PodcastPage show={show} podcastActive={podcastActive} />;
+  return <PodcastPage show={show} podcastActive={slug} />;
 }

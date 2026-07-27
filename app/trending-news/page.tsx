@@ -15,6 +15,7 @@ export default function TrendingNewsPage() {
       subtitle="Stories gaining momentum across our network."
       newsActive="trending"
       activeFilter="trending"
+      section="trending"
     />
   );
 }

@@ -2,15 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { weeklyIssues } from "@/lib/weeklyIssues";
 import { readWeeklyIssues, type AdminWeeklyIssue } from "@/lib/weeklyAdmin";
 import { downloadWeeklyPdf, getWeeklyDownloadName } from "@/lib/weeklyIssueUtils";
-
-const seedIssues: AdminWeeklyIssue[] = weeklyIssues.map((issue) => ({
-  ...issue,
-  cityId: "city-bengaluru",
-  cityName: "Bengaluru",
-}));
 
 type WeeklyIssueViewerProps = {
   slug: string;
@@ -23,7 +16,7 @@ export default function WeeklyIssueViewer({ slug }: WeeklyIssueViewerProps) {
 
   useEffect(() => {
     const loaded = readWeeklyIssues();
-    const found = loaded.find((item) => item.slug === slug) ?? seedIssues.find((item) => item.slug === slug) ?? null;
+    const found = loaded.find((item) => item.slug === slug) ?? null;
     setIssue(found);
     setReady(true);
   }, [slug]);

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import SiteMasthead from "@/components/SiteMasthead";
 import PanelDiscussionCard from "@/components/PanelDiscussionCard";
-import { panelDiscussions } from "@/lib/data";
+import ComingSoonBlock from "@/components/ComingSoonBlock";
+import { isDbConfigured } from "@/lib/db";
+import { getPanelDiscussionsFromDb } from "@/lib/panelsDb";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -12,8 +14,18 @@ export const metadata: Metadata = buildPageMetadata({
   keywords: ["education panel discussions", "ENN panels", "education leaders youtube"],
 });
 
+export const dynamic = "force-dynamic";
 
-export default function PanelDiscussionsPage() {
+export default async function PanelDiscussionsPage() {
+  let panels: Awaited<ReturnType<typeof getPanelDiscussionsFromDb>> = [];
+  if (isDbConfigured()) {
+    try {
+      panels = await getPanelDiscussionsFromDb(100);
+    } catch (error) {
+      console.error("[PanelDiscussionsPage]", error);
+    }
+  }
+
   return (
     <>
       <SiteMasthead activeNav="panel" />
@@ -32,24 +44,33 @@ export default function PanelDiscussionsPage() {
 
         <section className="panel-all-body" aria-labelledby="panels-grid-heading">
           <div className="container py-4 py-lg-5">
-            <div className="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-4">
-              <div>
-                <h2 id="panels-grid-heading" className="panel-all-grid-title serif-headline mb-1">
-                  All panels
-                </h2>
-                <p className="panel-all-grid-sub mb-0">
-                  {panelDiscussions.length} discussion{panelDiscussions.length === 1 ? "" : "s"} available
-                </p>
-              </div>
-            </div>
-
-            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-              {panelDiscussions.map((panel) => (
-                <div key={panel.episode} className="col">
-                  <PanelDiscussionCard panel={panel} sizes="(max-width: 768px) 100vw, 33vw" />
+            {!panels.length ? (
+              <ComingSoonBlock
+                title="Panel discussions coming soon"
+                message="Add panels in the admin panel — they will appear here automatically."
+              />
+            ) : (
+              <>
+                <div className="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-4">
+                  <div>
+                    <h2 id="panels-grid-heading" className="panel-all-grid-title serif-headline mb-1">
+                      All panels
+                    </h2>
+                    <p className="panel-all-grid-sub mb-0">
+                      {panels.length} discussion{panels.length === 1 ? "" : "s"} available
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                  {panels.map((panel) => (
+                    <div key={panel.episode} className="col">
+                      <PanelDiscussionCard panel={panel} sizes="(max-width: 768px) 100vw, 33vw" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </section>
       </main>

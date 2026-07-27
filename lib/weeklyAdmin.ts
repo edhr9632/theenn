@@ -1,4 +1,4 @@
-import { weeklyIssues, type WeeklyIssue } from "@/lib/weeklyIssues";
+import { type WeeklyIssue } from "@/lib/weeklyIssues";
 
 export type WeeklyCity = {
   id: string;
@@ -22,15 +22,6 @@ export const DEFAULT_WEEKLY_CITIES: WeeklyCity[] = [
   { id: "city-hyderabad", name: "Hyderabad", slug: "hyderabad" },
   { id: "city-pune", name: "Pune", slug: "pune" },
 ];
-
-function seedIssues(): AdminWeeklyIssue[] {
-  return weeklyIssues.map((issue) => ({
-    ...issue,
-    cityId: "city-bengaluru",
-    cityName: "Bengaluru",
-    title: issue.title.includes("Bengaluru") ? issue.title : `Weekly Bengaluru News`,
-  }));
-}
 
 export function slugifyWeekly(value: string) {
   return value
@@ -63,14 +54,14 @@ export function writeWeeklyCities(cities: WeeklyCity[]) {
 }
 
 export function readWeeklyIssues(): AdminWeeklyIssue[] {
-  if (typeof window === "undefined") return seedIssues();
+  if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(WEEKLY_ISSUES_KEY);
-    if (!raw) return seedIssues();
+    if (!raw) return [];
     const parsed = JSON.parse(raw) as AdminWeeklyIssue[];
-    return Array.isArray(parsed) && parsed.length ? parsed : seedIssues();
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return seedIssues();
+    return [];
   }
 }
 

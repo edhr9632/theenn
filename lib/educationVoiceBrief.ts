@@ -28,7 +28,11 @@ export function isEducationNews(article: NewsArticle) {
   return EDUCATION_KEYWORDS.test(`${article.title} ${article.excerpt} ${article.category}`);
 }
 
-/** Top education-only headlines for the daily voice brief (not general news). */
+/**
+ * Top education headlines for the daily voice brief.
+ * Uses published site articles only (newsArticles is empty; homepage uses DB separately).
+ * When a dedicated voice-brief API is added, swap this source.
+ */
 export function getTopEducationNews(limit = 5): VoiceBriefStory[] {
   return newsArticles
     .filter(isEducationNews)
