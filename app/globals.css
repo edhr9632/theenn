@@ -9083,11 +9083,25 @@ body.weekly-pdf-open {
   z-index: 2400;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(ellipse 70% 55% at 85% 8%, rgba(167, 139, 250, 0.28), transparent 58%),
-    radial-gradient(ellipse 55% 45% at 12% 20%, rgba(125, 211, 252, 0.32), transparent 55%),
-    linear-gradient(180deg, #eef4ff 0%, #f7f5ff 42%, #ffffff 100%);
+  background: #f4f7ff;
   overflow: hidden;
+}
+
+.ask-enn-fp-banner {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ask-enn-fp-banner-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  opacity: 1;
 }
 
 .ask-enn-fp-atmosphere {
@@ -9473,6 +9487,244 @@ body.weekly-pdf-open {
   padding-top: 0.2rem;
 }
 
+
+.ask-enn-fp-answer-view {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  width: min(46rem, 100%);
+  margin: 0 auto;
+  padding: 0 0 0.5rem;
+}
+
+.ask-enn-answer-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 1.35rem;
+  box-shadow: 0 18px 50px rgba(37, 99, 235, 0.08);
+  padding: 1.25rem 1.25rem 1.15rem;
+  animation: askEnnAnswerIn 0.35s ease;
+}
+
+@keyframes askEnnAnswerIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ask-enn-answer-head {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.ask-enn-answer-title {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.ask-enn-answer-meta {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.ask-enn-answer-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ask-enn-answer-step {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  gap: 0.75rem;
+  position: relative;
+  padding-bottom: 1.15rem;
+}
+
+.ask-enn-answer-step:last-of-type {
+  padding-bottom: 0.35rem;
+}
+
+.ask-enn-answer-step-rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.ask-enn-answer-step-rail::before {
+  content: "";
+  position: absolute;
+  top: 2.35rem;
+  bottom: -0.15rem;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #93c5fd 0%, #dbeafe 100%);
+}
+
+.ask-enn-answer-step:last-of-type .ask-enn-answer-step-rail::before {
+  display: none;
+}
+
+.ask-enn-answer-step-dot {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+  position: relative;
+  z-index: 1;
+}
+
+.ask-enn-answer-step-title {
+  font-family: "Roboto", system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 0.4rem !important;
+}
+
+.ask-enn-answer-step-copy {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #334155;
+  margin-bottom: 0.45rem !important;
+}
+
+.ask-enn-answer-step-list {
+  margin: 0.15rem 0 0;
+  padding-left: 1.1rem;
+  color: #334155;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.ask-enn-answer-step-list li + li {
+  margin-top: 0.28rem;
+}
+
+.ask-enn-answer-fallback {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.ask-enn-answer-story {
+  margin-top: 1.1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-radius: 0.95rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+  padding: 0.85rem 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ask-enn-answer-story:hover {
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+}
+
+.ask-enn-answer-story-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: #dbeafe;
+  color: #2563eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ask-enn-answer-story-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ask-enn-answer-story-copy strong {
+  font-size: 0.88rem;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.ask-enn-answer-story-copy small {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.ask-enn-answer-story-chevron {
+  color: #2563eb;
+  font-size: 1.35rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ask-enn-answer-more-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.ask-enn-answer-more-link {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.ask-enn-answer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.ask-enn-answer-chips button {
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-radius: 0.7rem;
+  background: #fff;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ask-enn-answer-chips button:hover {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
 .ask-enn-fp-messages {
   flex: 1;
   min-height: 0;
@@ -9492,10 +9744,25 @@ body.weekly-pdf-open {
 
 .ask-enn-fp-msg--user {
   align-self: flex-end;
-  padding: 0.65rem 0.85rem;
+  max-width: min(90%, 28rem);
+  padding: 0.55rem 0.85rem;
   border-radius: 1rem 1rem 0.3rem 1rem;
-  background: #eef4fc;
-  color: var(--navy);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  color: #1e3a8a;
+  font-size: 0.86rem;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.06);
+}
+
+.ask-enn-fp-composer {
+  flex-shrink: 0;
+  padding: 0.75rem 0 0.35rem;
+  border-top: 0;
+}
+
+.ask-enn-fp-answer-view .ask-enn-fp-footnote {
+  border-top: 0;
+  padding: 0.35rem 0 0.25rem;
 }
 
 .ask-enn-fp-msg--assistant {

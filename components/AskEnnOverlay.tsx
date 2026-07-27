@@ -3,11 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssistantLink } from "@/lib/ennAssistantBrain";
 import { getAskEnnTrendingPrompts } from "@/lib/askEnnSuggestions";
-import { ASK_ENN_OPEN_EVENT, type AskEnnOpenDetail } from "@/lib/askEnnOverlay";
+import {
+  ASK_ENN_OPEN_EVENT,
+  consumeAskEnnPendingOpen,
+  type AskEnnOpenDetail,
+} from "@/lib/askEnnOverlay";
 import { requestEducationVoiceBrief } from "@/lib/educationVoiceBrief";
+import AskEnnAnswerCard from "@/components/AskEnnAnswerCard";
 
 type ChatMessage = {
   id: string;
@@ -30,98 +35,12 @@ function SparkleIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-function ArrowUpRightIcon() {
+function ArrowUpIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M7 17L17 7M17 7H9M17 7V15"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-}
-
-function renderInlineMarkdown(text: string) {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
-    }
-    return <span key={index}>{part}</span>;
-  });
-}
-
-function renderMarkdownLite(text: string) {
-  const lines = text.replace(/\r\n/g, "\n").split("\n");
-  const nodes: ReactNode[] = [];
-  let paragraph: string[] = [];
-  let listItems: string[] = [];
-  let key = 0;
-
-  const flushParagraph = () => {
-    if (!paragraph.length) return;
-    const body = paragraph.join(" ").trim();
-    paragraph = [];
-    if (!body) return;
-    nodes.push(
-      <p key={`p-${key++}`} className="ask-enn-fp-md-p">
-        {renderInlineMarkdown(body)}
-      </p>,
-    );
-  };
-
-  const flushList = () => {
-    if (!listItems.length) return;
-    const items = [...listItems];
-    listItems = [];
-    nodes.push(
-      <ul key={`ul-${key++}`} className="ask-enn-fp-md-list">
-        {items.map((item, index) => (
-          <li key={index}>{renderInlineMarkdown(item)}</li>
-        ))}
-      </ul>,
-    );
-  };
-
-  const headingPattern =
-    /^(What's happening|Why it matters for education|What you can learn \(quick take\)|Key takeaways|Read the full ENN report)$/i;
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) {
-      flushList();
-      flushParagraph();
-      continue;
-    }
-    if (headingPattern.test(line)) {
-      flushList();
-      flushParagraph();
-      nodes.push(
-        <h3 key={`h-${key++}`} className="ask-enn-fp-md-h">
-          {line}
-        </h3>,
-      );
-      continue;
-    }
-    if (/^[-•]\s+/.test(line)) {
-      flushParagraph();
-      listItems.push(line.replace(/^[-•]\s+/, ""));
-      continue;
-    }
-    if (/^(Focus area|Published|Read time|Bottom line):/i.test(line)) {
-      flushParagraph();
-      listItems.push(line);
-      continue;
-    }
-    flushList();
-    paragraph.push(line);
-  }
-
-  flushList();
-  flushParagraph();
-  return nodes;
 }
 
 function countWords(value: string) {
@@ -157,33 +76,6 @@ function LightningIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M13 2L4 14h7l-1 8 10-14h-7l0-6z" />
     </svg>
-  );
-}
-
-function GlobeGraphic() {
-  return (
-    <div className="ask-enn-fp-globe" aria-hidden="true">
-      <svg viewBox="0 0 280 280" className="ask-enn-fp-globe-svg">
-        <defs>
-          <radialGradient id="askEnnGlobeCore" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.95" />
-            <stop offset="55%" stopColor="#6366f1" stopOpacity="0.75" />
-            <stop offset="100%" stopColor="#312e81" stopOpacity="0.35" />
-          </radialGradient>
-          <linearGradient id="askEnnOrbit" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#a78bfa" />
-            <stop offset="100%" stopColor="#38bdf8" />
-          </linearGradient>
-        </defs>
-        <circle cx="140" cy="140" r="78" fill="url(#askEnnGlobeCore)" />
-        <ellipse cx="140" cy="140" rx="108" ry="42" fill="none" stroke="url(#askEnnOrbit)" strokeWidth="1.6" opacity="0.7" transform="rotate(-18 140 140)" />
-        <ellipse cx="140" cy="140" rx="118" ry="48" fill="none" stroke="url(#askEnnOrbit)" strokeWidth="1.2" opacity="0.45" transform="rotate(32 140 140)" />
-        <ellipse cx="140" cy="140" rx="98" ry="36" fill="none" stroke="#c4b5fd" strokeWidth="1" opacity="0.55" transform="rotate(70 140 140)" />
-        <circle cx="210" cy="92" r="5" fill="#e0e7ff" />
-        <circle cx="78" cy="186" r="3.5" fill="#93c5fd" />
-        <circle cx="188" cy="198" r="4" fill="#a5b4fc" />
-      </svg>
-    </div>
   );
 }
 
@@ -286,15 +178,23 @@ export default function AskEnnOverlay() {
   );
 
   useEffect(() => {
-    const onOpen = (event: Event) => {
-      const detail = (event as CustomEvent<AskEnnOpenDetail>).detail;
+    const applyOpen = (detail?: AskEnnOpenDetail | null) => {
       resetSession();
       setOpen(true);
       if (detail?.query?.trim()) {
         pendingQuery.current = detail.query.trim();
       }
     };
+
+    const onOpen = (event: Event) => {
+      consumeAskEnnPendingOpen();
+      applyOpen((event as CustomEvent<AskEnnOpenDetail>).detail);
+    };
+
     window.addEventListener(ASK_ENN_OPEN_EVENT, onOpen);
+    const pending = consumeAskEnnPendingOpen();
+    if (pending) applyOpen(pending);
+
     return () => window.removeEventListener(ASK_ENN_OPEN_EVENT, onOpen);
   }, [resetSession]);
 
@@ -369,7 +269,7 @@ export default function AskEnnOverlay() {
             disabled={loading || !input.trim() || overLimit}
             aria-label="Ask ENN"
           >
-            <ArrowUpRightIcon />
+            <ArrowUpIcon />
           </button>
         </div>
       </div>
@@ -384,12 +284,17 @@ export default function AskEnnOverlay() {
 
   return open ? (
     <div className="ask-enn-fp-overlay" role="dialog" aria-modal="true" aria-label="Ask ENN">
-      <div className="ask-enn-fp-atmosphere" aria-hidden="true">
-        <span className="ask-enn-fp-wave ask-enn-fp-wave--a" />
-        <span className="ask-enn-fp-wave ask-enn-fp-wave--b" />
-        <span className="ask-enn-fp-wave ask-enn-fp-wave--c" />
+      <div className="ask-enn-fp-banner" aria-hidden="true">
+        {/* Native img keeps the PNG sharp (no Next image compression/downscale). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/ask-enn-banner.png"
+          alt=""
+          className="ask-enn-fp-banner-img"
+          decoding="async"
+          fetchPriority="high"
+        />
       </div>
-      {!hasChat ? <GlobeGraphic /> : null}
 
       <header className="ask-enn-fp-topbar">
         <div className="ask-enn-fp-brand">
@@ -456,45 +361,29 @@ export default function AskEnnOverlay() {
             </div>
           </div>
         ) : (
-          <>
+          <div className="ask-enn-fp-answer-view">
             <div className="ask-enn-fp-chat-head">
               <button type="button" className="ask-enn-fp-back-prompts" onClick={showHero}>
                 ← Trending prompts
               </button>
             </div>
             <div className="ask-enn-fp-messages" ref={listRef}>
-              {messages.map((message) => (
-                <div key={message.id} className={`ask-enn-fp-msg ask-enn-fp-msg--${message.role}`}>
-                  <div className="ask-enn-fp-msg-text">
-                    {message.role === "assistant" ? renderMarkdownLite(message.content) : message.content}
+              {messages.map((message) =>
+                message.role === "user" ? (
+                  <div key={message.id} className="ask-enn-fp-msg ask-enn-fp-msg--user">
+                    {message.content}
                   </div>
-                  {message.links?.length ? (
-                    <ul className="ask-enn-fp-links list-unstyled mb-0">
-                      {message.links.map((link) => (
-                        <li key={`${message.id}-${link.href}`}>
-                          <button
-                            type="button"
-                            className="ask-enn-fp-link"
-                            onClick={() => setFullPageHref(link.href)}
-                          >
-                            <span>{link.title}</span>
-                            {link.meta ? <small>{link.meta}</small> : null}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {message.suggestions?.length ? (
-                    <div className="ask-enn-fp-chips">
-                      {message.suggestions.map((suggestion) => (
-                        <button key={suggestion} type="button" onClick={() => void sendMessage(suggestion)}>
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ))}
+                ) : (
+                  <AskEnnAnswerCard
+                    key={message.id}
+                    content={message.content}
+                    links={message.links}
+                    suggestions={message.suggestions}
+                    onOpenLink={setFullPageHref}
+                    onAsk={(text) => void sendMessage(text)}
+                  />
+                ),
+              )}
               {loading ? (
                 <div className="ask-enn-fp-msg ask-enn-fp-msg--assistant ask-enn-fp-msg--loading">
                   Searching ENN website content…
@@ -503,7 +392,13 @@ export default function AskEnnOverlay() {
             </div>
 
             <div className="ask-enn-fp-composer">{searchForm(true)}</div>
-          </>
+            <p className="ask-enn-fp-footnote mb-0">
+              Ask ENN summaries are generated from Education News Network reporting.{" "}
+              <Link href="/contact" onClick={close}>
+                Share feedback
+              </Link>
+            </p>
+          </div>
         )}
       </div>
 
@@ -522,15 +417,6 @@ export default function AskEnnOverlay() {
           </div>
           <iframe className="ask-enn-story-viewer-frame" src={fullPageHref} title="Full story" />
         </div>
-      ) : null}
-
-      {hasChat ? (
-        <p className="ask-enn-fp-footnote mb-0">
-          Ask ENN summaries are generated from Education News Network reporting.{" "}
-          <Link href="/contact" onClick={close}>
-            Share feedback
-          </Link>
-        </p>
       ) : null}
       </div>
     </div>

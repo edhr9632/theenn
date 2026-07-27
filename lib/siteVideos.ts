@@ -28,10 +28,10 @@ export const DEFAULT_SITE_VIDEOS: SiteVideosConfig = {
   enabled: true,
   featuredTitle:
     process.env.NEXT_PUBLIC_TOP_NEWS_YOUTUBE_TITLE?.trim() ||
-    "Global Summit Opens in Geneva With Climate at the Center",
+    "KS DAT 2026 | SBI Internship | JPSC Exams | PM Modi on Paper Leaks | Maharashtra Medical",
   youtubeUrl:
     process.env.NEXT_PUBLIC_TOP_NEWS_YOUTUBE_URL?.trim() ||
-    "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
+    "https://www.youtube.com/watch?v=smZEFJc4O_I",
   channelUrl:
     process.env.NEXT_PUBLIC_TOP_NEWS_CHANNEL_URL?.trim() ||
     "https://www.youtube.com/@educationtoday7909",
@@ -87,7 +87,7 @@ export function readSiteVideos(): SiteVideosConfig {
     const raw = window.localStorage.getItem(SITE_VIDEOS_STORAGE_KEY);
     if (!raw) return DEFAULT_SITE_VIDEOS;
     const parsed = JSON.parse(raw) as Partial<SiteVideosConfig>;
-    return {
+    const merged: SiteVideosConfig = {
       ...DEFAULT_SITE_VIDEOS,
       ...parsed,
       enabled: parsed.enabled ?? DEFAULT_SITE_VIDEOS.enabled,
@@ -96,6 +96,15 @@ export function readSiteVideos(): SiteVideosConfig {
       showPodcasts: parsed.showPodcasts ?? true,
       items: Array.isArray(parsed.items) ? parsed.items : [],
     };
+
+    // Replace legacy demo clip so floating Now Playing shows the current ENN video.
+    const storedId = extractYoutubeId(merged.youtubeUrl || "");
+    if (!storedId || storedId === "aqz-KE-bpKQ") {
+      merged.youtubeUrl = DEFAULT_SITE_VIDEOS.youtubeUrl;
+      merged.featuredTitle = DEFAULT_SITE_VIDEOS.featuredTitle;
+    }
+
+    return merged;
   } catch {
     return DEFAULT_SITE_VIDEOS;
   }
@@ -108,7 +117,7 @@ export function writeSiteVideos(config: SiteVideosConfig) {
 
 export function resolveFeaturedVideo(config: SiteVideosConfig = DEFAULT_SITE_VIDEOS) {
   const youtubeUrl = config.youtubeUrl.trim() || DEFAULT_SITE_VIDEOS.youtubeUrl;
-  const videoId = extractYoutubeId(youtubeUrl) || "aqz-KE-bpKQ";
+  const videoId = extractYoutubeId(youtubeUrl) || "smZEFJc4O_I";
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`;
 

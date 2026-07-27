@@ -10,7 +10,9 @@ export default function AskEnnPageLauncher() {
     if (window.location.search) {
       window.history.replaceState(null, "", "/ask");
     }
-    openAskEnnOverlay(q || undefined);
+    // Defer so AskEnnOverlay can attach its listener in the same tick cycle.
+    const timer = window.setTimeout(() => openAskEnnOverlay(q || undefined), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return null;
