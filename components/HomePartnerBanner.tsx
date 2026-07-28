@@ -1,24 +1,22 @@
 import type { PromoBanner } from "@/lib/homeTypes";
-import ComingSoonBlock from "./ComingSoonBlock";
 
 type HomePartnerBannerProps = {
   banner: PromoBanner | null;
 };
 
+const DEFAULT_PARTNER_BANNER: PromoBanner = {
+  id: "partner_msa",
+  enabled: true,
+  eyebrow: "Partner - Advertisement",
+  title: "Looking for school admission? Visit MSA",
+  subtitle: "My School Admission helps parents discover schools, compare options, and apply with ease.",
+  ctaLabel: "Visit MSA",
+  ctaUrl: "https://myschooladmission.com/",
+  variant: "partner",
+};
+
 export default function HomePartnerBanner({ banner }: HomePartnerBannerProps) {
-  if (!banner) {
-    return (
-      <section className="partner-pro-banner mt-2 mt-lg-3" aria-label="Partner advertisement">
-        <div className="container">
-          <ComingSoonBlock
-            compact
-            title="Partner spotlight coming soon"
-            message="Partner promotions will appear here once added in the admin panel."
-          />
-        </div>
-      </section>
-    );
-  }
+  const resolved = banner ?? DEFAULT_PARTNER_BANNER;
 
   return (
     <section className="partner-pro-banner mt-2 mt-lg-3" aria-labelledby="partner-pro-heading">
@@ -29,22 +27,22 @@ export default function HomePartnerBanner({ banner }: HomePartnerBannerProps) {
               ✦
             </div>
             <div className="min-w-0">
-              {banner.eyebrow ? (
-                <p className="partner-pro-label text-uppercase small fw-semibold mb-2">{banner.eyebrow}</p>
+              {resolved.eyebrow ? (
+                <p className="partner-pro-label text-uppercase small fw-semibold mb-2">{resolved.eyebrow}</p>
               ) : null}
               <h2 id="partner-pro-heading" className="partner-pro-title serif-headline mb-2">
-                {banner.title}
+                {resolved.title}
               </h2>
-              {banner.subtitle ? <p className="partner-pro-sub small mb-0">{banner.subtitle}</p> : null}
+              {resolved.subtitle ? <p className="partner-pro-sub small mb-0">{resolved.subtitle}</p> : null}
             </div>
           </div>
           <a
-            href={banner.ctaUrl}
+            href={resolved.ctaUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="partner-pro-cta align-self-center flex-shrink-0"
           >
-            {banner.ctaLabel}
+            {resolved.ctaLabel}
           </a>
         </div>
       </div>

@@ -1,25 +1,22 @@
 import type { PromoBanner } from "@/lib/homeTypes";
-import ComingSoonBlock from "./ComingSoonBlock";
 
 type HomeSponsorBannerProps = {
   banner: PromoBanner | null;
 };
 
+const DEFAULT_TV_BANNER: PromoBanner = {
+  id: "tv_schedule",
+  enabled: true,
+  eyebrow: "TV Schedule",
+  title: "Knowledge Plus - Education News Network",
+  subtitle: "Hosted by Vibha Raj",
+  ctaLabel: "Watch our live discussion @3PM",
+  ctaUrl: "#",
+  variant: "tv_schedule",
+};
+
 export default function HomeSponsorBanner({ banner }: HomeSponsorBannerProps) {
-  if (!banner) {
-    return (
-      <section className="sponsor-banner-full mt-4 mt-lg-5" aria-label="TV Schedule">
-        <div className="container">
-          <ComingSoonBlock
-            compact
-            title="TV Schedule coming soon"
-            message="Add the Knowledge Plus banner in the admin panel when ready."
-            className="sponsor-coming-soon"
-          />
-        </div>
-      </section>
-    );
-  }
+  const resolved = banner ?? DEFAULT_TV_BANNER;
 
   return (
     <section className="sponsor-banner-full mt-4 mt-lg-5" aria-labelledby="sponsor-heading">
@@ -32,17 +29,17 @@ export default function HomeSponsorBanner({ banner }: HomeSponsorBannerProps) {
               </svg>
             </div>
             <div className="min-w-0 sponsor-banner-copy">
-              {banner.eyebrow ? (
-                <p className="sponsor-eyebrow text-white text-uppercase mb-1">{banner.eyebrow}</p>
+              {resolved.eyebrow ? (
+                <p className="sponsor-eyebrow text-white text-uppercase mb-1">{resolved.eyebrow}</p>
               ) : null}
               <h2 id="sponsor-heading" className="sponsor-headline text-white mb-1">
-                {banner.title}
+                {resolved.title}
               </h2>
-              {banner.subtitle ? <p className="sponsor-host text-white mb-0">{banner.subtitle}</p> : null}
+              {resolved.subtitle ? <p className="sponsor-host text-white mb-0">{resolved.subtitle}</p> : null}
             </div>
           </div>
-          <a href={banner.ctaUrl} className="sponsor-cta align-self-center flex-shrink-0 ms-md-3">
-            {banner.ctaLabel}
+          <a href={resolved.ctaUrl} className="sponsor-cta align-self-center flex-shrink-0 ms-md-3">
+            {resolved.ctaLabel}
           </a>
         </div>
       </div>
