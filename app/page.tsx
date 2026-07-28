@@ -2,6 +2,8 @@ import SiteMasthead from "@/components/SiteMasthead";
 import HomePageContent from "@/components/HomePageContent";
 import { buildPageMetadata } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = buildPageMetadata({
   path: "/",
   description:
