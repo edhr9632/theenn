@@ -1,8 +1,10 @@
-export const SURVEY_LABEL = "Dynamic Survey form 2026";
+export const SURVEY_LABEL = "Dynamic School - South India Educators' Summit Survey and Nomination Form 2026";
+export const SURVEY_SLUG = "dynamic-school-south-india-educators-summit-survey-and-nomination-form-2026";
+export const SURVEY_ROUTE_PATH = `/survey/${SURVEY_SLUG}`;
 
 /** Dynamic School — South India Educators' Summit Survey and Nomination Form 2026 */
 export const DEFAULT_SURVEY_FORM_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSeCAFKPD7ccmrSoKG2UFGtmYIdrSNPqBrrNx5PaTi_TizAKUA/viewform?usp=dialog";
+  "https://docs.google.com/forms/d/e/1FAIpQLSeCAFKPD7ccmrSoKG2UFGtmYIdrSNPqBrrNx5PaTi_TizAKUA/viewform";
 
 export const DEFAULT_SURVEY_FORM_EMBED_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSeCAFKPD7ccmrSoKG2UFGtmYIdrSNPqBrrNx5PaTi_TizAKUA/viewform?embedded=true";
@@ -23,7 +25,8 @@ export function getSurveyConfig(): SiteSurveyConfig {
 
 /** URL for opening the form in a new browser tab */
 export function getSurveyOpenUrl(config: SiteSurveyConfig = getSurveyConfig()) {
-  return config.directUrl || config.embedUrl;
+  if (config.directUrl || config.embedUrl) return SURVEY_ROUTE_PATH;
+  return "";
 }
 
 /** URL for embedding the form in the header modal iframe */

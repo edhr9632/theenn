@@ -102,7 +102,15 @@ export default function SurveyFormModal({
 
   if (!canRender) return null;
 
-  const openUrl = (directUrl || embedUrl || getSurveyOpenUrl()).trim();
+  const openUrl = (
+    getSurveyOpenUrl({
+      label,
+      embedUrl: embedUrl ?? "",
+      directUrl: directUrl ?? "",
+    }) ||
+    directUrl ||
+    embedUrl
+  ).trim();
 
   const openInNewTab = () => {
     if (!openUrl) return;
