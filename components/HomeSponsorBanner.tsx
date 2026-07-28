@@ -11,7 +11,7 @@ const DEFAULT_TV_BANNER: PromoBanner = {
   title: "Knowledge Plus - Education News Network",
   subtitle: "Hosted by Vibha Raj",
   ctaLabel: "Watch our live discussion @3PM",
-  ctaUrl: "#",
+  ctaUrl: "https://www.youtube.com/@EducationTodayNews",
   variant: "tv_schedule",
 };
 

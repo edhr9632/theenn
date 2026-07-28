@@ -7,7 +7,7 @@
  */
 const fs = require("fs");
 const path = require("path");
-const { Pool } = require("pg");
+const { createPool } = require("./db-pool");
 
 function loadEnvLocal() {
   const envPath = path.join(__dirname, "..", ".env.local");
@@ -48,7 +48,7 @@ async function upsertPromo(client, row) {
 }
 
 async function main() {
-  const pool = new Pool({ connectionString: databaseUrl });
+  const pool = createPool(databaseUrl);
   const client = await pool.connect();
 
   try {
@@ -58,7 +58,7 @@ async function main() {
       title: "Knowledge Plus - Education News Network",
       subtitle: "Hosted by Vibha Raj",
       ctaLabel: "Watch our live discussion @3PM",
-      ctaUrl: "#",
+      ctaUrl: "https://www.youtube.com/@EducationTodayNews",
       variant: "tv_schedule",
     });
 
