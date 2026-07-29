@@ -25,17 +25,30 @@ export default function AdminShortsPage() {
     setLoading(true);
     try {
       const response = await fetch("/api/admin/shorts");
-      const data = (await response.json()) as { items?: ShortVideo[]; error?: string };
+      const data = (await response.json()) as {
+        items?: ShortVideo[];
+        error?: string;
+        configured?: boolean;
+        connected?: boolean;
+      };
       if (!response.ok) {
         setDbError(true);
         setItems([]);
+        setMessage(data.error ?? "Could not connect to the database.");
         return;
       }
       setDbError(false);
       setItems(data.items ?? []);
+      if (data.configured === false) {
+        setDbError(true);
+        setMessage(
+          "DATABASE_URL is missing on Vercel. Add it in Settings → Environment Variables, then Redeploy.",
+        );
+      }
     } catch {
       setDbError(true);
       setItems([]);
+      setMessage("Network error while loading short videos.");
     } finally {
       setLoading(false);
     }
@@ -140,10 +153,18 @@ export default function AdminShortsPage() {
 
       {dbError ? (
         <div className="admin-panel mb-3 p-4">
-          <p className="mb-0 text-danger">
-            Could not connect to PostgreSQL. Check <code>DATABASE_URL</code> and run{" "}
-            <code>npm run db:migrate:patches</code>.
+          <p className="mb-2 text-danger fw-semibold">Database not connected on the live server</p>
+          <p className="mb-2 text-danger">
+            {message ||
+              "Could not connect to PostgreSQL. Add DATABASE_URL in Vercel → Settings → Environment Variables (Production), then Redeploy."}
           </p>
+          <ol className="mb-0 small text-secondary">
+            <li>Open Vercel → your project → Settings → Environment Variables</li>
+            <li>
+              Add <code>DATABASE_URL</code> = the Supabase URL from your local <code>.env.local</code>
+            </li>
+            <li>Save for Production → Deployments → Redeploy the latest commit</li>
+          </ol>
         </div>
       ) : null}
 

@@ -17,15 +17,29 @@ function dbMissingResponse() {
 }
 
 export async function GET() {
-  if (!isDbConfigured()) return dbMissingResponse();
+  if (!isDbConfigured()) {
+    return NextResponse.json(
+      {
+        items: [],
+        configured: false,
+        connected: false,
+        error:
+          "DATABASE_URL is not set on the live server. Add your Supabase Postgres connection string in Vercel → Settings → Environment Variables (Production), then Redeploy.",
+      },
+      { status: 503 },
+    );
+  }
 
   try {
     const items = await listShortVideosAdmin();
-    return NextResponse.json({ items });
+    return NextResponse.json({ items, configured: true, connected: true });
   } catch (error) {
     console.error("[GET /api/admin/shorts]", error);
     const message = error instanceof Error ? error.message : "Database unavailable";
-    return NextResponse.json({ error: message }, { status: 503 });
+    return NextResponse.json(
+      { items: [], configured: true, connected: false, error: message },
+      { status: 503 },
+    );
   }
 }
 
