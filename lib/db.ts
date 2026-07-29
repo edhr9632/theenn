@@ -9,10 +9,35 @@ export function getPool(): Pool | null {
   if (!url) return null;
 
   if (!pool) {
+    let connectionString = url;
+    let hostname = "";
+    try {
+      const parsed = new URL(url);
+      hostname = parsed.hostname;
+      const isSupabase =
+        hostname.includes("supabase.com") ||
+        hostname.includes("pooler.supabase.com") ||
+        hostname.endsWith(".supabase.co");
+      if (isSupabase || url.includes("sslmode=")) {
+        parsed.searchParams.set("uselibpqcompat", "true");
+        parsed.searchParams.set("sslmode", "require");
+        connectionString = parsed.toString();
+      }
+    } catch {
+      /* use raw url */
+    }
+
+    const useSsl =
+      hostname.includes("supabase.com") ||
+      hostname.includes("pooler.supabase.com") ||
+      hostname.endsWith(".supabase.co") ||
+      url.includes("sslmode=require");
+
     pool = new Pool({
-      connectionString: url,
+      connectionString,
       max: 10,
       idleTimeoutMillis: 30_000,
+      ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
     });
   }
 

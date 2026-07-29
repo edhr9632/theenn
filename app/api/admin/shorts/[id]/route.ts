@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
+import { isDbConfigured } from "@/lib/db";
 import { deleteShortVideo, getShortVideoById, updateShortVideo, type ShortVideoInput } from "@/lib/shortsDb";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+function dbMissingResponse() {
+  return NextResponse.json(
+    {
+      error:
+        "DATABASE_URL is not set on the live server. Add your Supabase Postgres connection string in Vercel → Settings → Environment Variables, then Redeploy.",
+    },
+    { status: 503 },
+  );
+}
+
 export async function GET(_request: Request, context: RouteContext) {
+  if (!isDbConfigured()) return dbMissingResponse();
   const { id } = await context.params;
   try {
     const item = await getShortVideoById(id);
@@ -13,11 +25,13 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ item });
   } catch (error) {
     console.error("[GET /api/admin/shorts/[id]]", error);
-    return NextResponse.json({ error: "Database unavailable" }, { status: 503 });
+    const message = error instanceof Error ? error.message : "Database unavailable";
+    return NextResponse.json({ error: message }, { status: 503 });
   }
 }
 
 export async function PUT(request: Request, context: RouteContext) {
+  if (!isDbConfigured()) return dbMissingResponse();
   const { id } = await context.params;
   try {
     const body = (await request.json()) as Partial<ShortVideoInput>;
@@ -33,11 +47,13 @@ export async function PUT(request: Request, context: RouteContext) {
     return NextResponse.json({ item: updated });
   } catch (error) {
     console.error("[PUT /api/admin/shorts/[id]]", error);
-    return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Update failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
+  if (!isDbConfigured()) return dbMissingResponse();
   const { id } = await context.params;
   try {
     const ok = await deleteShortVideo(id);
@@ -45,6 +61,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[DELETE /api/admin/shorts/[id]]", error);
-    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Delete failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

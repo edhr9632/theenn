@@ -8,11 +8,15 @@
     "start": "next start",
     "lint": "next lint",
     "weekly-pdfs": "node scripts/create-weekly-pdfs.js",
-    "db:migrate": "node scripts/db-migrate.js",
+    "db:migrate": "node scripts/db-migrate-node.js",
+    "db:migrate:psql": "node scripts/db-migrate.js",
+    "supabase:setup": "node scripts/supabase-setup.js",
     "db:migrate:patches": "node scripts/db-migrate-patches.js",
     "db:seed": "node scripts/db-seed.js"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.8",
     "bootstrap": "^5.3.3",
     "google-tts-api": "^2.0.2",
     "next": "^15.3.3",
