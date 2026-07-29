@@ -23,10 +23,9 @@ export function getSurveyConfig(): SiteSurveyConfig {
   };
 }
 
-/** URL for opening the form in a new browser tab */
+/** URL for opening the form in a new browser tab (Google Form — always works on live). */
 export function getSurveyOpenUrl(config: SiteSurveyConfig = getSurveyConfig()) {
-  if (config.directUrl || config.embedUrl) return SURVEY_ROUTE_PATH;
-  return "";
+  return config.directUrl?.trim() || config.embedUrl?.trim() || DEFAULT_SURVEY_FORM_URL;
 }
 
 /** URL for embedding the form in the header modal iframe */

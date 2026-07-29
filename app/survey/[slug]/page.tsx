@@ -14,8 +14,13 @@ export const metadata = buildPageMetadata({
   description: "Dynamic School - South India Educators' Summit Survey and Nomination Form 2026.",
 });
 
-export default function SurveyRedirectPage({ params }: { params: { slug: string } }) {
-  if (params.slug !== SURVEY_SLUG) notFound();
+export default async function SurveyRedirectPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  if (slug !== SURVEY_SLUG) notFound();
   const target = getSurveyConfig().directUrl?.trim() || DEFAULT_SURVEY_FORM_URL;
   redirect(target);
 }
