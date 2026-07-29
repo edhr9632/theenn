@@ -3,41 +3,57 @@ import "server-only";
 import { Pool, type QueryResultRow } from "pg";
 
 let pool: Pool | null = null;
+let poolUrl: string | null = null;
+
+function buildPoolConfig(rawUrl: string) {
+  let connectionString = rawUrl;
+  let hostname = "";
+  try {
+    const parsed = new URL(rawUrl);
+    hostname = parsed.hostname;
+    const isSupabase =
+      hostname.includes("supabase.com") ||
+      hostname.includes("pooler.supabase.com") ||
+      hostname.endsWith(".supabase.co");
+    if (isSupabase || rawUrl.includes("sslmode=")) {
+      // Avoid pg treating sslmode=require as verify-full against Supabase pooler certs.
+      parsed.searchParams.set("uselibpqcompat", "true");
+      parsed.searchParams.set("sslmode", "require");
+      connectionString = parsed.toString();
+    }
+  } catch {
+    /* use raw url */
+  }
+
+  const useSsl =
+    hostname.includes("supabase.com") ||
+    hostname.includes("pooler.supabase.com") ||
+    hostname.endsWith(".supabase.co") ||
+    rawUrl.includes("sslmode=require");
+
+  return {
+    connectionString,
+    // Serverless (Vercel): keep pool tiny; avoid leaked connections.
+    max: 1,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 15_000,
+    allowExitOnIdle: true,
+    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+  };
+}
 
 export function getPool(): Pool | null {
   const url = process.env.DATABASE_URL?.trim();
   if (!url) return null;
 
-  if (!pool) {
-    let connectionString = url;
-    let hostname = "";
-    try {
-      const parsed = new URL(url);
-      hostname = parsed.hostname;
-      const isSupabase =
-        hostname.includes("supabase.com") ||
-        hostname.includes("pooler.supabase.com") ||
-        hostname.endsWith(".supabase.co");
-      if (isSupabase || url.includes("sslmode=")) {
-        parsed.searchParams.set("uselibpqcompat", "true");
-        parsed.searchParams.set("sslmode", "require");
-        connectionString = parsed.toString();
-      }
-    } catch {
-      /* use raw url */
+  if (!pool || poolUrl !== url) {
+    if (pool) {
+      void pool.end().catch(() => undefined);
     }
-
-    const useSsl =
-      hostname.includes("supabase.com") ||
-      hostname.includes("pooler.supabase.com") ||
-      hostname.endsWith(".supabase.co") ||
-      url.includes("sslmode=require");
-
-    pool = new Pool({
-      connectionString,
-      max: 10,
-      idleTimeoutMillis: 30_000,
-      ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+    poolUrl = url;
+    pool = new Pool(buildPoolConfig(url));
+    pool.on("error", (err) => {
+      console.error("[pg pool]", err);
     });
   }
 
@@ -49,7 +65,11 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   params: unknown[] = [],
 ): Promise<T[]> {
   const db = getPool();
-  if (!db) return [];
+  if (!db) {
+    throw new Error(
+      "DATABASE_URL is not set. Add Supabase Postgres URI in Vercel → Settings → Environment Variables (Production), then Redeploy.",
+    );
+  }
   const result = await db.query<T>(text, params);
   return result.rows;
 }

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Could not create short video. Check Vercel DATABASE_URL points to Supabase and that the short_videos table exists.",
+            "Could not create short video (empty insert). Confirm short_videos table exists in Supabase.",
         },
         { status: 503 },
       );
@@ -53,6 +53,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[POST /api/admin/shorts]", error);
     const message = error instanceof Error ? error.message : "Save failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 503 });
   }
 }
