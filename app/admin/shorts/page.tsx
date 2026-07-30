@@ -1,12 +1,51 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { AdminBadge, AdminPageHeader, AdminTable } from "@/components/admin/AdminUi";
 import { AdminRowActions } from "@/components/admin/AdminRowActions";
 import { youtubeThumb } from "@/lib/siteVideos";
 import type { ShortVideo } from "@/lib/shortTypes";
 
+const MAX_THUMB_EDGE = 720;
+const THUMB_QUALITY = 0.85;
+
+async function fileToCompressedDataUrl(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Please choose an image file (JPG, PNG, or WebP).");
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    throw new Error("Image must be under 8 MB.");
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_THUMB_EDGE / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      // Fallback without compression.
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("Could not read image."));
+        reader.readAsDataURL(file);
+      });
+    }
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+    return canvas.toDataURL("image/jpeg", THUMB_QUALITY);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function AdminShortsPage() {
+  const fileRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<ShortVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -55,6 +94,7 @@ export default function AdminShortsPage() {
     setMeta("Short");
     setSortOrder("0");
     setEnabled(true);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const startEdit = (item: ShortVideo) => {
@@ -66,7 +106,18 @@ export default function AdminShortsPage() {
     setMeta(item.meta || "Short");
     setSortOrder(String(item.sortOrder ?? 0));
     setEnabled(item.enabled);
+    if (fileRef.current) fileRef.current.value = "";
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const onThumbFile = async (file: File | null) => {
+    if (!file) return;
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file);
+      setImageUrl(dataUrl);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not read image.");
+    }
   };
 
   const onSubmit = async (event: FormEvent) => {
@@ -103,7 +154,7 @@ export default function AdminShortsPage() {
       resetForm();
       await loadItems();
     } catch {
-      window.alert("Network error. Is PostgreSQL running?");
+      window.alert("Network error. Could not save short video.");
     } finally {
       setSaving(false);
     }
@@ -124,6 +175,8 @@ export default function AdminShortsPage() {
       window.alert("Network error while deleting.");
     }
   };
+
+  const previewSrc = imageUrl.trim() || (youtubeUrl.trim() ? youtubeThumb(youtubeUrl.trim()) : "");
 
   return (
     <div>
@@ -189,15 +242,58 @@ export default function AdminShortsPage() {
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
             Show on homepage
           </label>
-          <label className="admin-field-label admin-field-span">
-            Thumbnail URL <span className="text-muted">(optional — auto from YouTube if blank)</span>
+
+          <div className="admin-field-label admin-field-span">
+            <span className="d-block mb-2">Thumbnail image</span>
+            <div className="d-flex flex-wrap align-items-start gap-3">
+              <div
+                className="border rounded overflow-hidden bg-light flex-shrink-0"
+                style={{ width: 120, height: 180 }}
+              >
+                {previewSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={previewSrc} alt="" className="w-100 h-100" style={{ objectFit: "cover" }} />
+                ) : (
+                  <div className="w-100 h-100 d-flex align-items-center justify-content-center text-muted small px-2 text-center">
+                    No thumbnail
+                  </div>
+                )}
+              </div>
+              <div className="d-flex flex-column gap-2">
+                <button
+                  type="button"
+                  className="btn admin-btn-primary btn-sm"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  Upload thumbnail
+                </button>
+                {imageUrl ? (
+                  <button
+                    type="button"
+                    className="btn admin-btn-ghost btn-sm"
+                    onClick={() => {
+                      setImageUrl("");
+                      if (fileRef.current) fileRef.current.value = "";
+                    }}
+                  >
+                    Use YouTube thumbnail
+                  </button>
+                ) : null}
+                <span className="small text-muted">JPG/PNG/WebP. Optional — auto from YouTube if empty.</span>
+              </div>
+            </div>
             <input
-              className="admin-field"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://…/thumb.jpg"
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="d-none"
+              onChange={(e) => {
+                void onThumbFile(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
             />
-          </label>
+          </div>
+
           <div className="admin-field-span d-flex flex-wrap gap-2">
             <button type="submit" className="btn admin-btn-primary" disabled={saving}>
               {saving ? "Saving…" : editingId ? "Update short" : "Add short"}
@@ -212,16 +308,31 @@ export default function AdminShortsPage() {
       </div>
 
       <div className="admin-panel">
-        <AdminTable columns={["Title", "Meta", "Duration", "Status", "YouTube", "Actions"]}>
+        <AdminTable columns={["Thumb", "Title", "Meta", "Duration", "Status", "YouTube", "Actions"]}>
           {loading ? (
             <tr>
-              <td colSpan={6}>
+              <td colSpan={7}>
                 <p className="mb-0 text-muted py-3">Loading shorts…</p>
               </td>
             </tr>
           ) : items.length ? (
             items.map((item) => (
               <tr key={item.id}>
+                <td>
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.image}
+                      alt=""
+                      width={40}
+                      height={60}
+                      className="rounded"
+                      style={{ objectFit: "cover" }}
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td>
                   <p className="admin-cell-title mb-0">{item.title}</p>
                   <p className="admin-cell-sub mb-0">Order {item.sortOrder}</p>
@@ -247,7 +358,7 @@ export default function AdminShortsPage() {
             ))
           ) : (
             <tr>
-              <td colSpan={6}>
+              <td colSpan={7}>
                 <p className="mb-0 text-muted py-3">
                   No shorts yet. Add a YouTube Shorts URL above to show them on the homepage.
                 </p>

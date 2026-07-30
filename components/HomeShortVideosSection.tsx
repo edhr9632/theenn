@@ -83,11 +83,16 @@ export default function HomeShortVideosSection({ dbShortVideos = [] }: HomeShort
               >
                 <span className="home-shorts-thumb">
                   {item.image ? (
-                    <YoutubeThumbImage
-                      src={item.image}
-                      youtubeUrl={item.href}
-                      sizes="(max-width:575px) 50vw, (max-width:991px) 33vw, (max-width:1199px) 25vw, 220px"
-                    />
+                    item.image.startsWith("data:") || item.image.startsWith("/") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.image} alt="" className="object-fit-cover" />
+                    ) : (
+                      <YoutubeThumbImage
+                        src={item.image}
+                        youtubeUrl={item.href}
+                        sizes="(max-width:575px) 50vw, (max-width:991px) 33vw, (max-width:1199px) 25vw, 220px"
+                      />
+                    )
                   ) : null}
                   <span className="home-shorts-play" aria-hidden="true">
                     <PlayIcon size={18} />
