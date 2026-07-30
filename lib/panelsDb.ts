@@ -104,10 +104,13 @@ export async function createPanelDiscussion(input: AdminPanelInput): Promise<Adm
 }
 
 export async function updatePanelDiscussion(id: string, input: Partial<AdminPanelInput>): Promise<AdminPanelItem | null> {
+  const key = id.trim();
   const existing = await queryOne<PanelRow>(
     `SELECT id, episode, duration, topic, title, speakers, image_url, youtube_url, sort_order
-     FROM panel_discussions WHERE id = $1 LIMIT 1`,
-    [id],
+     FROM panel_discussions
+     WHERE id::text = $1 OR episode = $1
+     LIMIT 1`,
+    [key],
   );
   if (!existing) return null;
 
@@ -124,7 +127,7 @@ export async function updatePanelDiscussion(id: string, input: Partial<AdminPane
      WHERE id = $1
      RETURNING id, episode, duration, topic, title, speakers, image_url, youtube_url, sort_order`,
     [
-      id,
+      existing.id,
       input.duration !== undefined ? input.duration.trim() || null : existing.duration,
       input.topic !== undefined ? input.topic.trim() || null : existing.topic,
       input.title !== undefined ? input.title.trim() : existing.title,
@@ -138,13 +141,15 @@ export async function updatePanelDiscussion(id: string, input: Partial<AdminPane
 }
 
 export async function deletePanelDiscussion(id: string): Promise<boolean> {
-  const byId = await query<{ id: string }>(`DELETE FROM panel_discussions WHERE id = $1 RETURNING id`, [id]);
-  if (byId.length > 0) return true;
+  const key = id.trim();
+  if (!key) return false;
 
-  // Backward compatibility: older admin payloads used episode as row key.
-  const byEpisode = await query<{ id: string }>(
-    `DELETE FROM panel_discussions WHERE episode = $1 RETURNING id`,
-    [id],
+  // Use id::text so non-UUID keys (old episode codes) do not throw before episode match.
+  const deleted = await query<{ id: string }>(
+    `DELETE FROM panel_discussions
+     WHERE id::text = $1 OR episode = $1
+     RETURNING id`,
+    [key],
   );
-  return byEpisode.length > 0;
+  return deleted.length > 0;
 }

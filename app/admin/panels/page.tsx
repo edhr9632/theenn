@@ -147,19 +147,29 @@ export default function AdminPanelsPage() {
   };
 
   const onDelete = async (id: string) => {
+    if (!id?.trim()) {
+      window.alert("Missing panel id — refresh the page and try again.");
+      return;
+    }
     if (!window.confirm("Delete this panel discussion?")) return;
     try {
       const response = await fetch(`/api/admin/panels/${encodeURIComponent(id)}`, { method: "DELETE" });
+      let data: { error?: string; ok?: boolean } = {};
+      try {
+        data = (await response.json()) as { error?: string; ok?: boolean };
+      } catch {
+        /* non-JSON body */
+      }
       if (!response.ok) {
-        const data = (await response.json()) as { error?: string };
-        window.alert(data.error ?? "Could not delete panel discussion.");
+        window.alert(data.error ?? `Could not delete panel discussion (HTTP ${response.status}).`);
         return;
       }
       if (editingId === id) resetForm();
       flash("Panel deleted");
       await loadItems();
-    } catch {
-      window.alert("Could not delete panel discussion.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not delete panel discussion.";
+      window.alert(message);
     }
   };
 
