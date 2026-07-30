@@ -138,6 +138,13 @@ export async function updatePanelDiscussion(id: string, input: Partial<AdminPane
 }
 
 export async function deletePanelDiscussion(id: string): Promise<boolean> {
-  const rows = await query<{ id: string }>(`DELETE FROM panel_discussions WHERE id = $1 RETURNING id`, [id]);
-  return rows.length > 0;
+  const byId = await query<{ id: string }>(`DELETE FROM panel_discussions WHERE id = $1 RETURNING id`, [id]);
+  if (byId.length > 0) return true;
+
+  // Backward compatibility: older admin payloads used episode as row key.
+  const byEpisode = await query<{ id: string }>(
+    `DELETE FROM panel_discussions WHERE episode = $1 RETURNING id`,
+    [id],
+  );
+  return byEpisode.length > 0;
 }

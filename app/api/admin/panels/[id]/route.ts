@@ -32,6 +32,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[DELETE /api/admin/panels/[id]]", error);
-    return NextResponse.json({ error: "Could not delete panel discussion" }, { status: 503 });
+    const message = error instanceof Error ? error.message : "Could not delete panel discussion";
+    return NextResponse.json({ error: message }, { status: 503 });
   }
 }

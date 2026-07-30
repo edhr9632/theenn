@@ -31,6 +31,7 @@ export default function AdminPanelsPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [sortOrder, setSortOrder] = useState("0");
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   const loadItems = async () => {
     setLoading(true);
@@ -63,6 +64,11 @@ export default function AdminPanelsPage() {
     setImageUrl("");
     setSortOrder("0");
     if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const flash = (text: string) => {
+    setMessage(text);
+    window.setTimeout(() => setMessage(""), 2400);
   };
 
   const startEdit = (item: PanelAdminItem) => {
@@ -130,6 +136,7 @@ export default function AdminPanelsPage() {
         window.alert(data.error ?? "Could not save panel discussion.");
         return;
       }
+      flash(editingId ? "Panel updated" : "Panel added");
       resetForm();
       await loadItems();
     } catch {
@@ -144,10 +151,12 @@ export default function AdminPanelsPage() {
     try {
       const response = await fetch(`/api/admin/panels/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!response.ok) {
-        window.alert("Could not delete panel discussion.");
+        const data = (await response.json()) as { error?: string };
+        window.alert(data.error ?? "Could not delete panel discussion.");
         return;
       }
       if (editingId === id) resetForm();
+      flash("Panel deleted");
       await loadItems();
     } catch {
       window.alert("Could not delete panel discussion.");
@@ -160,6 +169,7 @@ export default function AdminPanelsPage() {
         title="Panel Discussions"
         description="YouTube panel carousel cards shown on the homepage."
       />
+      {message ? <p className="admin-flash mb-3">{message}</p> : null}
 
       <div className="admin-panel mb-4">
         <h2 className="h6 mb-3">{editingId ? "Edit panel discussion" : "Add panel discussion"}</h2>
