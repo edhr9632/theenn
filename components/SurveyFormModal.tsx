@@ -109,7 +109,8 @@ export default function SurveyFormModal({
       directUrl: directUrl ?? "",
     }) ||
     directUrl ||
-    embedUrl
+    embedUrl ||
+    ""
   ).trim();
 
   const openInNewTab = () => {
