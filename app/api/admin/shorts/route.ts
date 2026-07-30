@@ -6,45 +6,24 @@ import {
   type ShortVideoInput,
 } from "@/lib/shortsDb";
 
-function dbMissingResponse() {
-  return NextResponse.json(
-    {
-      error:
-        "DATABASE_URL is not set on the live server. Add your Supabase Postgres connection string in Vercel → Settings → Environment Variables, then Redeploy.",
-    },
-    { status: 503 },
-  );
-}
-
 export async function GET() {
   if (!isDbConfigured()) {
-    return NextResponse.json(
-      {
-        items: [],
-        configured: false,
-        connected: false,
-        error:
-          "DATABASE_URL is not set on the live server. Add your Supabase Postgres connection string in Vercel → Settings → Environment Variables (Production), then Redeploy.",
-      },
-      { status: 503 },
-    );
+    return NextResponse.json({ items: [] });
   }
 
   try {
     const items = await listShortVideosAdmin();
-    return NextResponse.json({ items, configured: true, connected: true });
+    return NextResponse.json({ items });
   } catch (error) {
     console.error("[GET /api/admin/shorts]", error);
-    const message = error instanceof Error ? error.message : "Database unavailable";
-    return NextResponse.json(
-      { items: [], configured: true, connected: false, error: message },
-      { status: 503 },
-    );
+    return NextResponse.json({ items: [] });
   }
 }
 
 export async function POST(request: Request) {
-  if (!isDbConfigured()) return dbMissingResponse();
+  if (!isDbConfigured()) {
+    return NextResponse.json({ error: "Could not create short video." }, { status: 503 });
+  }
 
   try {
     const body = (await request.json()) as ShortVideoInput;
@@ -54,19 +33,12 @@ export async function POST(request: Request) {
 
     const created = await createShortVideo(body);
     if (!created) {
-      return NextResponse.json(
-        {
-          error:
-            "Could not create short video (empty insert). Confirm short_videos table exists in Supabase.",
-        },
-        { status: 503 },
-      );
+      return NextResponse.json({ error: "Could not create short video." }, { status: 503 });
     }
 
     return NextResponse.json({ item: created }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/admin/shorts]", error);
-    const message = error instanceof Error ? error.message : "Save failed";
-    return NextResponse.json({ error: message }, { status: 503 });
+    return NextResponse.json({ error: "Could not create short video." }, { status: 503 });
   }
 }
