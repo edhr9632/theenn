@@ -7,13 +7,7 @@ type RouteContext = {
 };
 
 function dbMissingResponse() {
-  return NextResponse.json(
-    {
-      error:
-        "DATABASE_URL is not set on the live server. Add your Supabase Postgres connection string in Vercel → Settings → Environment Variables, then Redeploy.",
-    },
-    { status: 503 },
-  );
+  return NextResponse.json({ error: "Could not save short video." }, { status: 503 });
 }
 
 export async function GET(_request: Request, context: RouteContext) {
