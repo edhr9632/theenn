@@ -62,7 +62,6 @@ export default function PanelDiscussionCard({
       <div className="panel-disco-body p-3 p-md-4 d-flex flex-column flex-grow-1">
         <div className="d-flex align-items-center justify-content-between gap-2 mb-1">
           <span className="panel-disco-cat text-uppercase small fw-semibold">Panel discussion</span>
-          <span className="panel-disco-episode small text-muted">{panel.episode}</span>
         </div>
         <p className="panel-disco-topic small fw-semibold mb-1">{panel.topic}</p>
         <h3 className="panel-disco-cardtitle serif-headline h6 mt-1 mb-2 lh-sm">{panel.title}</h3>
