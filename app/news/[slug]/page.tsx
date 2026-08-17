@@ -11,6 +11,8 @@ import ArticleComments from "@/components/ArticleComments";
 import {
   buildArticleFaqs,
   buildArticleSuggestedQuestions,
+  extractArticleKeywords,
+  highlightArticleContent,
   toArticleAskContext,
 } from "@/lib/articleAskAi";
 import { listApprovedComments } from "@/lib/commentsDb";
@@ -96,6 +98,8 @@ export default async function NewsArticlePage({ params }: Props) {
   const askCtx = toArticleAskContext(article, content);
   const askSuggestions = buildArticleSuggestedQuestions(askCtx);
   const faqs = buildArticleFaqs(askCtx);
+  const keywords = extractArticleKeywords(askCtx, 6);
+  const highlightedContent = highlightArticleContent(content, keywords);
 
   return (
     <>
@@ -133,7 +137,7 @@ export default async function NewsArticlePage({ params }: Props) {
                   <span>{article.readTime}</span>
                 </div>
 
-                <ArticleAudioPlayer article={article} />
+                <ArticleAudioPlayer article={article} content={content} />
 
                 <ArticleHeroMedia
                   featuredVideo={featuredVideo}
@@ -141,12 +145,21 @@ export default async function NewsArticlePage({ params }: Props) {
                   imageAlt={imageAlt}
                 />
 
+                {keywords.length ? (
+                  <div className="article-keyword-row" aria-label="Article keywords">
+                    {keywords.map((keyword) => (
+                      <span key={keyword} className="article-keyword-chip">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 {article.excerpt ? (
                   <div className="article-lede-block mb-4">
                     <p className="article-lede mb-0">{article.excerpt}</p>
                   </div>
                 ) : null}
-                <ArticleBody content={content} />
+                <ArticleBody content={highlightedContent} />
               </article>
             </div>
             <ArticleSidebar related={related} />
@@ -179,6 +192,7 @@ export default async function NewsArticlePage({ params }: Props) {
         slug={slug}
         articleTitle={article.title}
         suggestions={askSuggestions}
+        keywords={keywords}
       />
     </>
   );

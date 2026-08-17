@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { buildAssistantReply, type AssistantContext } from "@/lib/ennAssistantBrain";
+import { isDbConfigured } from "@/lib/db";
+import { listPublishedNewsKnowledge } from "@/lib/newsDb";
 
 type AssistantRequest = {
   message?: string;
   context?: AssistantContext;
 };
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +19,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
-    const reply = buildAssistantReply(message, body.context);
+    const knowledge =
+      isDbConfigured() ? await listPublishedNewsKnowledge(80).catch(() => []) : [];
+
+    const reply = buildAssistantReply(message, body.context, knowledge);
     return NextResponse.json({
       ...reply,
       poweredBy: "enn-local",

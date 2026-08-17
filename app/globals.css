@@ -3114,6 +3114,34 @@ body {
   color: #2b3542;
 }
 
+.article-keyword-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1.1rem;
+}
+
+.article-keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #1a4099;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: capitalize;
+}
+
+.article-content mark.article-keyword,
+.article-keyword {
+  background: #fff3bf;
+  color: inherit;
+  padding: 0.05em 0.15em;
+  border-radius: 0.2em;
+}
+
 .article-content > *:first-child {
   margin-top: 0;
 }

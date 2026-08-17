@@ -171,7 +171,6 @@ export default function AskEnnChatApp({ suggestions }: AskEnnChatAppProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fullPageHref, setFullPageHref] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const listRef = useRef<HTMLDivElement | null>(null);
   const bootstrapped = useRef(false);
@@ -252,6 +251,27 @@ export default function AskEnnChatApp({ suggestions }: AskEnnChatAppProps) {
     }
   }, [loading]);
 
+  const openAssistantLink = useCallback(
+    (link: AssistantLink) => {
+      const newsMatch = link.href.match(/^\/news\/([^/?#]+)/);
+      if (newsMatch) {
+        if (/^Read full story:/i.test(link.title)) {
+          window.open(link.href, "_blank", "noopener,noreferrer");
+          return;
+        }
+        const title = link.title.replace(/^Read full story:\s*/i, "").trim();
+        void sendMessage(`What should I know about: ${title}`);
+        return;
+      }
+      if (link.href === "/news" || link.href === "/trending-news") {
+        void sendMessage(link.href === "/trending-news" ? "Trending news" : "Daily news");
+        return;
+      }
+      window.open(link.href, "_blank", "noopener,noreferrer");
+    },
+    [sendMessage],
+  );
+
   useEffect(() => {
     if (bootstrapped.current) return;
     bootstrapped.current = true;
@@ -274,15 +294,6 @@ export default function AskEnnChatApp({ suggestions }: AskEnnChatAppProps) {
 
     if (pending) void sendMessage(pending);
   }, [sendMessage]);
-
-  useEffect(() => {
-    if (!fullPageHref) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setFullPageHref(null);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [fullPageHref]);
 
   const startNewChat = () => {
     setMessages([]);
@@ -399,8 +410,8 @@ export default function AskEnnChatApp({ suggestions }: AskEnnChatAppProps) {
                       <button
                         type="button"
                         className="ask-enn-bubble-link"
-                        onClick={() => setFullPageHref(link.href)}
-                        aria-label={`Open full story: ${link.title}`}
+                        onClick={() => openAssistantLink(link)}
+                        aria-label={`Summarize: ${link.title}`}
                       >
                         <span>{link.title}</span>
                         {link.meta ? <small>{link.meta}</small> : null}
@@ -427,23 +438,6 @@ export default function AskEnnChatApp({ suggestions }: AskEnnChatAppProps) {
             </div>
           ) : null}
         </div>
-
-        {fullPageHref ? (
-          <div className="ask-enn-story-viewer" role="dialog" aria-modal="true" aria-label="Full story">
-            <div className="ask-enn-story-viewer-head">
-              <div className="ask-enn-story-viewer-label">Full story</div>
-              <button
-                type="button"
-                className="ask-enn-story-viewer-close"
-                onClick={() => setFullPageHref(null)}
-                aria-label="Close full story"
-              >
-                ✕
-              </button>
-            </div>
-            <iframe className="ask-enn-story-viewer-frame" src={fullPageHref} title="Full story" />
-          </div>
-        ) : null}
 
         <form
           className="ask-enn-chat-composer"

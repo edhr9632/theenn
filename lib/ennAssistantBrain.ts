@@ -1,7 +1,13 @@
 import { newsArticles, panelDiscussions, type NewsArticle } from "@/lib/data";
-import { getTopEducationNews } from "@/lib/educationVoiceBrief";
+import { extractArticleKeywords, toArticleAskContext } from "@/lib/articleAskAi";
+import { splitSentences, stripHtml } from "@/lib/htmlText";
 import { podcastShows } from "@/lib/podcasts";
 import { weeklyIssues } from "@/lib/weeklyIssues";
+
+export type KnowledgeArticle = NewsArticle & {
+  content?: string;
+  section?: string;
+};
 
 export type AssistantLink = {
   title: string;
@@ -36,9 +42,10 @@ function tokenize(text: string) {
     .filter((word) => word.length > 2 && !STOP_WORDS.has(word));
 }
 
-function scoreArticle(query: string, article: NewsArticle) {
+function scoreArticle(query: string, article: KnowledgeArticle) {
   const tokens = tokenize(query);
-  const haystack = `${article.title} ${article.excerpt} ${article.category} ${article.author}`.toLowerCase();
+  const haystack =
+    `${article.title} ${article.excerpt} ${article.category} ${article.author} ${stripHtml(article.content || "")}`.toLowerCase();
   let score = 0;
 
   for (const token of tokens) {
@@ -51,8 +58,8 @@ function scoreArticle(query: string, article: NewsArticle) {
   return score;
 }
 
-function searchArticles(query: string, limit = 4) {
-  return newsArticles
+function searchArticles(query: string, articles: KnowledgeArticle[], limit = 4) {
+  return articles
     .map((article) => ({ article, score: scoreArticle(query, article) }))
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
@@ -60,7 +67,7 @@ function searchArticles(query: string, limit = 4) {
     .map((item) => item.article);
 }
 
-function articleLinks(articles: NewsArticle[]): AssistantLink[] {
+function articleLinks(articles: KnowledgeArticle[]): AssistantLink[] {
   return articles.map((article) => ({
     title: article.title,
     href: `/news/${article.slug}`,
@@ -68,66 +75,85 @@ function articleLinks(articles: NewsArticle[]): AssistantLink[] {
   }));
 }
 
-function defaultFollowUps(): string[] {
-  return ["Daily news", "Weekly news", "Podcast", "AI in classrooms", "Teacher shortage", "Literacy reform"];
+function defaultFollowUps(articles: KnowledgeArticle[]): string[] {
+  const fromBlogs = articles.slice(0, 3).map((article) => `What should I know about: ${article.title}`);
+  return fromBlogs.length
+    ? [...fromBlogs, "Daily news", "Trending news"]
+    : ["Daily news", "Weekly news", "Podcast"];
 }
 
-function greetingReply(): AssistantReply {
+function greetingReply(articles: KnowledgeArticle[]): AssistantReply {
   return {
     message:
-      "Hi! I'm Ask ENN — your education news assistant. Choose Daily news, Weekly news, or Podcast below to browse everything on ENN, or ask about any education story.",
-    links: [
-      { title: "Daily News", href: "/news", meta: "Latest stories" },
-      { title: "Weekly Magazines", href: "/weekly-news", meta: "City PDF editions" },
-      { title: "Podcasts", href: "/podcasts", meta: "Shows & episodes" },
-    ],
-    suggestions: defaultFollowUps(),
+      "Hi! I'm Ask ENN — your education news assistant. Ask about any uploaded blog, or choose Daily news to see summaries of what we have published.",
+    links: articleLinks(articles.slice(0, 4)),
+    suggestions: defaultFollowUps(articles),
   };
 }
 
-function voiceBriefReply(): AssistantReply {
-  const stories = getTopEducationNews(5);
-  const lines = stories.map(
+function voiceBriefReply(articles: KnowledgeArticle[]): AssistantReply {
+  const stories = articles.filter((article) => article.section === "top_education").slice(0, 5);
+  const list = stories.length ? stories : articles.slice(0, 5);
+  const lines = list.map(
     (story, index) => `${index + 1}. ${story.title} (${story.category}) — ${story.excerpt}`,
   );
 
   return {
-    message: stories.length
+    message: list.length
       ? `Playing today's top education news brief now. You can also use the Listen news button on the home page.\n\n${lines.join("\n\n")}`
-      : "I couldn't find top education headlines right now.",
-    links: stories.map((story) => ({
-      title: story.title,
-      href: story.href,
-      meta: `${story.category} · ${story.date}`,
-    })),
-    suggestions: defaultFollowUps(),
-    action: "play-voice-brief",
+      : "I couldn't find top education headlines right now. Publish blogs in Admin → News.",
+    links: articleLinks(list),
+    suggestions: defaultFollowUps(articles),
+    action: list.length ? "play-voice-brief" : undefined,
   };
 }
 
-function dailyBriefReply(): AssistantReply {
-  const articles = newsArticles;
-  const lines = articles.map(
-    (article, index) =>
-      `${index + 1}. ${article.title}\n${article.category} · ${article.date} · ${article.readTime}\n${article.excerpt}`,
-  );
+function sectionLabel(section?: string) {
+  if (section === "top_education") return "Top Education News";
+  if (section === "trending") return "Trending";
+  if (section === "press") return "Press Release";
+  return "Daily News";
+}
+
+function dailyBriefReply(articles: KnowledgeArticle[]): AssistantReply {
+  if (!articles.length) {
+    return {
+      message:
+        "No blogs have been published yet. Add stories in Admin → News (Top Education, Daily, or Trending) and they will appear here automatically.",
+      links: [{ title: "Daily News", href: "/news", meta: "Latest stories" }],
+      suggestions: ["Weekly news", "Podcast"],
+    };
+  }
+
+  const grouped = new Map<string, KnowledgeArticle[]>();
+  for (const article of articles) {
+    const key = sectionLabel(article.section);
+    const list = grouped.get(key) ?? [];
+    list.push(article);
+    grouped.set(key, list);
+  }
+
+  const blocks: string[] = ["Here are the blogs published on Education News Network right now:"];
+  for (const [label, list] of grouped) {
+    blocks.push(`\n${label}`);
+    for (const [index, article] of list.entries()) {
+      blocks.push(
+        `${index + 1}. ${article.title}\n${article.category} · ${article.date} · ${article.readTime}\n${article.excerpt || "Open this story for the full summary."}`,
+      );
+    }
+  }
 
   return {
-    message: `Here is all Daily News on Education News Network right now:\n\n${lines.join("\n\n")}`,
-    links: articles.map((article) => ({
-      title: article.title,
-      href: `/news/${article.slug}`,
-      meta: `${article.category} · ${article.date}`,
-    })),
-    suggestions: defaultFollowUps(),
+    message: blocks.join("\n\n"),
+    links: articleLinks(articles.slice(0, 12)),
+    suggestions: defaultFollowUps(articles),
   };
 }
 
 function weeklyReply(): AssistantReply {
   const featured = weeklyIssues.find((issue) => issue.featured) ?? weeklyIssues[0];
   const lines = weeklyIssues.map(
-    (issue, index) =>
-      `${index + 1}. ${issue.title} (${issue.dateLabel})\n${issue.tagline}`,
+    (issue, index) => `${index + 1}. ${issue.title} (${issue.dateLabel})\n${issue.tagline}`,
   );
   const links = weeklyIssues.map((issue) => ({
     title: `${issue.title} (${issue.dateLabel})`,
@@ -140,7 +166,7 @@ function weeklyReply(): AssistantReply {
       ? `Here is all Weekly News on Education News Network. Featured edition: ${featured.title} (${featured.dateLabel}) — ${featured.tagline}\n\n${lines.join("\n\n")}`
       : `Here is all Weekly News on Education News Network:\n\n${lines.join("\n\n")}`,
     links,
-    suggestions: defaultFollowUps(),
+    suggestions: ["Daily news", "Podcast"],
   };
 }
 
@@ -167,9 +193,11 @@ function podcastReply(): AssistantReply {
   }
 
   return {
-    message: `Here are all ENN Podcast shows and episodes:\n\n${lines.join("\n\n")}`,
+    message: lines.length
+      ? `Here are all ENN Podcast shows and episodes:\n\n${lines.join("\n\n")}`
+      : "Podcast episodes will appear here when they are published.",
     links,
-    suggestions: defaultFollowUps(),
+    suggestions: ["Daily news", "Weekly news"],
   };
 }
 
@@ -184,7 +212,7 @@ function panelReply(): AssistantReply {
     message:
       "Explore **Panel Discussions** — expert conversations on literacy, funding equity, higher ed access, and student wellbeing:",
     links,
-    suggestions: defaultFollowUps(),
+    suggestions: ["Daily news", "Weekly news"],
   };
 }
 
@@ -197,37 +225,52 @@ function eventsReply(): AssistantReply {
       { title: "Speakers", href: "/events/speakers", meta: "Expert profiles" },
       { title: "Sponsors", href: "/events/sponsors", meta: "Partners" },
     ],
-    suggestions: defaultFollowUps(),
+    suggestions: ["Daily news", "Weekly news"],
   };
 }
 
-/** AI-style article briefing written from ENN story fields for askENN answers. */
-function writeArticleBrief(article: NewsArticle): AssistantReply {
+function writeArticleBrief(article: KnowledgeArticle): AssistantReply {
+  const body = stripHtml(article.content || "");
+  const sentences = splitSentences(body);
+  const lead = article.excerpt.trim() || sentences[0] || `${article.title} — coverage from Education News Network.`;
+  const extra = sentences.filter((sentence) => sentence !== lead).slice(0, 3);
+  const ctx = toArticleAskContext(article, article.content || "");
+  const keywords = extractArticleKeywords(ctx, 6);
+  const highlights = [...new Set([lead, ...extra])].slice(0, 4);
+
   const message = [
     article.title,
     "",
     `${article.category} · ${article.date} · ${article.author} · ${article.readTime}`,
     "",
     "What's happening",
-    article.excerpt,
+    lead,
+    extra[0] || "",
     "",
     "Why it matters for education",
-    `This ${article.category.toLowerCase()} story from Education News Network highlights a shift schools, educators, and parents are watching closely. ${article.author} reports on how the issue is unfolding and what leaders should track next.`,
+    extra[1] ||
+      `This ${article.category.toLowerCase()} story from Education News Network highlights a shift schools, educators, and parents are watching closely.`,
     "",
     "What you can learn (quick take)",
-    `- How this affects schools, educators, and parents right now`,
-    `- What to watch next in the policy / classroom story`,
-    `- A simple way to explain the change to others`,
+    ...highlights.slice(0, 3).map((item) => `- ${item}`),
+    "",
+    "Highlights",
+    ...highlights.map((item) => `- ${item}`),
+    "",
+    "Keywords",
+    keywords.length ? keywords.join(", ") : article.category,
     "",
     "Key takeaways",
     `Focus area: ${article.category}`,
     `Published: ${article.date}`,
     `Read time: ${article.readTime}`,
-    `Bottom line: ${article.excerpt}`,
+    `Bottom line: ${lead}`,
     "",
     "Read the full ENN report",
-    "Open the complete article on Education News Network for more context, quotes, and analysis.",
-  ].join("\n");
+    "Ask me another question about this blog, or open the complete article on Education News Network.",
+  ]
+    .filter((line) => line !== undefined)
+    .join("\n");
 
   return {
     message,
@@ -238,39 +281,44 @@ function writeArticleBrief(article: NewsArticle): AssistantReply {
         meta: `${article.category} · ${article.readTime}`,
       },
     ],
-    suggestions: defaultFollowUps(),
+    suggestions: [
+      `What is this article about?`,
+      ...keywords.slice(0, 2).map((keyword) => `What is ${keyword}?`),
+      "Daily news",
+    ],
   };
 }
 
-function summarizeArticle(article: NewsArticle): AssistantReply {
+function summarizeArticle(article: KnowledgeArticle): AssistantReply {
   return writeArticleBrief(article);
 }
 
-function categoryReply(category: string): AssistantReply {
-  const matches = newsArticles.filter((article) => article.category.toLowerCase() === category.toLowerCase());
+function categoryReply(category: string, articles: KnowledgeArticle[]): AssistantReply {
+  const matches = articles.filter((article) => article.category.toLowerCase() === category.toLowerCase());
   if (!matches.length) {
     return {
-      message: `I couldn't find stories in **${category}** right now. Try asking about K-12, EdTech, Higher Ed, Policy, or Wellbeing.`,
-      links: [{ title: "Browse all news", href: "/news" }],
-      suggestions: defaultFollowUps(),
+      message: `I couldn't find stories in **${category}** right now. Try asking about a published headline, or choose Daily news.`,
+      links: articleLinks(articles.slice(0, 4)),
+      suggestions: defaultFollowUps(articles),
     };
   }
 
   return {
     message: `Here are ENN stories in **${category}**:`,
-    links: articleLinks(matches.slice(0, 4)),
-    suggestions: defaultFollowUps(),
+    links: articleLinks(matches.slice(0, 6)),
+    suggestions: defaultFollowUps(articles),
   };
 }
 
-function findBestArticle(query: string) {
+function findBestArticle(query: string, articles: KnowledgeArticle[]) {
   const cleaned = query
     .replace(/^what should i know about\s*:?\s*/i, "")
     .replace(/^tell me about\s+/i, "")
     .replace(/^explain\s+/i, "")
+    .replace(/^summarize\s+/i, "")
     .trim();
 
-  const byTitle = newsArticles.find(
+  const byTitle = articles.find(
     (article) =>
       article.title.toLowerCase() === cleaned.toLowerCase() ||
       cleaned.toLowerCase().includes(article.title.toLowerCase()) ||
@@ -278,48 +326,47 @@ function findBestArticle(query: string) {
   );
   if (byTitle) return byTitle;
 
-  const scored = newsArticles
+  const bySlug = articles.find((article) => cleaned.includes(article.slug.replace(/-/g, " ")));
+  if (bySlug) return bySlug;
+
+  const scored = articles
     .map((article) => ({ article, score: scoreArticle(cleaned || query, article) }))
     .sort((a, b) => b.score - a.score);
 
   return scored[0]?.score > 0 ? scored[0].article : null;
 }
 
-function fallbackReply(query: string): AssistantReply {
-  const best = findBestArticle(query);
+function fallbackReply(query: string, articles: KnowledgeArticle[]): AssistantReply {
+  const best = findBestArticle(query, articles);
   if (best && scoreArticle(query, best) >= 4) {
     return writeArticleBrief(best);
   }
 
-  const matches = searchArticles(query, 4);
+  const matches = searchArticles(query, articles, 4);
   if (matches.length === 1) {
     return writeArticleBrief(matches[0]);
   }
   if (matches.length) {
     return {
-      message: `I found these ENN stories related to your question. Tap one to open the full report, or ask me about a specific headline:`,
+      message: `I found these ENN blogs related to your question. Tap one for a summary of that story:`,
       links: articleLinks(matches),
-      suggestions: defaultFollowUps(),
+      suggestions: defaultFollowUps(articles),
     };
   }
 
   return {
     message:
-      "I couldn't find an exact match on ENN for that. Try asking about a topic like **AI in classrooms**, **teacher shortage**, **literacy reform**, **weekly magazines**, or **podcasts**.",
-    links: [
-      { title: "Daily News", href: "/news" },
-      { title: "Weekly News", href: "/weekly-news" },
-      { title: "Podcasts", href: "/podcasts" },
-    ],
-    suggestions: defaultFollowUps(),
+      "I couldn't find an exact match in the blogs published on ENN. Try Daily news to see every uploaded story, or ask about a headline.",
+    links: articleLinks(articles.slice(0, 4)),
+    suggestions: defaultFollowUps(articles),
   };
 }
 
-function articleFromPath(path?: string) {
+function articleFromPath(path: string | undefined, articles: KnowledgeArticle[]) {
   if (!path) return null;
   const match = path.match(/^\/news\/([^/]+)$/);
   if (!match) return null;
-  return newsArticles.find((article) => article.slug === match[1]) ?? null;
+  return articles.find((article) => article.slug === match[1]) ?? null;
 }
 
 function detectIntent(query: string) {
@@ -334,7 +381,9 @@ function detectIntent(query: string) {
     return "voice";
   }
   if (
-    /(what'?s trending|trending news|daily news|daily brief|today'?s news|headlines|what'?s new|latest news)/.test(q)
+    /(what'?s trending|trending news|daily news|daily brief|today'?s news|headlines|what'?s new|latest news|all blogs|uploaded blogs)/.test(
+      q,
+    )
   ) {
     return "brief";
   }
@@ -356,16 +405,21 @@ function detectIntent(query: string) {
   return "search";
 }
 
-export function buildAssistantReply(message: string, context?: AssistantContext): AssistantReply {
+export function buildAssistantReply(
+  message: string,
+  context?: AssistantContext,
+  knowledge: KnowledgeArticle[] = newsArticles,
+): AssistantReply {
   const query = message.trim();
-  if (!query) return greetingReply();
+  const articles = knowledge;
+  if (!query) return greetingReply(articles);
 
-  const pageArticle = articleFromPath(context?.path);
+  const pageArticle = articleFromPath(context?.path, articles);
   const intent = detectIntent(query);
 
-  if (intent === "greeting") return greetingReply();
-  if (intent === "voice") return voiceBriefReply();
-  if (intent === "brief") return dailyBriefReply();
+  if (intent === "greeting") return greetingReply(articles);
+  if (intent === "voice") return voiceBriefReply(articles);
+  if (intent === "brief") return dailyBriefReply(articles);
   if (intent === "weekly") return weeklyReply();
   if (intent === "podcast") return podcastReply();
   if (intent === "panel") return panelReply();
@@ -374,24 +428,24 @@ export function buildAssistantReply(message: string, context?: AssistantContext)
   if (intent === "summarize" && pageArticle) return summarizeArticle(pageArticle);
 
   if (intent === "article") {
-    const article = findBestArticle(query);
+    const article = findBestArticle(query, articles);
     if (article) return writeArticleBrief(article);
   }
 
   if (intent.startsWith("category:")) {
-    return categoryReply(intent.replace("category:", ""));
+    return categoryReply(intent.replace("category:", ""), articles);
   }
 
   if (pageArticle && /this|current|here|page/.test(query.toLowerCase())) {
     return summarizeArticle(pageArticle);
   }
 
-  return fallbackReply(query);
+  return fallbackReply(query, articles);
 }
 
-export function getAssistantKnowledgeSummary() {
+export function getAssistantKnowledgeSummary(knowledge: KnowledgeArticle[] = newsArticles) {
   return {
-    articles: newsArticles.length,
+    articles: knowledge.length,
     weeklyEditions: weeklyIssues.length,
     podcasts: podcastShows.length,
     panels: panelDiscussions.length,

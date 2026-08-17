@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AskEnnPageLauncher from "@/components/AskEnnPageLauncher";
-import { getAskEnnFaqItems } from "@/lib/askEnnSuggestions";
+import { faqItemsFromStories } from "@/lib/askEnnSuggestions";
+import { getTopEducationStoriesFromDb } from "@/lib/educationVoiceBriefDb";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -21,8 +22,11 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
-export default function AskPage() {
-  const faqItems = getAskEnnFaqItems(6);
+export const dynamic = "force-dynamic";
+
+export default async function AskPage() {
+  const stories = await getTopEducationStoriesFromDb(6);
+  const faqItems = faqItemsFromStories(stories, 6);
 
   const faqJsonLd = {
     "@context": "https://schema.org",

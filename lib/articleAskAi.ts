@@ -1,4 +1,5 @@
 import type { NewsArticle } from "@/lib/data";
+import { highlightKeywordsInHtml, splitSentences, stripHtml } from "@/lib/htmlText";
 
 export type ArticleAskContext = {
   slug: string;
@@ -20,29 +21,9 @@ export type ArticleAskReply = {
   citations: string[];
   suggestions: string[];
   grounded: boolean;
+  keywords: string[];
+  highlights: string[];
 };
-
-function stripHtml(html: string) {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function splitSentences(text: string) {
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 35);
-}
 
 const STOP = new Set([
   "a", "an", "the", "is", "are", "was", "were", "what", "how", "when", "where", "who", "why",
@@ -182,12 +163,28 @@ export function buildArticleGeoFaqs(ctx: ArticleAskContext, limit = 6) {
   return buildArticleFaqs(ctx, limit);
 }
 
+function formatAskAnswer(body: string, keywords: string[], highlights: string[]) {
+  const parts = [body.trim()];
+  if (highlights.length) {
+    parts.push("", "Highlights", ...highlights.slice(0, 4).map((item) => `• ${item}`));
+  }
+  if (keywords.length) {
+    parts.push("", `Keywords: ${keywords.slice(0, 8).join(", ")}`);
+  }
+  return parts.join("\n");
+}
+
+export function highlightArticleContent(contentHtml: string, keywords: string[]) {
+  return highlightKeywordsInHtml(contentHtml, keywords);
+}
+
 export function answerFromArticle(question: string, ctx: ArticleAskContext): ArticleAskReply {
   const q = question.trim();
   const suggestions = buildArticleSuggestedQuestions(ctx);
   const corpus = buildCorpus(ctx);
   const sentences = splitSentences(corpus);
   const qLower = q.toLowerCase();
+  const keywords = extractArticleKeywords(ctx, 6);
 
   if (!q) {
     return {
@@ -195,6 +192,8 @@ export function answerFromArticle(question: string, ctx: ArticleAskContext): Art
       citations: [],
       suggestions,
       grounded: false,
+      keywords,
+      highlights: [],
     };
   }
 
@@ -208,28 +207,40 @@ export function answerFromArticle(question: string, ctx: ArticleAskContext): Art
     const lead = [ctx.excerpt, ...sentences.slice(0, 2)].filter(Boolean);
     const unique = [...new Set(lead)].slice(0, 3);
     return {
-      answer: [
-        `“${ctx.title}” covers this:`,
-        "",
-        unique.map((s) => `• ${s}`).join("\n"),
-        "",
-        `Category: ${ctx.category} · Reported by ${ctx.author} · ${ctx.date}`,
-        "",
-        "— Answered from this ENN article.",
-      ].join("\n"),
+      answer: formatAskAnswer(
+        [
+          `“${ctx.title}” covers this:`,
+          "",
+          unique.map((s) => `• ${s}`).join("\n"),
+          "",
+          `Category: ${ctx.category} · Reported by ${ctx.author} · ${ctx.date}`,
+          "",
+          "— Answered from this ENN article.",
+        ].join("\n"),
+        keywords,
+        unique,
+      ),
       citations: unique,
       suggestions,
       grounded: unique.length > 0,
+      keywords,
+      highlights: unique,
     };
   }
 
   const qTokens = tokens(q);
   if (!sentences.length && !ctx.excerpt) {
     return {
-      answer: `This ENN article covers “${ctx.title}”. Open the full story for more detail.`,
+      answer: formatAskAnswer(
+        `This ENN article covers “${ctx.title}”. Open the full story for more detail.`,
+        keywords,
+        [],
+      ),
       citations: [],
       suggestions,
       grounded: false,
+      keywords,
+      highlights: [],
     };
   }
 
@@ -250,17 +261,17 @@ export function answerFromArticle(question: string, ctx: ArticleAskContext): Art
   const top = [...new Set(ranked.slice(0, 3).map((item) => item.sentence))];
   const grounded = top.length > 0;
 
-  let answer: string;
+  let body: string;
   if (grounded) {
     const primary = top[0];
     const extra = top.slice(1);
-    answer = [
+    body = [
       primary,
       extra.length ? `\n\nAlso from this article:\n${extra.map((s) => `• ${s}`).join("\n")}` : "",
       `\n\n— Answered from this ENN article: “${ctx.title}”.`,
     ].join("");
   } else {
-    answer = [
+    body = [
       `I could not find a direct answer to that in this article.`,
       `Here is the core of the story: ${ctx.excerpt || ctx.title}`,
       `Try asking about the main topic, who is affected, or what happens next.`,
@@ -268,10 +279,12 @@ export function answerFromArticle(question: string, ctx: ArticleAskContext): Art
   }
 
   return {
-    answer,
+    answer: formatAskAnswer(body, keywords, top),
     citations: top,
     suggestions,
     grounded,
+    keywords,
+    highlights: top,
   };
 }
 

@@ -9,13 +9,13 @@ import {
 import {
   VOICE_BRIEF_EVENT,
   buildEducationVoiceScript,
-  getTopEducationNews,
+  type VoiceBriefStory,
 } from "@/lib/educationVoiceBrief";
 
 type VoiceState = "idle" | "speaking" | "paused";
 
 export default function EducationVoiceBrief() {
-  const stories = useMemo(() => getTopEducationNews(5), []);
+  const [stories, setStories] = useState<VoiceBriefStory[]>([]);
   const script = useMemo(() => buildEducationVoiceScript(stories), [stories]);
   const [state, setState] = useState<VoiceState>("idle");
   const [supported, setSupported] = useState(true);
@@ -27,6 +27,19 @@ export default function EducationVoiceBrief() {
 
   useEffect(() => {
     setAbsoluteMp3Url(`${window.location.origin}${DAILY_AUDIO_PUBLIC_PATH}`);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/education-brief")
+      .then((response) => response.json())
+      .then((data: { stories?: VoiceBriefStory[] }) => {
+        if (!cancelled && Array.isArray(data.stories)) setStories(data.stories);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const stopSpeaking = useCallback(() => {

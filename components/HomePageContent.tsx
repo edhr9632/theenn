@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getAskEnnSuggestions } from "@/lib/askEnnSuggestions";
+import { promptsFromStories } from "@/lib/askEnnSuggestions";
 import { getHomePageData } from "@/lib/homeContent";
 import AskEnnBar from "./AskEnnBar";
 import HomeSurveyBanner from "./HomeSurveyBanner";
@@ -16,7 +16,14 @@ import HomeVideosSection from "./HomeVideosSection";
 
 export default async function HomePageContent() {
   const home = await getHomePageData();
-  const askSuggestions = getAskEnnSuggestions(3);
+  const askStories = (home.topEducation.length ? home.topEducation : home.daily).slice(0, 3).map((article) => ({
+    title: article.title,
+    excerpt: article.excerpt,
+    category: article.category,
+    href: `/news/${article.slug}`,
+    date: article.date,
+  }));
+  const askSuggestions = promptsFromStories(askStories, 3).map((item) => item.query);
 
   return (
     <>

@@ -46,7 +46,7 @@ export function getTopEducationNews(limit = 5): VoiceBriefStory[] {
     }));
 }
 
-export function buildEducationVoiceScript(stories: VoiceBriefStory[] = getTopEducationNews()) {
+export function buildEducationVoiceScript(stories: VoiceBriefStory[] = []) {
   if (!stories.length) {
     return "There are no top education headlines available right now. Please check back later on Education News Network.";
   }
@@ -65,6 +65,22 @@ export function buildEducationVoiceScript(stories: VoiceBriefStory[] = getTopEdu
     "That concludes today's top education news from Education News Network. Keep watching Education News Network for more updates. For enquiries, please visit our Contact Us page, or write to us through the enquiry form on Education News Network. Thank you for listening.";
 
   return `${intro} ${body} ${outro}`;
+}
+
+export function getDailyBriefScript(stories: VoiceBriefStory[]) {
+  return buildEducationVoiceScript(stories);
+}
+
+export function getDailyBriefTitle(stories: VoiceBriefStory[] = []) {
+  const stamp = new Date().toISOString().slice(0, 10);
+  return `ENN Daily Education Brief — ${stamp}`;
+}
+
+export function getDailyBriefDescription(stories: VoiceBriefStory[] = []) {
+  if (!stories.length) {
+    return "Daily education headlines from Education News Network.";
+  }
+  return stories.map((story, index) => `${index + 1}. ${story.title}`).join(" ");
 }
 
 export const VOICE_BRIEF_EVENT = "enn-voice-brief-play";

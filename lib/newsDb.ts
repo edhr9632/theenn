@@ -1,7 +1,8 @@
 import "server-only";
 
 import { mapNewsArticleRow } from "@/lib/mapNewsArticle";
-import { query, queryOne } from "@/lib/db";
+import { isDbConfigured, query, queryOne } from "@/lib/db";
+import type { NewsArticle } from "@/lib/data";
 import type { NewsArticleInput, NewsArticleRow, NewsSection } from "@/lib/newsTypes";
 
 export type { NewsArticleInput, NewsArticleRow, NewsSection } from "@/lib/newsTypes";
@@ -14,6 +15,32 @@ const SELECT_FIELDS = `
   category_label, image_url, image_alt, featured_video, status,
   has_video, is_featured, publish_date, sort_order
 `;
+
+export type KnowledgeArticle = NewsArticle & {
+  content: string;
+  section: NewsSection;
+};
+
+export function mapKnowledgeArticle(row: NewsArticleRow): KnowledgeArticle {
+  return {
+    ...mapNewsArticleRow(row),
+    content: row.content?.trim() || "",
+    section: row.section,
+  };
+}
+
+export async function listPublishedNewsKnowledge(limit = 80): Promise<KnowledgeArticle[]> {
+  if (!isDbConfigured()) return [];
+  const rows = await query<NewsArticleRow>(
+    `SELECT ${SELECT_FIELDS}
+     FROM news_articles
+     WHERE status = $1
+     ORDER BY publish_date DESC NULLS LAST, sort_order ASC, created_at DESC
+     LIMIT $2`,
+    [PUBLISHED, Math.max(1, limit)],
+  );
+  return rows.map(mapKnowledgeArticle);
+}
 
 export async function getNewsBySection(section: NewsSection, limit?: number): Promise<ReturnType<typeof mapNewsArticleRow>[]> {
   const limitSql = limit ? `LIMIT ${Math.max(1, limit)}` : "";

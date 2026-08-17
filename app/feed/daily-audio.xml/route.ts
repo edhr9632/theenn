@@ -2,10 +2,12 @@ import {
   DAILY_AUDIO_PUBLIC_PATH,
   getDailyAudioFeedUrl,
   getDailyAudioPublicUrl,
-  getDailyBriefDescription,
-  getDailyBriefStories,
-  getDailyBriefTitle,
 } from "@/lib/dailyAudio";
+import {
+  getDailyBriefDescription,
+  getDailyBriefTitle,
+} from "@/lib/educationVoiceBrief";
+import { getTopEducationStoriesFromDb } from "@/lib/educationVoiceBriefDb";
 import { siteSeo } from "@/lib/seo";
 
 export const runtime = "nodejs";
@@ -25,7 +27,7 @@ function xmlEscape(value: string) {
  * /audio/daily-latest.mp3 — suitable for podcast apps and scheduled morning play.
  */
 export async function GET() {
-  const stories = getDailyBriefStories(5);
+  const stories = await getTopEducationStoriesFromDb(5);
   const now = new Date();
   const pubDate = now.toUTCString();
   const title = getDailyBriefTitle(stories);

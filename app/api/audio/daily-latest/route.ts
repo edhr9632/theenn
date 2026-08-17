@@ -1,7 +1,7 @@
 import {
   getDailyBriefScript,
-  getDailyBriefStories,
-} from "@/lib/dailyAudio";
+} from "@/lib/educationVoiceBrief";
+import { getTopEducationStoriesFromDb } from "@/lib/educationVoiceBriefDb";
 import { synthesizeMp3Cached, toArrayBuffer } from "@/lib/ttsMp3";
 
 export const runtime = "nodejs";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const stories = getDailyBriefStories(5);
+    const stories = await getTopEducationStoriesFromDb(5);
     const script = getDailyBriefScript(stories);
     const mp3 = await synthesizeMp3Cached("daily-education-brief", script);
     const body = toArrayBuffer(mp3);

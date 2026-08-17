@@ -32,7 +32,19 @@ const eyebrowByFilter: Record<NewsListPageProps["newsActive"], string> = {
 async function loadArticles(section: NewsListPageProps["section"]): Promise<NewsArticle[]> {
   if (!isDbConfigured()) return [];
   try {
-    return await getNewsBySection(section);
+    const primary = await getNewsBySection(section);
+    if (primary.length || section !== "trending") return primary;
+
+    const [daily, topEducation] = await Promise.all([
+      getNewsBySection("daily", 12),
+      getNewsBySection("top_education", 8),
+    ]);
+    const seen = new Set<string>();
+    return [...daily, ...topEducation].filter((article) => {
+      if (seen.has(article.slug)) return false;
+      seen.add(article.slug);
+      return true;
+    });
   } catch (error) {
     console.error("[NewsListPage]", error);
     return [];

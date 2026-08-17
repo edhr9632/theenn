@@ -14,11 +14,9 @@ export type AskEnnBriefSection = {
 const SECTION_HEADINGS: { pattern: RegExp; kind: AskEnnBriefSection["kind"]; title: string }[] = [
   { pattern: /^what'?s happening$/i, kind: "happening", title: "What's happening" },
   { pattern: /^why it matters for education$/i, kind: "matters", title: "Why it matters for education" },
-  {
-    pattern: /^what you can learn \(quick take\)$/i,
-    kind: "learn",
-    title: "What you can learn (quick take)",
-  },
+  { pattern: /^what you can learn \(quick take\)$/i, kind: "learn", title: "What you can learn (quick take)" },
+  { pattern: /^highlights$/i, kind: "learn", title: "Highlights" },
+  { pattern: /^keywords$/i, kind: "takeaways", title: "Keywords" },
   { pattern: /^key takeaways$/i, kind: "takeaways", title: "Key takeaways" },
   { pattern: /^read the full enn report$/i, kind: "report", title: "Read the full ENN report" },
 ];
@@ -127,7 +125,7 @@ type AskEnnAnswerCardProps = {
   content: string;
   links?: AssistantLink[];
   suggestions?: string[];
-  onOpenLink: (href: string) => void;
+  onOpenLink: (link: AssistantLink) => void;
   onAsk: (text: string) => void;
 };
 
@@ -185,7 +183,7 @@ export default function AskEnnAnswerCard({
         <button
           type="button"
           className="ask-enn-answer-story"
-          onClick={() => onOpenLink(primaryLink.href)}
+          onClick={() => onOpenLink(primaryLink)}
         >
           <span className="ask-enn-answer-story-icon" aria-hidden="true">
             <DocIcon />
@@ -203,7 +201,7 @@ export default function AskEnnAnswerCard({
       {links && links.length > 1 ? (
         <div className="ask-enn-answer-more-links">
           {links.slice(1).map((link) => (
-            <button key={link.href} type="button" className="ask-enn-answer-more-link" onClick={() => onOpenLink(link.href)}>
+            <button key={link.href} type="button" className="ask-enn-answer-more-link" onClick={() => onOpenLink(link)}>
               {link.title}
             </button>
           ))}

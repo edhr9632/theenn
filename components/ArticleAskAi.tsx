@@ -6,6 +6,7 @@ type ArticleAskAiProps = {
   slug: string;
   articleTitle: string;
   suggestions: string[];
+  keywords?: string[];
   variant?: "page" | "panel";
   headingId?: string;
   autoFocus?: boolean;
@@ -22,6 +23,7 @@ export default function ArticleAskAi({
   slug,
   articleTitle,
   suggestions,
+  keywords = [],
   variant = "page",
   headingId = "article-ask-ai-heading",
   autoFocus = false,
@@ -141,7 +143,8 @@ export default function ArticleAskAi({
         {messages.length === 0 ? (
           <div className="article-ask-ai-empty-card">
             <p className="article-ask-ai-empty mb-0">
-              Type a question below, or tap a suggestion. Answers come from this article only.
+              Type a question below, or tap a suggestion. Answers come from this article only
+              {keywords.length ? `, with highlights and keywords such as ${keywords.slice(0, 4).join(", ")}.` : "."}
             </p>
           </div>
         ) : (

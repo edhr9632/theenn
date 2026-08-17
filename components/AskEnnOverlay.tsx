@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssistantLink } from "@/lib/ennAssistantBrain";
-import { getAskEnnTrendingPrompts } from "@/lib/askEnnSuggestions";
+import type { AskEnnTrendingPrompt } from "@/lib/askEnnSuggestions";
 import {
   ASK_ENN_OPEN_EVENT,
   consumeAskEnnPendingOpen,
@@ -84,11 +84,10 @@ export default function AskEnnOverlay() {
   const hiddenOnRoute =
     pathname?.startsWith("/admin") || Boolean(pathname?.match(/^\/weekly-news\/[^/]+$/));
 
-  const trending = getAskEnnTrendingPrompts(6);
+  const [trending, setTrending] = useState<AskEnnTrendingPrompt[]>([]);
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fullPageHref, setFullPageHref] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -97,7 +96,6 @@ export default function AskEnnOverlay() {
   const resetSession = useCallback(() => {
     setInput("");
     setLoading(false);
-    setFullPageHref(null);
     setMessages([]);
     pendingQuery.current = null;
   }, []);
@@ -115,7 +113,8 @@ export default function AskEnnOverlay() {
     async (raw: string) => {
       const text = raw.trim();
       if (!text || loading) return;
-      if (countWords(text) > WORD_LIMIT) return;
+      const isSummaryAsk = /^what should i know about:/i.test(text);
+      if (!isSummaryAsk && countWords(text) > WORD_LIMIT) return;
 
       setInput("");
       setLoading(true);
@@ -177,6 +176,40 @@ export default function AskEnnOverlay() {
     [loading, pathname],
   );
 
+  const openAssistantLink = useCallback(
+    (link: AssistantLink) => {
+      const newsMatch = link.href.match(/^\/news\/([^/?#]+)/);
+      if (newsMatch) {
+        if (/^Read full story:/i.test(link.title)) {
+          window.open(link.href, "_blank", "noopener,noreferrer");
+          return;
+        }
+        const title = link.title.replace(/^Read full story:\s*/i, "").trim();
+        void sendMessage(`What should I know about: ${title}`);
+        return;
+      }
+      if (link.href === "/news" || link.href === "/trending-news") {
+        void sendMessage(link.href === "/trending-news" ? "Trending news" : "Daily news");
+        return;
+      }
+      window.open(link.href, "_blank", "noopener,noreferrer");
+    },
+    [sendMessage],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/ask-enn/prompts")
+      .then((response) => response.json())
+      .then((data: { prompts?: AskEnnTrendingPrompt[] }) => {
+        if (!cancelled && Array.isArray(data.prompts)) setTrending(data.prompts);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const applyOpen = (detail?: AskEnnOpenDetail | null) => {
       resetSession();
@@ -221,14 +254,11 @@ export default function AskEnnOverlay() {
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (fullPageHref) setFullPageHref(null);
-        else close();
-      }
+      if (event.key === "Escape") close();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, fullPageHref, close]);
+  }, [open, close]);
 
   useEffect(() => {
     if (!open) return;
@@ -379,7 +409,7 @@ export default function AskEnnOverlay() {
                     content={message.content}
                     links={message.links}
                     suggestions={message.suggestions}
-                    onOpenLink={setFullPageHref}
+                    onOpenLink={openAssistantLink}
                     onAsk={(text) => void sendMessage(text)}
                   />
                 ),
@@ -402,22 +432,6 @@ export default function AskEnnOverlay() {
         )}
       </div>
 
-      {fullPageHref ? (
-        <div className="ask-enn-story-viewer" role="dialog" aria-modal="true" aria-label="Full story">
-          <div className="ask-enn-story-viewer-head">
-            <div className="ask-enn-story-viewer-label">Full story</div>
-            <button
-              type="button"
-              className="ask-enn-story-viewer-close"
-              onClick={() => setFullPageHref(null)}
-              aria-label="Close full story"
-            >
-              ✕
-            </button>
-          </div>
-          <iframe className="ask-enn-story-viewer-frame" src={fullPageHref} title="Full story" />
-        </div>
-      ) : null}
       </div>
     </div>
   ) : null;

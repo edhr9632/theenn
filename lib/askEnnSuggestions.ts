@@ -1,16 +1,12 @@
-import { getTopEducationNews } from "@/lib/educationVoiceBrief";
+import type { VoiceBriefStory } from "@/lib/educationVoiceBrief";
 
 export type AskEnnTrendingPrompt = {
   label: string;
   query: string;
 };
 
-/** Short trending chips for the Ask ENN full-page overlay — from live education news only. */
-export function getAskEnnTrendingPrompts(limit = 5): AskEnnTrendingPrompt[] {
-  const education = getTopEducationNews(limit);
-  if (!education.length) return [];
-
-  return education.map((story) => {
+export function promptsFromStories(stories: VoiceBriefStory[], limit = 5): AskEnnTrendingPrompt[] {
+  return stories.slice(0, limit).map((story) => {
     const title = story.title.replace(/\?$/, "").trim();
     const query = `What should I know about: ${title}`;
     let label = title;
@@ -29,18 +25,24 @@ export function getAskEnnTrendingPrompts(limit = 5): AskEnnTrendingPrompt[] {
   });
 }
 
-/** Suggested prompts derived from live site news for the askENN bar. */
-export function getAskEnnSuggestions(limit = 3): string[] {
-  return getAskEnnTrendingPrompts(limit).map((item) => item.query);
-}
-
-/** Crawlable FAQ pairs for Google (askENN landing SEO). */
-export function getAskEnnFaqItems(limit = 6) {
-  const stories = getTopEducationNews(limit);
-  return stories.map((story) => ({
+export function faqItemsFromStories(stories: VoiceBriefStory[], limit = 6) {
+  return stories.slice(0, limit).map((story) => ({
     question: `What should I know about: ${story.title}`,
     answer: story.excerpt,
     href: story.href,
     title: story.title,
   }));
+}
+
+/** Client fallback when the prompts API has not loaded yet. */
+export function getAskEnnTrendingPrompts(_limit = 5): AskEnnTrendingPrompt[] {
+  return [];
+}
+
+export function getAskEnnSuggestions(limit = 3): string[] {
+  return getAskEnnTrendingPrompts(limit).map((item) => item.query);
+}
+
+export function getAskEnnFaqItems(limit = 6) {
+  return faqItemsFromStories([], limit);
 }

@@ -7,9 +7,10 @@ type ArticleAskAiFloatProps = {
   slug: string;
   articleTitle: string;
   suggestions: string[];
+  keywords?: string[];
 };
 
-export default function ArticleAskAiFloat({ slug, articleTitle, suggestions }: ArticleAskAiFloatProps) {
+export default function ArticleAskAiFloat({ slug, articleTitle, suggestions, keywords = [] }: ArticleAskAiFloatProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function ArticleAskAiFloat({ slug, articleTitle, suggestions }: A
         <div className="article-ask-float-panel-top">
           <div>
             <p className="article-ask-float-panel-label mb-0">Ask AI</p>
-            <p className="article-ask-float-panel-sub mb-0">Questions about this article</p>
+            <p className="article-ask-float-panel-sub mb-0">Answers use this blog’s content, highlights, and keywords</p>
           </div>
           <button
             type="button"
@@ -75,6 +76,7 @@ export default function ArticleAskAiFloat({ slug, articleTitle, suggestions }: A
               slug={slug}
               articleTitle={articleTitle}
               suggestions={suggestions}
+              keywords={keywords}
               variant="panel"
               headingId="article-ask-float-heading"
               autoFocus

@@ -56,13 +56,18 @@ export async function getHomePageData(): Promise<HomePageData> {
       ]);
 
     const latest = daily.slice(0, 4);
-    const mostRead = trending.length ? trending : daily.slice(0, 6);
+    const trendingShown = trending.length
+      ? trending
+      : [...daily, ...topEducation]
+          .filter((article, index, list) => list.findIndex((item) => item.slug === article.slug) === index)
+          .slice(0, 6);
+    const mostRead = trendingShown.length ? trendingShown : daily.slice(0, 6);
 
     return {
       dbConnected: true,
       topEducation,
       daily,
-      trending,
+      trending: trendingShown,
       latest,
       mostRead,
       tvSchedule,

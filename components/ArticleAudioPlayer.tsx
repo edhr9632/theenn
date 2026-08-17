@@ -6,21 +6,22 @@ import EnnMediaPlayer from "@/components/EnnMediaPlayer";
 
 type ArticleAudioPlayerProps = {
   article: Pick<NewsArticle, "title" | "excerpt" | "author" | "date" | "category" | "readTime" | "slug">;
+  content?: string;
 };
 
-export default function ArticleAudioPlayer({ article }: ArticleAudioPlayerProps) {
-  const script = buildArticleNewsScript(article as NewsArticle);
+export default function ArticleAudioPlayer({ article, content = "" }: ArticleAudioPlayerProps) {
+  const script = buildArticleNewsScript(article as NewsArticle, content);
   const listenTime = estimateListenMinutes(script);
 
   return (
     <EnnMediaPlayer
       title={article.title}
       showLabel={`ENN News · ${article.category}`}
-      description={article.excerpt}
+      description={article.excerpt || "Listen to the full article."}
       durationLabel={listenTime}
       script={script}
       downloadUrl={`/api/article-audio/${encodeURIComponent(article.slug)}`}
-      downloadFileName={`enn-${article.slug}-news-briefing.mp3`}
+      downloadFileName={`enn-${article.slug}-full-article.mp3`}
       brandTitle="ENN"
       brandSubtitle="NEWS"
     />

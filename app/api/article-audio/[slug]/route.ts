@@ -12,7 +12,7 @@ type RouteContext = {
 async function resolveArticleForAudio(slug: string) {
   try {
     const fromDb = await getPublishedNewsDetail(slug);
-    if (fromDb) return fromDb.article;
+    if (fromDb) return fromDb;
   } catch {
     /* database unavailable */
   }
@@ -21,16 +21,16 @@ async function resolveArticleForAudio(slug: string) {
 
 export async function GET(_request: Request, context: RouteContext) {
   const { slug } = await context.params;
-  const article = await resolveArticleForAudio(slug);
+  const resolved = await resolveArticleForAudio(slug);
 
-  if (!article) {
+  if (!resolved) {
     return Response.json({ error: "Article not found" }, { status: 404 });
   }
 
   try {
-    const script = buildArticleNewsScript(article);
+    const script = buildArticleNewsScript(resolved.article, resolved.content);
     const mp3 = await synthesizeMp3FromText(script);
-    const filename = `enn-${safeAudioFileName(article.slug)}-news-briefing.mp3`;
+    const filename = `enn-${safeAudioFileName(resolved.article.slug)}-full-article.mp3`;
 
     return new Response(toArrayBuffer(mp3), {
       status: 200,
