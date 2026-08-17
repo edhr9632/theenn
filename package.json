@@ -11,6 +11,7 @@
     "db:migrate": "node scripts/db-migrate-node.js",
     "db:migrate:psql": "node scripts/db-migrate.js",
     "supabase:setup": "node scripts/supabase-setup.js",
+    "supabase:videos": "node scripts/apply-site-videos-migration.js",
     "db:migrate:patches": "node scripts/db-migrate-patches.js",
     "db:seed": "node scripts/db-seed.js"
   },
