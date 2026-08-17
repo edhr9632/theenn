@@ -1,6 +1,6 @@
 import "server-only";
 
-import { query, queryOne } from "@/lib/db";
+import { isDbConfigured, query, queryOne } from "@/lib/db";
 import {
   createVideoId,
   DEFAULT_SITE_VIDEOS,
@@ -102,10 +102,17 @@ async function loadItemRows(): Promise<VideoItemRow[]> {
 
 /** Public homepage read — returns config even when section is disabled (UI checks enabled). */
 export async function getVideosConfigFromDb(): Promise<SiteVideosConfig | null> {
-  const config = await loadConfigRow();
-  if (!config) return null;
-  const items = await loadItemRows();
-  return mapConfigRow(config, items);
+  if (!isDbConfigured()) return null;
+
+  try {
+    const config = await loadConfigRow();
+    if (!config) return null;
+    const items = await loadItemRows();
+    return mapConfigRow(config, items);
+  } catch (error) {
+    console.error("[getVideosConfigFromDb]", error);
+    return null;
+  }
 }
 
 export async function updateVideosConfig(input: SiteVideosConfigInput): Promise<SiteVideosConfig | null> {
