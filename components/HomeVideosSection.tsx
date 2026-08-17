@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_SITE_VIDEOS,
-  readSiteVideos,
+  HOME_VIDEOS_DISPLAY_MAX,
   resolveFeaturedVideo,
   youtubeThumb,
   type SiteVideoTab,
@@ -135,22 +135,7 @@ export default function HomeVideosSection({
   dbVideosConfig = null,
   dbPanels = [],
 }: HomeVideosSectionProps) {
-  const [config, setConfig] = useState<SiteVideosConfig>(dbVideosConfig ?? DEFAULT_SITE_VIDEOS);
-
-  useEffect(() => {
-    const local = readSiteVideos();
-    if (dbVideosConfig?.items?.length) {
-      setConfig(dbVideosConfig);
-      return;
-    }
-    if (local.items.length) {
-      setConfig(local);
-      return;
-    }
-    if (dbVideosConfig) {
-      setConfig(dbVideosConfig);
-    }
-  }, [dbVideosConfig]);
+  const config = dbVideosConfig ?? DEFAULT_SITE_VIDEOS;
 
   const tabs = useMemo(
     () => ALL_TABS.filter((tab) => Boolean(config[tab.flag])),
@@ -166,14 +151,19 @@ export default function HomeVideosSection({
     [config, dbPanels],
   );
 
-  const [activeTab, setActiveTab] = useState<VideoTabId>("education");
+  const firstTabWithContent = useMemo(
+    () => tabs.find((tab) => (catalogs[tab.id]?.length ?? 0) > 0)?.id ?? tabs[0]?.id ?? "education",
+    [tabs, catalogs],
+  );
+
+  const [activeTab, setActiveTab] = useState<VideoTabId>(firstTabWithContent);
   const [activeId, setActiveId] = useState("");
 
   useEffect(() => {
     if (!tabs.some((tab) => tab.id === activeTab)) {
-      setActiveTab(tabs[0]?.id ?? "education");
+      setActiveTab(firstTabWithContent);
     }
-  }, [tabs, activeTab]);
+  }, [tabs, activeTab, firstTabWithContent]);
 
   const list = catalogs[activeTab] ?? [];
 
@@ -184,10 +174,11 @@ export default function HomeVideosSection({
   }, [activeTab, list, activeId]);
 
   const featured = list.find((item) => item.id === activeId) ?? list[0];
-  const mustWatch = list.filter((item) => item.id !== featured?.id).slice(0, 5);
+  const mustWatch = list.filter((item) => item.id !== featured?.id).slice(0, HOME_VIDEOS_DISPLAY_MAX - 1);
   const channel = resolveFeaturedVideo(config);
+  const hasAnyContent = tabs.some((tab) => (catalogs[tab.id]?.length ?? 0) > 0);
 
-  if (!config.enabled || !tabs.length || !featured) {
+  if (!config.enabled || !tabs.length || !hasAnyContent || !featured) {
     return (
       <section className="home-videos-section" aria-labelledby="home-videos-heading">
         <div className="container py-4 py-lg-5">

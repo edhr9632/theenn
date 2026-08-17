@@ -4,22 +4,21 @@ import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   DEFAULT_SITE_VIDEOS,
-  readSiteVideos,
   resolveFeaturedVideo,
   type SiteVideosConfig,
 } from "@/lib/siteVideos";
 
 const SCROLL_SHOW_AT = 320;
 
-export default function FloatingNowPlaying() {
+type FloatingNowPlayingProps = {
+  initialConfig?: SiteVideosConfig | null;
+};
+
+export default function FloatingNowPlaying({ initialConfig = null }: FloatingNowPlayingProps) {
   const pathname = usePathname();
-  const [config, setConfig] = useState<SiteVideosConfig>(DEFAULT_SITE_VIDEOS);
+  const config = initialConfig ?? DEFAULT_SITE_VIDEOS;
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    setConfig(readSiteVideos());
-  }, []);
 
   const video = resolveFeaturedVideo(config);
 

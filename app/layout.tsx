@@ -6,7 +6,7 @@ import BootstrapClient from "@/components/BootstrapClient";
 import ConditionalSiteFooter from "@/components/ConditionalSiteFooter";
 import AskEnnOverlay from "@/components/AskEnnOverlay";
 import EnnAssistant from "@/components/EnnAssistant";
-import FloatingNowPlaying from "@/components/FloatingNowPlaying";
+import FloatingNowPlayingLoader from "@/components/FloatingNowPlayingLoader";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
 
 const roboto = Roboto({
@@ -77,7 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BootstrapClient />
         {children}
         <ConditionalSiteFooter />
-        <FloatingNowPlaying />
+        <FloatingNowPlayingLoader />
         <AskEnnOverlay />
         <EnnAssistant />
       </body>

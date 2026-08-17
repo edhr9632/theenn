@@ -7,6 +7,7 @@ import { getPanelDiscussionsFromDb } from "@/lib/panelsDb";
 import { getPromoBanner } from "@/lib/promoDb";
 import { getShortVideosFromDb } from "@/lib/shortsDb";
 import { getVideosConfigFromDb } from "@/lib/videosDb";
+import { HOME_SHORTS_DISPLAY_MAX, HOME_VIDEOS_DISPLAY_MAX } from "@/lib/siteVideos";
 import type { SiteVideosConfig } from "@/lib/siteVideos";
 import type { PanelDiscussionItem, PromoBanner } from "@/lib/homeTypes";
 
@@ -49,9 +50,9 @@ export async function getHomePageData(): Promise<HomePageData> {
         getNewsBySection("trending", 6),
         getPromoBanner("tv_schedule"),
         getPromoBanner("partner_msa"),
-        getPanelDiscussionsFromDb(4),
+        getPanelDiscussionsFromDb(HOME_VIDEOS_DISPLAY_MAX),
         getVideosConfigFromDb(),
-        getShortVideosFromDb(6),
+        getShortVideosFromDb(HOME_SHORTS_DISPLAY_MAX),
       ]);
 
     const latest = daily.slice(0, 4);

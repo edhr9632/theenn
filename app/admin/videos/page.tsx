@@ -1,9 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminBadge, AdminEmpty, AdminPageHeader, AdminTable } from "@/components/admin/AdminUi";
 import {
-  createVideoId,
   DEFAULT_SITE_VIDEOS,
   readSiteVideos,
   writeSiteVideos,
@@ -19,9 +18,16 @@ const TAB_LABELS: Record<SiteVideoTab, string> = {
   podcasts: "Podcasts",
 };
 
+async function fetchConfig(): Promise<SiteVideosConfig> {
+  const response = await fetch("/api/admin/videos");
+  const data = (await response.json()) as { config?: SiteVideosConfig };
+  return data.config ?? DEFAULT_SITE_VIDEOS;
+}
+
 export default function AdminVideosPage() {
   const [config, setConfig] = useState<SiteVideosConfig>(DEFAULT_SITE_VIDEOS);
   const [ready, setReady] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -31,20 +37,78 @@ export default function AdminVideosPage() {
   const [meta, setMeta] = useState("K-12");
   const [tab, setTab] = useState<SiteVideoTab>("education");
 
-  useEffect(() => {
-    setConfig(readSiteVideos());
-    setReady(true);
+  const flash = useCallback((text: string) => {
+    setMessage(text);
+    window.setTimeout(() => setMessage(""), 2800);
   }, []);
 
-  const persist = (next: SiteVideosConfig) => {
-    setConfig(next);
-    writeSiteVideos(next);
-  };
+  const loadConfig = useCallback(async () => {
+    const dbConfig = await fetchConfig();
+    setConfig(dbConfig);
+    return dbConfig;
+  }, []);
 
-  const flash = (text: string) => {
-    setMessage(text);
-    window.setTimeout(() => setMessage(""), 2200);
-  };
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      try {
+        let dbConfig = await fetchConfig();
+
+        const local = readSiteVideos();
+        const hasLocalItems = local.items.length > 0;
+        const dbEmpty = !dbConfig.items.length;
+
+        if (hasLocalItems && dbEmpty) {
+          await fetch("/api/admin/videos", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              enabled: local.enabled,
+              featuredTitle: local.featuredTitle,
+              youtubeUrl: local.youtubeUrl,
+              channelUrl: local.channelUrl,
+              channelLabel: local.channelLabel,
+              showEducation: local.showEducation,
+              showPanels: local.showPanels,
+              showPodcasts: local.showPodcasts,
+            }),
+          });
+
+          for (const item of local.items) {
+            await fetch("/api/admin/videos/items", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title: item.title,
+                tab: item.tab,
+                duration: item.duration,
+                imageUrl: item.image,
+                youtubeUrl: item.youtubeUrl,
+                meta: item.meta,
+              }),
+            });
+          }
+
+          writeSiteVideos({ ...DEFAULT_SITE_VIDEOS, items: [] });
+          dbConfig = await fetchConfig();
+          if (!cancelled) flash(`Migrated ${local.items.length} video(s) from this browser to the database.`);
+        }
+
+        if (!cancelled) {
+          setConfig(dbConfig);
+          setReady(true);
+        }
+      } catch {
+        if (!cancelled) setReady(true);
+      }
+    }
+
+    void init();
+    return () => {
+      cancelled = true;
+    };
+  }, [flash]);
 
   const resetItemForm = () => {
     setEditingId(null);
@@ -56,11 +120,11 @@ export default function AdminVideosPage() {
     setTab("education");
   };
 
-  const onSaveFeatured = (event: FormEvent<HTMLFormElement>) => {
+  const onSaveFeatured = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSaving(true);
     const form = new FormData(event.currentTarget);
-    const next: SiteVideosConfig = {
-      ...config,
+    const payload = {
       enabled: form.get("enabled") === "on",
       featuredTitle: String(form.get("featuredTitle") ?? "").trim() || DEFAULT_SITE_VIDEOS.featuredTitle,
       youtubeUrl: String(form.get("youtubeUrl") ?? "").trim() || DEFAULT_SITE_VIDEOS.youtubeUrl,
@@ -70,34 +134,66 @@ export default function AdminVideosPage() {
       showPanels: form.get("showPanels") === "on",
       showPodcasts: form.get("showPodcasts") === "on",
     };
-    persist(next);
-    flash("Videos settings saved");
+
+    try {
+      const response = await fetch("/api/admin/videos", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { config?: SiteVideosConfig; error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not save videos settings.");
+        return;
+      }
+      setConfig(data.config ?? { ...config, ...payload, items: config.items });
+      flash("Videos settings saved to database");
+    } catch {
+      window.alert("Could not save videos settings.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const onSubmitItem = (event: FormEvent) => {
+  const onSubmitItem = async (event: FormEvent) => {
     event.preventDefault();
     const cleanTitle = title.trim();
     const cleanUrl = youtubeUrl.trim();
     if (!cleanTitle || !cleanUrl) return;
 
-    const thumb = image.trim() || youtubeThumb(cleanUrl);
-    const item: SiteVideoItem = {
-      id: editingId ?? createVideoId(),
+    setSaving(true);
+    const payload = {
       title: cleanTitle,
+      tab,
       duration: duration.trim() || "Watch",
-      image: thumb,
+      imageUrl: image.trim() || youtubeThumb(cleanUrl),
       youtubeUrl: cleanUrl,
       meta: meta.trim() || "Video",
-      tab,
     };
 
-    const items = editingId
-      ? config.items.map((row) => (row.id === editingId ? item : row))
-      : [...config.items, item];
-
-    persist({ ...config, items });
-    flash(editingId ? "Video updated" : "Video added");
-    resetItemForm();
+    try {
+      const url = editingId
+        ? `/api/admin/videos/items/${encodeURIComponent(editingId)}`
+        : "/api/admin/videos/items";
+      const method = editingId ? "PUT" : "POST";
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not save video.");
+        return;
+      }
+      flash(editingId ? "Video updated" : "Video added");
+      resetItemForm();
+      await loadConfig();
+    } catch {
+      window.alert("Could not save video.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const startEdit = (item: SiteVideoItem) => {
@@ -110,10 +206,21 @@ export default function AdminVideosPage() {
     setTab(item.tab);
   };
 
-  const removeItem = (id: string) => {
-    persist({ ...config, items: config.items.filter((item) => item.id !== id) });
-    if (editingId === id) resetItemForm();
-    flash("Video removed");
+  const removeItem = async (id: string) => {
+    if (!window.confirm("Delete this video?")) return;
+    try {
+      const response = await fetch(`/api/admin/videos/items/${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not delete video.");
+        return;
+      }
+      if (editingId === id) resetItemForm();
+      flash("Video deleted");
+      await loadConfig();
+    } catch {
+      window.alert("Could not delete video.");
+    }
   };
 
   const itemsByTab = useMemo(() => config.items, [config.items]);
@@ -126,12 +233,12 @@ export default function AdminVideosPage() {
     <div className="admin-form-page admin-form-page--wide">
       <AdminPageHeader
         title="Videos"
-        description="Control the homepage Videos section, featured YouTube clip, channel links, and Must Watch list."
+        description="Control the homepage Videos section. All changes are saved to the database and visible to every admin and visitor."
       />
 
       {message ? <p className="admin-flash mb-3">{message}</p> : null}
 
-      <form className="admin-form-shell mb-4" onSubmit={onSaveFeatured}>
+      <form className="admin-form-shell mb-4" onSubmit={(e) => void onSaveFeatured(e)}>
         <section className="admin-form-card">
           <div className="admin-form-card-head">
             <div>
@@ -184,8 +291,8 @@ export default function AdminVideosPage() {
         </section>
 
         <div className="admin-form-footer-actions">
-          <button type="submit" className="btn admin-btn-primary">
-            Save videos settings
+          <button type="submit" className="btn admin-btn-primary" disabled={saving}>
+            {saving ? "Saving…" : "Save videos settings"}
           </button>
         </div>
       </form>
@@ -195,12 +302,12 @@ export default function AdminVideosPage() {
           <div>
             <h2 className="admin-form-card-title mb-1">{editingId ? "Edit video" : "Add video"}</h2>
             <p className="admin-form-card-sub mb-0">
-              Custom videos appear in the Videos section for the selected tab. Leave empty to use site news/panels/podcasts.
+              Custom videos appear in the Videos section for the selected tab. Up to 15 videos show on the homepage.
             </p>
           </div>
         </div>
 
-        <form className="admin-form-grid" onSubmit={onSubmitItem}>
+        <form className="admin-form-grid" onSubmit={(e) => void onSubmitItem(e)}>
           <label className="admin-field-label admin-field-span">
             Title
             <input className="admin-field" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -241,8 +348,8 @@ export default function AdminVideosPage() {
             />
           </label>
           <div className="admin-field-span d-flex gap-2">
-            <button type="submit" className="btn admin-btn-primary">
-              {editingId ? "Update video" : "Add video"}
+            <button type="submit" className="btn admin-btn-primary" disabled={saving}>
+              {saving ? "Saving…" : editingId ? "Update video" : "Add video"}
             </button>
             {editingId ? (
               <button type="button" className="btn admin-btn-ghost" onClick={resetItemForm}>
@@ -279,7 +386,11 @@ export default function AdminVideosPage() {
                     <button type="button" className="admin-link-btn" onClick={() => startEdit(item)}>
                       Edit
                     </button>
-                    <button type="button" className="admin-link-btn admin-link-btn--danger" onClick={() => removeItem(item.id)}>
+                    <button
+                      type="button"
+                      className="admin-link-btn admin-link-btn--danger"
+                      onClick={() => void removeItem(item.id)}
+                    >
                       Delete
                     </button>
                   </div>
@@ -288,7 +399,7 @@ export default function AdminVideosPage() {
             ))}
           </AdminTable>
         ) : (
-          <AdminEmpty message="No custom videos yet. The homepage will use built-in news, panels, and podcasts until you add some." />
+          <AdminEmpty message="No custom videos yet. Add videos above — they are stored in the database and shared with all admins." />
         )}
       </div>
     </div>
