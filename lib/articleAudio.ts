@@ -43,3 +43,45 @@ export function estimateListenMinutes(script: string) {
   const minutes = Math.max(1, Math.round(words / 150));
   return `${minutes} min listen`;
 }
+
+/** Chrome/Safari fail on long SpeechSynthesis utterances — keep chunks short. */
+export function splitSpeechChunks(text: string, maxLen = 160): string[] {
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (!cleaned) return [];
+
+  const pieces = cleaned.match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? [cleaned];
+  const chunks: string[] = [];
+  let buffer = "";
+
+  const pushWords = (value: string) => {
+    const words = value.split(" ");
+    let current = "";
+    for (const word of words) {
+      const next = current ? `${current} ${word}` : word;
+      if (next.length <= maxLen) {
+        current = next;
+      } else {
+        if (current) chunks.push(current);
+        current = word;
+      }
+    }
+    if (current) chunks.push(current);
+  };
+
+  for (const piece of pieces) {
+    const sentence = piece.trim();
+    if (!sentence) continue;
+    const combined = buffer ? `${buffer} ${sentence}` : sentence;
+    if (combined.length <= maxLen) {
+      buffer = combined;
+      continue;
+    }
+    if (buffer) chunks.push(buffer);
+    buffer = "";
+    if (sentence.length <= maxLen) buffer = sentence;
+    else pushWords(sentence);
+  }
+
+  if (buffer) chunks.push(buffer);
+  return chunks;
+}

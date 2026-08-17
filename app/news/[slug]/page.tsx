@@ -12,9 +12,9 @@ import {
   buildArticleFaqs,
   buildArticleSuggestedQuestions,
   extractArticleKeywords,
-  highlightArticleContent,
   toArticleAskContext,
 } from "@/lib/articleAskAi";
+import { splitSentences, stripHtml } from "@/lib/htmlText";
 import { listApprovedComments } from "@/lib/commentsDb";
 import { getNewsBySection, getPublishedNewsDetail } from "@/lib/newsDb";
 import { buildPageMetadata } from "@/lib/seo";
@@ -99,7 +99,9 @@ export default async function NewsArticlePage({ params }: Props) {
   const askSuggestions = buildArticleSuggestedQuestions(askCtx);
   const faqs = buildArticleFaqs(askCtx);
   const keywords = extractArticleKeywords(askCtx, 6);
-  const highlightedContent = highlightArticleContent(content, keywords);
+  const listenHighlights = [...new Set([article.excerpt, ...splitSentences(stripHtml(content)).slice(0, 3)])]
+    .filter((item) => item.trim().length > 20)
+    .slice(0, 4);
 
   return (
     <>
@@ -137,7 +139,12 @@ export default async function NewsArticlePage({ params }: Props) {
                   <span>{article.readTime}</span>
                 </div>
 
-                <ArticleAudioPlayer article={article} content={content} />
+                <ArticleAudioPlayer
+                  article={article}
+                  content={content}
+                  keywords={keywords}
+                  highlights={listenHighlights}
+                />
 
                 <ArticleHeroMedia
                   featuredVideo={featuredVideo}
@@ -145,21 +152,12 @@ export default async function NewsArticlePage({ params }: Props) {
                   imageAlt={imageAlt}
                 />
 
-                {keywords.length ? (
-                  <div className="article-keyword-row" aria-label="Article keywords">
-                    {keywords.map((keyword) => (
-                      <span key={keyword} className="article-keyword-chip">
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
                 {article.excerpt ? (
                   <div className="article-lede-block mb-4">
                     <p className="article-lede mb-0">{article.excerpt}</p>
                   </div>
                 ) : null}
-                <ArticleBody content={highlightedContent} />
+                <ArticleBody content={content} />
               </article>
             </div>
             <ArticleSidebar related={related} />

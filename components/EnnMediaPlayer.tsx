@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { splitSpeechChunks } from "@/lib/articleAudio";
 
 const DEFAULT_SPOTIFY_URL =
   process.env.NEXT_PUBLIC_SPOTIFY_SHOW_URL?.trim() ||
@@ -22,6 +23,8 @@ export type EnnMediaPlayerProps = {
   subscribeUrl?: string;
   brandTitle?: string;
   brandSubtitle?: string;
+  keywords?: string[];
+  highlights?: string[];
 };
 
 function PlayIcon() {
@@ -168,6 +171,8 @@ export default function EnnMediaPlayer({
   spotifyUrl = DEFAULT_SPOTIFY_URL,
   shareUrl,
   subscribeUrl = "/subscribe",
+  keywords = [],
+  highlights = [],
 }: EnnMediaPlayerProps) {
   const [state, setState] = useState<VoiceState>("idle");
   const [supported, setSupported] = useState(true);
@@ -176,12 +181,17 @@ export default function EnnMediaPlayer({
   const [showDescription, setShowDescription] = useState(false);
   const [shareNote, setShareNote] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [liveLine, setLiveLine] = useState(description);
+  const chunksRef = useRef<string[]>([]);
+  const chunkIndexRef = useRef(0);
+  const playTokenRef = useRef(0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const startedAtRef = useRef(0);
   const durationRef = useRef(0);
   const pausedElapsedRef = useRef(0);
   const tickRef = useRef<number | null>(null);
-  const voicesReadyRef = useRef(false);
+
+  const chunks = useMemo(() => splitSpeechChunks(script), [script]);
 
   const estimatedSeconds = useMemo(() => {
     const wordCount = script.trim().split(/\s+/).filter(Boolean).length;
@@ -195,17 +205,6 @@ export default function EnnMediaPlayer({
     }
   }, []);
 
-  const stop = useCallback(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    utteranceRef.current = null;
-    clearTick();
-    pausedElapsedRef.current = 0;
-    setProgress(0);
-    setElapsed(0);
-    setState("idle");
-  }, [clearTick]);
-
   const startTick = useCallback(() => {
     clearTick();
     tickRef.current = window.setInterval(() => {
@@ -216,119 +215,144 @@ export default function EnnMediaPlayer({
     }, 180);
   }, [clearTick]);
 
-  const speakNow = useCallback(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) {
+  const finishPlayback = useCallback(() => {
+    utteranceRef.current = null;
+    clearTick();
+    setProgress(100);
+    setElapsed(durationRef.current);
+    setState("idle");
+    window.setTimeout(() => {
+      setProgress(0);
+      setElapsed(0);
+      setLiveLine(description);
+    }, 1200);
+  }, [clearTick, description]);
+
+  const speakChunk = useCallback(
+    (index: number, token: number) => {
+      if (typeof window === "undefined" || !window.speechSynthesis) {
+        setSupported(false);
+        return;
+      }
+      if (token !== playTokenRef.current) return;
+
+      const queue = chunksRef.current;
+      if (index >= queue.length) {
+        finishPlayback();
+        return;
+      }
+
+      chunkIndexRef.current = index;
+      const line = queue[index];
+      setLiveLine(line);
+
+      const utterance = new SpeechSynthesisUtterance(line);
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      const preferred = pickVoice(window.speechSynthesis.getVoices());
+      if (preferred) utterance.voice = preferred;
+
+      utterance.onend = () => {
+        if (token !== playTokenRef.current) return;
+        speakChunk(index + 1, token);
+      };
+      utterance.onerror = (event) => {
+        if (token !== playTokenRef.current) return;
+        if (event.error === "interrupted" || event.error === "canceled") return;
+        speakChunk(index + 1, token);
+      };
+
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    },
+    [finishPlayback],
+  );
+
+  const stop = useCallback(() => {
+    playTokenRef.current += 1;
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    utteranceRef.current = null;
+    chunkIndexRef.current = 0;
+    clearTick();
+    pausedElapsedRef.current = 0;
+    setProgress(0);
+    setElapsed(0);
+    setLiveLine(description);
+    setState("idle");
+  }, [clearTick, description]);
+
+  const play = useCallback(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setSupported(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(script);
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    utterance.volume = 1;
+    const queue = chunks.length ? chunks : splitSpeechChunks(script);
+    if (!queue.length) return;
 
-    const preferred = pickVoice(window.speechSynthesis.getVoices());
-    if (preferred) utterance.voice = preferred;
+    playTokenRef.current += 1;
+    const token = playTokenRef.current;
+    chunksRef.current = queue;
+    chunkIndexRef.current = 0;
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
 
     durationRef.current = estimatedSeconds;
     pausedElapsedRef.current = 0;
     startedAtRef.current = Date.now();
+    setState("speaking");
+    setLiveLine(queue[0]);
+    startTick();
+    speakChunk(0, token);
+  }, [chunks, estimatedSeconds, script, speakChunk, startTick]);
 
-    utterance.onstart = () => {
-      setState("speaking");
-      startTick();
-    };
-    utterance.onend = () => {
-      utteranceRef.current = null;
-      clearTick();
-      setProgress(100);
-      setElapsed(durationRef.current);
-      setState("idle");
-      window.setTimeout(() => {
-        setProgress(0);
-        setElapsed(0);
-      }, 1800);
-    };
-    utterance.onerror = () => {
-      utteranceRef.current = null;
-      clearTick();
-      setState("idle");
-      setProgress(0);
-      setElapsed(0);
-    };
+  const pause = useCallback(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (state !== "speaking") return;
+    pausedElapsedRef.current += (Date.now() - startedAtRef.current) / 1000;
+    playTokenRef.current += 1;
+    window.speechSynthesis.cancel();
+    clearTick();
+    setState("paused");
+  }, [clearTick, state]);
 
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-    window.setTimeout(() => {
-      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-    }, 40);
-  }, [script, estimatedSeconds, startTick, clearTick]);
-
-  const play = useCallback(() => {
+  const resume = useCallback(() => {
+    if (state !== "paused") {
+      play();
+      return;
+    }
     if (typeof window === "undefined" || !window.speechSynthesis) {
       setSupported(false);
       return;
     }
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices.length && !voicesReadyRef.current) {
-      const onVoices = () => {
-        voicesReadyRef.current = true;
-        window.speechSynthesis.removeEventListener("voiceschanged", onVoices);
-        speakNow();
-      };
-      window.speechSynthesis.addEventListener("voiceschanged", onVoices);
-      window.setTimeout(() => {
-        window.speechSynthesis.removeEventListener("voiceschanged", onVoices);
-        speakNow();
-      }, 350);
-      return;
-    }
-    speakNow();
-  }, [speakNow]);
 
-  const pause = useCallback(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      pausedElapsedRef.current += (Date.now() - startedAtRef.current) / 1000;
-      window.speechSynthesis.pause();
-      clearTick();
-      setState("paused");
-    }
-  }, [clearTick]);
-
-  const resume = useCallback(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    if (window.speechSynthesis.paused) {
-      startedAtRef.current = Date.now();
-      window.speechSynthesis.resume();
-      startTick();
-      setState("speaking");
-    } else {
-      play();
-    }
-  }, [startTick, play]);
+    playTokenRef.current += 1;
+    const token = playTokenRef.current;
+    startedAtRef.current = Date.now();
+    setState("speaking");
+    startTick();
+    speakChunk(chunkIndexRef.current, token);
+  }, [play, speakChunk, startTick, state]);
 
   useEffect(() => {
     const ok = typeof window !== "undefined" && "speechSynthesis" in window;
     setSupported(ok);
     if (!ok) return;
-    const warmVoices = () => {
-      if (window.speechSynthesis.getVoices().length) voicesReadyRef.current = true;
-    };
-    warmVoices();
-    window.speechSynthesis.addEventListener("voiceschanged", warmVoices);
+    window.speechSynthesis.getVoices();
     return () => {
-      window.speechSynthesis.removeEventListener("voiceschanged", warmVoices);
+      playTokenRef.current += 1;
       window.speechSynthesis.cancel();
       clearTick();
     };
   }, [clearTick]);
 
   useEffect(() => {
-    stop();
     setShowDescription(false);
-  }, [script, title, stop]);
+  }, [script, title]);
 
   const onPrimary = () => {
     if (!supported) return;
@@ -396,6 +420,16 @@ export default function EnnMediaPlayer({
           <h2 className="enn-media-desc-heading">Description</h2>
           <div className="enn-media-desc-scroll">
             <p className="enn-media-desc-text">{description}</p>
+            {highlights.length ? (
+              <ul className="enn-media-highlights list-unstyled mb-0">
+                {highlights.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
+            {keywords.length ? (
+              <p className="enn-media-desc-meta">Keywords · {keywords.join(", ")}</p>
+            ) : null}
             {durationLabel ? <p className="enn-media-desc-meta">Duration · {durationLabel}</p> : null}
           </div>
         </div>
@@ -426,10 +460,30 @@ export default function EnnMediaPlayer({
             <p className="enn-media-show mb-0">{showLabel}</p>
             <h2 className="enn-media-title mb-0">{title}</h2>
             <LiveScriptText
-              text={description}
-              progress={progress}
+              text={liveLine || description}
+              progress={state === "speaking" ? 100 : progress}
               active={state === "speaking" || state === "paused" || progress > 0}
             />
+            {keywords.length || highlights.length ? (
+              <div className="enn-media-listen-extras">
+                {keywords.length ? (
+                  <div className="enn-media-keywords" aria-label="Keywords">
+                    {keywords.map((keyword) => (
+                      <span key={keyword} className="enn-media-keyword">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {highlights.length ? (
+                  <ul className="enn-media-highlights list-unstyled mb-0">
+                    {highlights.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <time className="enn-media-clock" dateTime={formatClock(elapsed)}>
