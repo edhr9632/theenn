@@ -5,6 +5,35 @@ import { Pool, type QueryResultRow } from "pg";
 let pool: Pool | null = null;
 let poolUrl: string | null = null;
 
+const DATABASE_ENV_KEYS = [
+  "DATABASE_URL",
+  "POSTGRES_URL",
+  "POSTGRES_PRISMA_URL",
+  "SUPABASE_DATABASE_URL",
+  "DIRECT_URL",
+] as const;
+
+function stripEnvQuotes(value: string) {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
+export function readDatabaseUrl(): { url: string; envKey: string } | null {
+  for (const key of DATABASE_ENV_KEYS) {
+    const raw = process.env[key];
+    if (!raw?.trim()) continue;
+    const url = stripEnvQuotes(raw);
+    if (url) return { url, envKey: key };
+  }
+  return null;
+}
+
 function buildPoolConfig(rawUrl: string) {
   let connectionString = rawUrl;
   let hostname = "";
@@ -43,8 +72,9 @@ function buildPoolConfig(rawUrl: string) {
 }
 
 export function getPool(): Pool | null {
-  const url = process.env.DATABASE_URL?.trim();
-  if (!url) return null;
+  const resolved = readDatabaseUrl();
+  if (!resolved) return null;
+  const url = resolved.url;
 
   if (!pool || poolUrl !== url) {
     if (pool) {
@@ -83,5 +113,5 @@ export async function queryOne<T extends QueryResultRow = QueryResultRow>(
 }
 
 export function isDbConfigured() {
-  return Boolean(process.env.DATABASE_URL?.trim());
+  return Boolean(readDatabaseUrl());
 }

@@ -106,9 +106,22 @@ export async function getVideosConfigFromDb(): Promise<SiteVideosConfig | null> 
 
   try {
     const config = await loadConfigRow();
-    if (!config) return null;
     const items = await loadItemRows();
-    return mapConfigRow(config, items);
+    const mapped = mapConfigRow(
+      config ?? {
+        enabled: true,
+        featured_title: null,
+        youtube_url: null,
+        channel_url: null,
+        channel_label: null,
+        show_education: true,
+        show_panels: true,
+        show_podcasts: true,
+      },
+      items,
+    );
+    if (items.length) mapped.enabled = true;
+    return mapped;
   } catch (error) {
     console.error("[getVideosConfigFromDb]", error);
     return null;

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { isDbConfigured, query } from "@/lib/db";
+import { isDbConfigured, query, readDatabaseUrl } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 /** Quick check that the live server can reach Postgres (Supabase). */
 export async function GET() {
-  if (!isDbConfigured()) {
+  if (!isDbConfigured() || !readDatabaseUrl()) {
     return NextResponse.json(
       {
         ok: false,

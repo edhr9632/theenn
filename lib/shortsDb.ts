@@ -48,11 +48,10 @@ export async function listShortVideosAdmin(): Promise<ShortVideo[]> {
   return rows.map(mapRow);
 }
 
-export async function getShortVideosFromDb(limit = 6): Promise<ShortVideo[]> {
+export async function getShortVideosFromDb(limit = 50): Promise<ShortVideo[]> {
   const rows = await query<ShortVideoRow>(
     `SELECT ${SELECT_FIELDS}
      FROM short_videos
-     WHERE enabled = TRUE
      ORDER BY sort_order ASC, created_at DESC
      LIMIT $1`,
     [Math.max(1, limit)],

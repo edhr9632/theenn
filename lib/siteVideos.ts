@@ -24,9 +24,9 @@ export type SiteVideosConfig = {
 
 export const SITE_VIDEOS_STORAGE_KEY = "enn_admin_site_videos";
 
-/** Max videos shown per homepage section (featured + must-watch list). */
-export const HOME_VIDEOS_DISPLAY_MAX = 15;
-export const HOME_SHORTS_DISPLAY_MAX = 15;
+/** Max videos shown per homepage section. */
+export const HOME_VIDEOS_DISPLAY_MAX = 50;
+export const HOME_SHORTS_DISPLAY_MAX = 50;
 
 export const DEFAULT_SITE_VIDEOS: SiteVideosConfig = {
   enabled: true,
