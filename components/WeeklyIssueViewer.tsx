@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { readWeeklyIssues, type AdminWeeklyIssue } from "@/lib/weeklyAdmin";
+import type { AdminWeeklyIssue } from "@/lib/weeklyTypes";
 import { downloadWeeklyPdf, getWeeklyDownloadName } from "@/lib/weeklyIssueUtils";
 
 type WeeklyIssueViewerProps = {
@@ -15,10 +15,24 @@ export default function WeeklyIssueViewer({ slug }: WeeklyIssueViewerProps) {
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    const loaded = readWeeklyIssues();
-    const found = loaded.find((item) => item.slug === slug) ?? null;
-    setIssue(found);
-    setReady(true);
+    let cancelled = false;
+    void fetch(`/api/weekly?slug=${encodeURIComponent(slug)}`)
+      .then((response) => response.json())
+      .then((data: { issue?: AdminWeeklyIssue | null }) => {
+        if (!cancelled) {
+          setIssue(data.issue ?? null);
+          setReady(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIssue(null);
+          setReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   useEffect(() => {

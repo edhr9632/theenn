@@ -123,7 +123,7 @@ export async function getVideosConfigFromDb(): Promise<SiteVideosConfig | null> 
     if (items.length) mapped.enabled = true;
     return mapped;
   } catch (error) {
-    console.error("[getVideosConfigFromDb]", error);
+    console.warn("[getVideosConfigFromDb]", error instanceof Error ? error.message : error);
     return null;
   }
 }

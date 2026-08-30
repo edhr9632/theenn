@@ -34,6 +34,10 @@ export function readDatabaseUrl(): { url: string; envKey: string } | null {
   return null;
 }
 
+function isLocalHost(hostname: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
 function buildPoolConfig(rawUrl: string) {
   let connectionString = rawUrl;
   let hostname = "";
@@ -54,21 +58,34 @@ function buildPoolConfig(rawUrl: string) {
     /* use raw url */
   }
 
+  const local = isLocalHost(hostname);
   const useSsl =
-    hostname.includes("supabase.com") ||
-    hostname.includes("pooler.supabase.com") ||
-    hostname.endsWith(".supabase.co") ||
-    rawUrl.includes("sslmode=require");
+    !local &&
+    (hostname.includes("supabase.com") ||
+      hostname.includes("pooler.supabase.com") ||
+      hostname.endsWith(".supabase.co") ||
+      rawUrl.includes("sslmode=require"));
+
+  // Local Next.js can issue many parallel page queries; Vercel serverless stays tiny.
+  const onVercel = Boolean(process.env.VERCEL);
+  const max = onVercel ? 1 : 5;
 
   return {
     connectionString,
-    // Serverless (Vercel): keep pool tiny; avoid leaked connections.
-    max: 1,
-    idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 15_000,
+    max,
+    idleTimeoutMillis: onVercel ? 10_000 : 30_000,
+    connectionTimeoutMillis: onVercel ? 15_000 : 30_000,
     allowExitOnIdle: true,
     ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
   };
+}
+
+function destroyPool() {
+  if (!pool) return;
+  const ending = pool;
+  pool = null;
+  poolUrl = null;
+  void ending.end().catch(() => undefined);
 }
 
 export function getPool(): Pool | null {
@@ -77,17 +94,32 @@ export function getPool(): Pool | null {
   const url = resolved.url;
 
   if (!pool || poolUrl !== url) {
-    if (pool) {
-      void pool.end().catch(() => undefined);
-    }
+    destroyPool();
     poolUrl = url;
     pool = new Pool(buildPoolConfig(url));
     pool.on("error", (err) => {
-      console.error("[pg pool]", err);
+      console.error("[pg pool]", err.message);
+      destroyPool();
     });
   }
 
   return pool;
+}
+
+function isConnectionError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const err = error as { message?: string; code?: string };
+  const message = (err.message || "").toLowerCase();
+  return (
+    err.code === "ETIMEDOUT" ||
+    err.code === "ECONNRESET" ||
+    err.code === "ECONNREFUSED" ||
+    err.code === "57P01" ||
+    message.includes("timeout exceeded when trying to connect") ||
+    message.includes("connection terminated") ||
+    message.includes("cannot connect") ||
+    message.includes("server closed the connection")
+  );
 }
 
 export async function query<T extends QueryResultRow = QueryResultRow>(
@@ -97,11 +129,24 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   const db = getPool();
   if (!db) {
     throw new Error(
-      "DATABASE_URL is not set. Add Supabase Postgres URI in Vercel → Settings → Environment Variables (Production), then Redeploy.",
+      "DATABASE_URL is not set. Add Supabase Postgres URI in .env.local (local) or Vercel → Settings → Environment Variables (Production), then Redeploy.",
     );
   }
-  const result = await db.query<T>(text, params);
-  return result.rows;
+
+  try {
+    const result = await db.query<T>(text, params);
+    return result.rows;
+  } catch (error) {
+    if (!isConnectionError(error)) throw error;
+
+    // Stale / timed-out pool: rebuild once and retry.
+    console.warn("[pg] connection issue — recreating pool and retrying once");
+    destroyPool();
+    const retryPool = getPool();
+    if (!retryPool) throw error;
+    const result = await retryPool.query<T>(text, params);
+    return result.rows;
+  }
 }
 
 export async function queryOne<T extends QueryResultRow = QueryResultRow>(

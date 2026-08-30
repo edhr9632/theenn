@@ -21,7 +21,7 @@ export type SiteAdsConfig = {
 
 export const SITE_ADS_STORAGE_KEY = "enn_admin_site_ads";
 export const SITE_ADS_VERSION_KEY = "enn_admin_site_ads_version";
-export const SITE_ADS_VERSION = "v10-et-msa-edhr-banners";
+export const SITE_ADS_VERSION = "v17-no-onam-banner";
 
 /** Seconds between slides in the header carousel */
 export const ADS_AUTOPLAY_MS = 5000;

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_noStore as noStore } from "next/cache";
 import { mapNewsArticleRow } from "@/lib/mapNewsArticle";
 import { isDbConfigured, query, queryOne } from "@/lib/db";
 import type { NewsArticle } from "@/lib/data";
@@ -43,6 +44,7 @@ export async function listPublishedNewsKnowledge(limit = 80): Promise<KnowledgeA
 }
 
 export async function getNewsBySection(section: NewsSection, limit?: number): Promise<ReturnType<typeof mapNewsArticleRow>[]> {
+  noStore();
   const limitSql = limit ? `LIMIT ${Math.max(1, limit)}` : "";
   const rows = await query<NewsArticleRow>(
     `SELECT ${SELECT_FIELDS}
@@ -86,17 +88,15 @@ export async function getPublishedNewsDetail(slug: string): Promise<{
 }
 
 export async function listNewsAdmin(section?: NewsSection): Promise<NewsArticleRow[]> {
+  noStore();
+  const orderSql = `ORDER BY sort_order ASC, publish_date DESC NULLS LAST, id DESC`;
   if (section) {
     return query<NewsArticleRow>(
-      `SELECT ${SELECT_FIELDS} FROM news_articles WHERE section = $1
-       ORDER BY sort_order ASC, publish_date DESC NULLS LAST, created_at DESC`,
+      `SELECT ${SELECT_FIELDS} FROM news_articles WHERE section = $1 ${orderSql}`,
       [section],
     );
   }
-  return query<NewsArticleRow>(
-    `SELECT ${SELECT_FIELDS} FROM news_articles
-     ORDER BY section, sort_order ASC, publish_date DESC NULLS LAST, created_at DESC`,
-  );
+  return query<NewsArticleRow>(`SELECT ${SELECT_FIELDS} FROM news_articles ${orderSql}`);
 }
 
 export async function createNewsArticle(input: NewsArticleInput): Promise<NewsArticleRow | null> {
@@ -182,6 +182,10 @@ export async function updateNewsArticle(
 }
 
 export async function deleteNewsArticle(slug: string): Promise<boolean> {
-  const rows = await query<{ slug: string }>(`DELETE FROM news_articles WHERE slug = $1 RETURNING slug`, [slug]);
+  const decoded = decodeURIComponent(slug);
+  const rows = await query<{ slug: string }>(
+    `DELETE FROM news_articles WHERE slug = $1 OR slug = $2 RETURNING slug`,
+    [slug, decoded],
+  );
   return rows.length > 0;
 }

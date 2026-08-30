@@ -16,7 +16,7 @@ type MostReadBlockProps = {
   title?: string;
 };
 
-export default function MostReadBlock({ articles, title = "Related Blogs" }: MostReadBlockProps) {
+export default function MostReadBlock({ articles, title = "Recent Blogs" }: MostReadBlockProps) {
   return (
     <div className="most-read-block bg-white rounded-3 shadow-sm p-3 p-md-4">
       <h3 className="most-read-title serif-headline mb-0 pb-2">{title}</h3>

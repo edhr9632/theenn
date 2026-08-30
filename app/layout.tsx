@@ -7,6 +7,7 @@ import ConditionalSiteFooter from "@/components/ConditionalSiteFooter";
 import AskEnnOverlay from "@/components/AskEnnOverlay";
 import EnnAssistant from "@/components/EnnAssistant";
 import FloatingNowPlayingLoader from "@/components/FloatingNowPlayingLoader";
+import FestivalPopup from "@/components/FestivalPopup";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
 
 const roboto = Roboto({
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <ConditionalSiteFooter />
         <FloatingNowPlayingLoader />
+        <FestivalPopup />
         <AskEnnOverlay />
         <EnnAssistant />
       </body>

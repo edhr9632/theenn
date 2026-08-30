@@ -10,5 +10,5 @@ export type WeeklyIssue = {
   featured?: boolean;
 };
 
-/** Weekly editions are managed in admin/localStorage — no static seed issues. */
+/** Weekly editions are managed in Admin → News → Weekly News (Postgres database). */
 export const weeklyIssues: WeeklyIssue[] = [];

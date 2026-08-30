@@ -14,11 +14,9 @@ import {
   extractArticleKeywords,
   toArticleAskContext,
 } from "@/lib/articleAskAi";
-import { splitSentences, stripHtml } from "@/lib/htmlText";
 import { listApprovedComments } from "@/lib/commentsDb";
-import { getNewsBySection, getPublishedNewsDetail } from "@/lib/newsDb";
+import { getPublishedNewsDetail } from "@/lib/newsDb";
 import { buildPageMetadata } from "@/lib/seo";
-import type { NewsArticle } from "@/lib/data";
 import type { NewsSection } from "@/lib/newsTypes";
 
 export const dynamic = "force-dynamic";
@@ -80,14 +78,7 @@ export default async function NewsArticlePage({ params }: Props) {
   const { article, content, section, publishDateIso, featuredVideo, imageUrl, imageAlt } = resolved;
   const sectionNav = SECTION_NAV[section];
 
-  let related: NewsArticle[] = [];
   let comments: Awaited<ReturnType<typeof listApprovedComments>> = [];
-  try {
-    const sectionArticles = await getNewsBySection(section, 4);
-    related = sectionArticles.filter((item) => item.slug !== slug).slice(0, 3);
-  } catch {
-    /* related unavailable */
-  }
 
   try {
     comments = await listApprovedComments(slug);
@@ -99,9 +90,8 @@ export default async function NewsArticlePage({ params }: Props) {
   const askSuggestions = buildArticleSuggestedQuestions(askCtx);
   const faqs = buildArticleFaqs(askCtx);
   const keywords = extractArticleKeywords(askCtx, 6);
-  const listenHighlights = [...new Set([article.excerpt, ...splitSentences(stripHtml(content)).slice(0, 3)])]
-    .filter((item) => item.trim().length > 20)
-    .slice(0, 4);
+  // Hide “points”/highlights on the article page (we still speak/read the full article via the audio player).
+  const listenHighlights: string[] = [];
 
   return (
     <>
@@ -160,7 +150,7 @@ export default async function NewsArticlePage({ params }: Props) {
                 <ArticleBody content={content} />
               </article>
             </div>
-            <ArticleSidebar related={related} />
+            <ArticleSidebar />
           </div>
 
           <div className="article-engagement-full">

@@ -8,3 +8,6 @@ out
 *.log
 .vercel
 *.tsbuildinfo
+
+.vercel
+.env*

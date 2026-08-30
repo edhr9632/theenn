@@ -46,10 +46,20 @@ export function getTopEducationNews(limit = 5): VoiceBriefStory[] {
     }));
 }
 
-export function buildEducationVoiceScript(stories: VoiceBriefStory[] = []) {
+export function buildEducationVoiceScript(
+  stories: VoiceBriefStory[] = [],
+  options?: { listenIntro?: string },
+) {
+  const listenIntro = options?.listenIntro?.trim() || "";
+
   if (!stories.length) {
+    if (listenIntro) {
+      return `${listenIntro} There are no top education headlines available right now. Please check back later on Education News Network.`;
+    }
     return "There are no top education headlines available right now. Please check back later on Education News Network.";
   }
+
+  const wish = listenIntro ? `${listenIntro} ` : "";
 
   const intro =
     "Good day. This is your Education News Network daily education brief. Here are today's top education headlines.";
@@ -64,11 +74,11 @@ export function buildEducationVoiceScript(stories: VoiceBriefStory[] = []) {
   const outro =
     "That concludes today's top education news from Education News Network. Keep watching Education News Network for more updates. For enquiries, please visit our Contact Us page, or write to us through the enquiry form on Education News Network. Thank you for listening.";
 
-  return `${intro} ${body} ${outro}`;
+  return `${wish}${intro} ${body} ${outro}`;
 }
 
-export function getDailyBriefScript(stories: VoiceBriefStory[]) {
-  return buildEducationVoiceScript(stories);
+export function getDailyBriefScript(stories: VoiceBriefStory[], listenIntro = "") {
+  return buildEducationVoiceScript(stories, { listenIntro });
 }
 
 export function getDailyBriefTitle(stories: VoiceBriefStory[] = []) {

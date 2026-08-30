@@ -3,15 +3,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminFormLayout from "@/components/admin/AdminFormLayout";
+import { createWeeklyId, slugifyWeekly } from "@/lib/weeklyTypes";
+import type { AdminWeeklyIssue, WeeklyCity } from "@/lib/weeklyTypes";
 import {
-  createWeeklyId,
-  readWeeklyCities,
-  readWeeklyIssues,
-  slugifyWeekly,
-  writeWeeklyIssues,
-  type AdminWeeklyIssue,
-  type WeeklyCity,
-} from "@/lib/weeklyAdmin";
+  compressWeeklyCover,
+  isDataUrl,
+  isRemoteOrPublicPath,
+  uploadWeeklyAsset,
+} from "@/lib/weeklyUpload";
 
 type WeeklyFormProps = {
   mode: "new" | "edit";
@@ -19,6 +18,17 @@ type WeeklyFormProps = {
 };
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const HIGHLIGHT_TONES = ["red", "blue", "purple", "teal", "ink"] as const;
+
+async function fetchWeeklyData() {
+  const response = await fetch("/api/admin/weekly");
+  const data = (await response.json()) as {
+    weekly?: { cities: WeeklyCity[]; issues: AdminWeeklyIssue[] };
+    error?: string;
+  };
+  if (!response.ok) throw new Error(data.error ?? "Could not load weekly data.");
+  return data.weekly ?? { cities: [], issues: [] };
+}
 
 export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
   const router = useRouter();
@@ -36,50 +46,75 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
   const [weekday, setWeekday] = useState("Saturday");
   const [tagline, setTagline] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfName, setPdfName] = useState("");
   const [featured, setFeatured] = useState(false);
   const [highlights, setHighlights] = useState("Bengaluru 360°, Academia, Funorama");
   const [ready, setReady] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   useEffect(() => {
-    const loadedCities = readWeeklyCities();
-    setCities(loadedCities);
+    let cancelled = false;
 
-    if (mode === "edit" && slug) {
-      const existing = readWeeklyIssues().find((item) => item.slug === slug);
-      if (existing) {
-        setCityId(existing.cityId);
-        setTitle(existing.title);
-        setIssueSlug(existing.slug);
-        setSlugTouched(true);
-        setDateLabel(existing.dateLabel);
-        setWeekday(existing.weekday);
-        setTagline(existing.tagline);
-        setCoverImage(existing.coverImage);
-        setPdfUrl(existing.pdfUrl);
-        setFeatured(Boolean(existing.featured));
-        setHighlights(existing.highlights.map((h) => h.label).join(", "));
-      }
-    } else {
-      const preferred = searchParams.get("city") || loadedCities[0]?.id || "";
-      setCityId(preferred);
-      const city = loadedCities.find((c) => c.id === preferred);
-      if (city) {
-        setTitle(`Weekly ${city.name} News`);
-        setTagline(`Smart reads for ${city.name} families.`);
+    async function init() {
+      try {
+        const weekly = await fetchWeeklyData();
+        if (cancelled) return;
+        setCities(weekly.cities);
+
+        if (mode === "edit" && slug) {
+          const existing = weekly.issues.find((item) => item.slug === slug);
+          if (existing) {
+            setCityId(existing.cityId);
+            setTitle(existing.title);
+            setIssueSlug(existing.slug);
+            setSlugTouched(true);
+            setDateLabel(existing.dateLabel);
+            setWeekday(existing.weekday);
+            setTagline(existing.tagline);
+            setCoverImage(existing.coverImage);
+            setPdfUrl(existing.pdfUrl);
+            setFeatured(Boolean(existing.featured));
+            setHighlights(existing.highlights.map((h) => h.label).join(", "));
+          }
+        } else {
+          const preferred = searchParams.get("city") || weekly.cities[0]?.id || "";
+          setCityId(preferred);
+          const city = weekly.cities.find((c) => c.id === preferred);
+          if (city) {
+            setTitle(`Weekly ${city.name} News`);
+            setTagline(`Smart reads for ${city.name} families.`);
+          }
+        }
+      } catch (error) {
+        if (!cancelled) {
+          window.alert(error instanceof Error ? error.message : "Could not load weekly form.");
+        }
+      } finally {
+        if (!cancelled) setReady(true);
       }
     }
-    setReady(true);
+
+    void init();
+    return () => {
+      cancelled = true;
+    };
   }, [mode, slug, searchParams]);
 
   const selectedCity = useMemo(() => cities.find((c) => c.id === cityId) ?? null, [cities, cityId]);
 
-  const onCoverFile = (file: File | null) => {
+  const onCoverFile = async (file: File | null) => {
     if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => setCoverImage(String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressWeeklyCover(file);
+      setCoverFile(compressed);
+      setCoverImage(URL.createObjectURL(compressed));
+    } catch {
+      window.alert("Could not process cover image. Try a JPG or PNG.");
+    }
   };
 
   const onPdfFile = (file: File | null) => {
@@ -88,71 +123,104 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
       window.alert("Please upload a PDF file.");
       return;
     }
+    if (file.size > 50 * 1024 * 1024) {
+      window.alert("PDF is larger than 50 MB. Upload a smaller file or host it under /public and paste the path.");
+      return;
+    }
+    setPdfFile(file);
     setPdfName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => setPdfUrl(String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    setPdfUrl("");
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!selectedCity) {
       window.alert("Please select a city.");
       return;
     }
-    if (!coverImage) {
-      window.alert("Please add a cover image.");
-      return;
-    }
-    if (!pdfUrl) {
-      window.alert("Please upload or paste a PDF.");
-      return;
-    }
-
-    const tones = ["red", "blue", "purple", "teal", "ink"] as const;
-    const parsedHighlights = highlights
-      .split(",")
-      .map((label) => label.trim())
-      .filter(Boolean)
-      .map((label, index) => ({ label, tone: tones[index % tones.length] }));
 
     const finalSlug =
       issueSlug ||
       slugifyWeekly(`${selectedCity.slug}-${dateLabel || createWeeklyId("week")}`);
 
-    const nextIssue: AdminWeeklyIssue = {
-      slug: finalSlug,
-      dateLabel: dateLabel || "01.01.2026",
-      weekday,
-      title: title || `Weekly ${selectedCity.name} News`,
-      tagline,
-      coverImage,
-      pdfUrl,
-      featured,
-      highlights: parsedHighlights,
-      cityId: selectedCity.id,
-      cityName: selectedCity.name,
-    };
+    setSaving(true);
+    try {
+      let resolvedCover = coverImage.trim();
+      let resolvedPdf = pdfUrl.trim();
 
-    const existing = readWeeklyIssues();
-    let updated: AdminWeeklyIssue[];
-    if (mode === "edit" && slug) {
-      updated = existing.map((item) => (item.slug === slug ? nextIssue : item));
-      if (featured) {
-        updated = updated.map((item) =>
-          item.cityId === selectedCity.id ? { ...item, featured: item.slug === nextIssue.slug } : item,
-        );
+      if (coverFile) {
+        setUploadStatus("Uploading cover image…");
+        resolvedCover = await uploadWeeklyAsset(coverFile, "covers", finalSlug);
+      } else if (!resolvedCover) {
+        window.alert("Please add a cover image.");
+        return;
+      } else if (isDataUrl(resolvedCover)) {
+        window.alert("Cover image is too large. Click Upload cover image again, then save.");
+        return;
+      } else if (!isRemoteOrPublicPath(resolvedCover)) {
+        window.alert("Cover must be uploaded or a valid URL/path.");
+        return;
       }
-    } else {
-      updated = [nextIssue, ...existing.filter((item) => item.slug !== nextIssue.slug)];
-      if (featured) {
-        updated = updated.map((item) =>
-          item.cityId === selectedCity.id ? { ...item, featured: item.slug === nextIssue.slug } : item,
-        );
+
+      if (pdfFile) {
+        setUploadStatus("Uploading PDF…");
+        resolvedPdf = await uploadWeeklyAsset(pdfFile, "pdfs", finalSlug);
+      } else if (!resolvedPdf) {
+        window.alert("Please upload or paste a PDF.");
+        return;
+      } else if (isDataUrl(resolvedPdf)) {
+        window.alert("PDF is too large to save directly. Click Upload PDF again, then save.");
+        return;
+      } else if (!isRemoteOrPublicPath(resolvedPdf)) {
+        window.alert("PDF must be uploaded or a valid URL/path like /weekly-pdfs/edition.pdf");
+        return;
       }
+
+      const parsedHighlights = highlights
+        .split(",")
+        .map((label) => label.trim())
+        .filter(Boolean)
+        .map((label, index) => ({ label, tone: HIGHLIGHT_TONES[index % HIGHLIGHT_TONES.length] }));
+
+      setUploadStatus("Saving edition…");
+      const payload = {
+        slug: finalSlug,
+        cityId: selectedCity.id,
+        dateLabel: dateLabel || "01.01.2026",
+        weekday,
+        title: title || `Weekly ${selectedCity.name} News`,
+        tagline,
+        coverImage: resolvedCover,
+        pdfUrl: resolvedPdf,
+        featured,
+        highlights: parsedHighlights,
+      };
+
+      const url =
+        mode === "edit" && slug
+          ? `/api/admin/weekly/issues/${encodeURIComponent(slug)}`
+          : "/api/admin/weekly/issues";
+      const response = await fetch(url, {
+        method: mode === "edit" && slug ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { issue?: AdminWeeklyIssue; error?: string };
+      if (!response.ok) {
+        window.alert(
+          data.error ??
+            (response.status === 413
+              ? "Files are too large. Upload cover/PDF using the buttons so they go to storage."
+              : "Could not save weekly edition to the database."),
+        );
+        return;
+      }
+      router.push("/admin/news/weekly");
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not save weekly edition.");
+    } finally {
+      setSaving(false);
+      setUploadStatus("");
     }
-
-    writeWeeklyIssues(updated);
-    router.push("/admin/news/weekly");
   };
 
   if (!ready) return <p className="admin-empty mb-0">Loading form…</p>;
@@ -160,11 +228,13 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
   return (
     <AdminFormLayout
       title={mode === "edit" ? "Edit weekly edition" : "Add weekly edition"}
-      description="City weekly magazine — upload cover image and PDF, same as the public Weekly News page."
+      description="Upload cover + PDF to storage, then save edition details in the database."
       backHref="/admin/news/weekly"
-      submitLabel={mode === "edit" ? "Update edition" : "Save edition"}
+      submitLabel={
+        saving ? uploadStatus || "Saving…" : mode === "edit" ? "Update edition" : "Save edition"
+      }
       wide
-      cardSubtitle="Choose city, add cover + PDF, then publish."
+      cardSubtitle="Choose city, add cover + PDF, then save to database."
       showSeo
       onSubmit={onSubmit}
       seoDefaults={{
@@ -280,7 +350,7 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
       <div className="admin-field-label admin-field-span">
         Cover image
         <div className="admin-featured-box">
-          {coverImage ? (
+          {coverImage || coverFile ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={coverImage} alt="" className="admin-featured-preview" />
           ) : (
@@ -290,8 +360,15 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
             <button type="button" className="btn admin-btn-primary btn-sm" onClick={() => coverRef.current?.click()}>
               Upload cover image
             </button>
-            {coverImage ? (
-              <button type="button" className="btn admin-btn-ghost btn-sm" onClick={() => setCoverImage("")}>
+            {coverImage || coverFile ? (
+              <button
+                type="button"
+                className="btn admin-btn-ghost btn-sm"
+                onClick={() => {
+                  setCoverImage("");
+                  setCoverFile(null);
+                }}
+              >
                 Remove
               </button>
             ) : null}
@@ -301,8 +378,11 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
             <input
               id={`${uid}-cover-url`}
               className="admin-field"
-              value={coverImage.startsWith("data:") ? "" : coverImage}
-              onChange={(e) => setCoverImage(e.target.value)}
+              value={coverFile ? "" : coverImage.startsWith("data:") ? "" : coverImage}
+              onChange={(e) => {
+                setCoverFile(null);
+                setCoverImage(e.target.value);
+              }}
               placeholder="/images/weekly/aug-week-1.png"
             />
           </label>
@@ -322,15 +402,19 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
       <div className="admin-field-label admin-field-span">
         Weekly PDF
         <div className="admin-featured-box">
-          {pdfUrl ? (
+          {pdfFile || pdfUrl ? (
             <div className="admin-pdf-ready">
-              <strong>{pdfName || "PDF ready"}</strong>
+              <strong>{pdfName || pdfUrl.split("/").pop() || "PDF ready"}</strong>
               <span className="admin-cell-sub d-block">
-                {pdfUrl.startsWith("data:") ? "Uploaded file (saved locally for demo)" : pdfUrl}
+                {pdfFile
+                  ? `${(pdfFile.size / (1024 * 1024)).toFixed(1)} MB — will upload to storage on save`
+                  : pdfUrl}
               </span>
-              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="admin-link-btn">
-                Preview PDF
-              </a>
+              {pdfUrl && !pdfFile ? (
+                <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="admin-link-btn">
+                  Preview PDF
+                </a>
+              ) : null}
             </div>
           ) : (
             <div className="admin-featured-empty">Upload the weekly PDF magazine</div>
@@ -339,13 +423,14 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
             <button type="button" className="btn admin-btn-primary btn-sm" onClick={() => pdfRef.current?.click()}>
               Upload PDF
             </button>
-            {pdfUrl ? (
+            {pdfFile || pdfUrl ? (
               <button
                 type="button"
                 className="btn admin-btn-ghost btn-sm"
                 onClick={() => {
                   setPdfUrl("");
                   setPdfName("");
+                  setPdfFile(null);
                 }}
               >
                 Remove
@@ -353,12 +438,13 @@ export default function AdminWeeklyIssueForm({ mode, slug }: WeeklyFormProps) {
             ) : null}
           </div>
           <label className="admin-field-label mb-0" htmlFor={`${uid}-pdf-url`}>
-            Or PDF URL / path
+            Or PDF URL / path (recommended for large files)
             <input
               id={`${uid}-pdf-url`}
               className="admin-field"
-              value={pdfUrl.startsWith("data:") ? "" : pdfUrl}
+              value={pdfFile ? "" : pdfUrl.startsWith("data:") ? "" : pdfUrl}
               onChange={(e) => {
+                setPdfFile(null);
                 setPdfUrl(e.target.value);
                 setPdfName("");
               }}

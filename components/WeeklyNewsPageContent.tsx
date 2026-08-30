@@ -7,11 +7,9 @@ import SiteMasthead from "@/components/SiteMasthead";
 import ComingSoonBlock from "@/components/ComingSoonBlock";
 import {
   DEFAULT_WEEKLY_CITIES,
-  readWeeklyCities,
-  readWeeklyIssues,
   type AdminWeeklyIssue,
   type WeeklyCity,
-} from "@/lib/weeklyAdmin";
+} from "@/lib/weeklyTypes";
 import { downloadWeeklyPdf, getWeeklyDownloadName, getWeeklyViewerPath } from "@/lib/weeklyIssueUtils";
 
 const filters = [
@@ -89,12 +87,29 @@ export default function WeeklyNewsPageContent() {
   const [cityId, setCityId] = useState(DEFAULT_WEEKLY_CITIES[0]?.id ?? "");
 
   useEffect(() => {
-    const loadedCities = readWeeklyCities();
-    const loadedIssues = readWeeklyIssues();
-    setCities(loadedCities);
-    setIssues(loadedIssues);
-    const withContent = loadedCities.find((city) => loadedIssues.some((issue) => issue.cityId === city.id));
-    setCityId(withContent?.id ?? loadedCities[0]?.id ?? "");
+    let cancelled = false;
+    void fetch("/api/weekly")
+      .then((response) => response.json())
+      .then((data: { cities?: WeeklyCity[]; issues?: AdminWeeklyIssue[] }) => {
+        if (cancelled) return;
+        const loadedCities = data.cities?.length ? data.cities : DEFAULT_WEEKLY_CITIES;
+        const loadedIssues = data.issues ?? [];
+        setCities(loadedCities);
+        setIssues(loadedIssues);
+        const withContent = loadedCities.find((city) =>
+          loadedIssues.some((issue) => issue.cityId === city.id),
+        );
+        setCityId(withContent?.id ?? loadedCities[0]?.id ?? "");
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCities(DEFAULT_WEEKLY_CITIES);
+          setIssues([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const selectedCity = useMemo(() => cities.find((city) => city.id === cityId) ?? cities[0], [cities, cityId]);

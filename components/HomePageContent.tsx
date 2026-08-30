@@ -1,8 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { promptsFromStories } from "@/lib/askEnnSuggestions";
 import { getHomePageData } from "@/lib/homeContent";
-import AskEnnBar from "./AskEnnBar";
 import HomeSurveyBanner from "./HomeSurveyBanner";
 import TopEducationNewsSection from "./TopEducationNewsSection";
 import HomeSponsorBanner from "./HomeSponsorBanner";
@@ -16,20 +14,11 @@ import HomeVideosSection from "./HomeVideosSection";
 
 export default async function HomePageContent() {
   const home = await getHomePageData();
-  const askStories = (home.topEducation.length ? home.topEducation : home.daily).slice(0, 3).map((article) => ({
-    title: article.title,
-    excerpt: article.excerpt,
-    category: article.category,
-    href: `/news/${article.slug}`,
-    date: article.date,
-  }));
-  const askSuggestions = promptsFromStories(askStories, 3).map((item) => item.query);
 
   return (
     <>
       <main className="main-area py-4 py-lg-5">
         <div className="container">
-          <AskEnnBar suggestions={askSuggestions} />
           <HomeSurveyBanner />
         </div>
 
@@ -111,9 +100,13 @@ export default async function HomePageContent() {
                     </div>
                   </div>
                   {home.mostRead.length ? (
-                    <MostReadBlock articles={home.mostRead} />
+                    <MostReadBlock articles={home.mostRead} title="Recent Blogs" />
                   ) : (
-                    <ComingSoonBlock compact title="Most read coming soon" message="Trending stories will list here." />
+                    <ComingSoonBlock
+                      compact
+                      title="Recent Blogs coming soon"
+                      message="Published blogs will appear here automatically."
+                    />
                   )}
                 </div>
               </div>

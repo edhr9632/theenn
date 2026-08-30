@@ -34,7 +34,10 @@ export default function AdminNewsSectionNewPage({ section }: { section: NewsSect
       cardSubtitle={`${meta.label} · saved to PostgreSQL`}
       onSubmit={async (event) => {
         const ok = await submitAdminArticleForm(event, "create");
-        if (ok) router.push(meta.back);
+        if (ok) {
+          router.push(meta.back);
+          router.refresh();
+        }
       }}
     >
       <input type="hidden" name="newsSection" value={section} />

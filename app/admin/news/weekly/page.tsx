@@ -1,22 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminBadge, AdminEmpty, AdminPageHeader, AdminTable } from "@/components/admin/AdminUi";
 import { AdminRowActions } from "@/components/admin/AdminRowActions";
 import AdminNewsTabs from "@/components/admin/AdminNewsTabs";
 import {
-  createWeeklyId,
-  DEFAULT_WEEKLY_CITIES,
-  getIssuesForCity,
   readWeeklyCities,
   readWeeklyIssues,
-  slugifyWeekly,
   writeWeeklyCities,
   writeWeeklyIssues,
-  type AdminWeeklyIssue,
-  type WeeklyCity,
 } from "@/lib/weeklyAdmin";
+import type { AdminWeeklyIssue, WeeklyAdminState, WeeklyCity } from "@/lib/weeklyTypes";
+
+async function fetchWeekly(): Promise<WeeklyAdminState> {
+  const response = await fetch("/api/admin/weekly");
+  const data = (await response.json()) as { weekly?: WeeklyAdminState; error?: string };
+  if (!response.ok) throw new Error(data.error ?? "Could not load weekly news.");
+  return data.weekly ?? { cities: [], issues: [] };
+}
 
 export default function AdminWeeklyNewsPage() {
   const [cities, setCities] = useState<WeeklyCity[]>([]);
@@ -25,64 +27,185 @@ export default function AdminWeeklyNewsPage() {
   const [ready, setReady] = useState(false);
   const [cityName, setCityName] = useState("");
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const loadedCities = readWeeklyCities();
-    const loadedIssues = readWeeklyIssues();
-    setCities(loadedCities);
-    setIssues(loadedIssues);
-    setCityId(loadedCities[0]?.id ?? "");
-    setReady(true);
+  const flash = useCallback((text: string) => {
+    setMessage(text);
+    window.setTimeout(() => setMessage(""), 2800);
   }, []);
 
+  const applyState = useCallback((weekly: WeeklyAdminState) => {
+    setCities(weekly.cities);
+    setIssues(weekly.issues);
+    setCityId((current) => {
+      if (current && weekly.cities.some((city) => city.id === current)) return current;
+      return weekly.cities[0]?.id ?? "";
+    });
+  }, []);
+
+  const load = useCallback(async () => {
+    let weekly = await fetchWeekly();
+
+    const localIssues = readWeeklyIssues();
+    const localCities = readWeeklyCities();
+    const dbEmpty = !weekly.issues.length && localIssues.length > 0;
+
+    if (dbEmpty) {
+      for (const city of localCities) {
+        const exists = weekly.cities.some((item) => item.id === city.id);
+        if (!exists) {
+          await fetch("/api/admin/weekly", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: city.name }),
+          });
+        }
+      }
+      weekly = await fetchWeekly();
+
+      for (const issue of localIssues) {
+        await fetch("/api/admin/weekly/issues", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug: issue.slug,
+            cityId: issue.cityId,
+            dateLabel: issue.dateLabel,
+            weekday: issue.weekday,
+            title: issue.title,
+            tagline: issue.tagline,
+            coverImage: issue.coverImage,
+            pdfUrl: issue.pdfUrl,
+            highlights: issue.highlights,
+            featured: issue.featured,
+          }),
+        });
+      }
+
+      writeWeeklyIssues([]);
+      writeWeeklyCities([]);
+      weekly = await fetchWeekly();
+      flash(`Migrated ${localIssues.length} weekly edition(s) from this browser to the database.`);
+    }
+
+    applyState(weekly);
+    return weekly;
+  }, [applyState, flash]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void load()
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          window.alert(error instanceof Error ? error.message : "Could not load weekly news.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
+
   const selectedCity = useMemo(() => cities.find((c) => c.id === cityId) ?? null, [cities, cityId]);
-  const cityIssues = useMemo(() => (cityId ? getIssuesForCity(cityId, issues) : []), [cityId, issues]);
+  const cityIssues = useMemo(
+    () => (cityId ? issues.filter((issue) => issue.cityId === cityId) : []),
+    [cityId, issues],
+  );
 
-  const flash = (text: string) => {
-    setMessage(text);
-    window.setTimeout(() => setMessage(""), 2200);
-  };
-
-  const addCity = (e: FormEvent) => {
+  const addCity = async (e: FormEvent) => {
     e.preventDefault();
     const name = cityName.trim();
     if (!name) return;
-    const next: WeeklyCity = {
-      id: createWeeklyId("city"),
-      name,
-      slug: slugifyWeekly(name),
-    };
-    const updated = [...cities, next];
-    setCities(updated);
-    writeWeeklyCities(updated);
-    setCityId(next.id);
-    setCityName("");
-    flash(`City “${name}” added`);
+    setSaving(true);
+    try {
+      const response = await fetch("/api/admin/weekly", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = (await response.json()) as { weekly?: WeeklyAdminState; error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not create city.");
+        return;
+      }
+      if (data.weekly) applyState(data.weekly);
+      setCityName("");
+      flash(`City “${name}” saved to database`);
+    } catch {
+      window.alert("Could not create city.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteCity = (id: string) => {
-    if (!window.confirm("Delete this city and keep its issues unlisted from this city?")) return;
-    const updated = cities.filter((c) => c.id !== id);
-    setCities(updated);
-    writeWeeklyCities(updated);
-    if (cityId === id) setCityId(updated[0]?.id ?? "");
-    flash("City removed");
+  const deleteCity = async (id: string) => {
+    if (!window.confirm("Delete this city and all its weekly editions?")) return;
+    setSaving(true);
+    try {
+      const response = await fetch("/api/admin/weekly", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cityId: id }),
+      });
+      const data = (await response.json()) as { weekly?: WeeklyAdminState; error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not delete city.");
+        return;
+      }
+      if (data.weekly) applyState(data.weekly);
+      flash("City deleted from database");
+    } catch {
+      window.alert("Could not delete city.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteIssue = (slug: string) => {
+  const deleteIssue = async (slug: string) => {
     if (!window.confirm("Delete this weekly edition?")) return;
-    const updated = issues.filter((item) => item.slug !== slug);
-    setIssues(updated);
-    writeWeeklyIssues(updated);
-    flash("Weekly edition deleted");
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/admin/weekly/issues/${encodeURIComponent(slug)}`, {
+        method: "DELETE",
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not delete edition.");
+        return;
+      }
+      const weekly = await fetchWeekly();
+      applyState(weekly);
+      flash("Weekly edition deleted from database");
+    } catch {
+      window.alert("Could not delete edition.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const resetDefaults = () => {
-    if (!window.confirm("Reset cities to the default list?")) return;
-    setCities(DEFAULT_WEEKLY_CITIES);
-    writeWeeklyCities(DEFAULT_WEEKLY_CITIES);
-    setCityId(DEFAULT_WEEKLY_CITIES[0]?.id ?? "");
-    flash("Default cities restored");
+  const resetDefaults = async () => {
+    if (!window.confirm("Restore default cities in the database?")) return;
+    setSaving(true);
+    try {
+      const response = await fetch("/api/admin/weekly", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset-cities" }),
+      });
+      const data = (await response.json()) as { weekly?: WeeklyAdminState; error?: string };
+      if (!response.ok) {
+        window.alert(data.error ?? "Could not reset cities.");
+        return;
+      }
+      if (data.weekly) applyState(data.weekly);
+      flash("Default cities restored in database");
+    } catch {
+      window.alert("Could not reset cities.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (!ready) return <p className="admin-empty mb-0">Loading weekly news…</p>;
@@ -91,13 +214,13 @@ export default function AdminWeeklyNewsPage() {
     <div>
       <AdminPageHeader
         title="Weekly News"
-        description="Manage city weeklies like the frontend — cover image + PDF per edition."
+        description="Manage city weeklies — cover image + PDF saved in the database and shown on the public Weekly News page."
         actionHref="/admin/news/weekly/new"
         actionLabel="+ Add weekly edition"
       />
       <AdminNewsTabs />
 
-      {message ? <p className="admin-inline-toast mt-3 mb-0">{message}</p> : null}
+      {message ? <p className="text-success fw-semibold mt-3 mb-0">{message}</p> : null}
 
       <div className="admin-category-layout mt-3">
         <section className="admin-form-card">
@@ -123,10 +246,10 @@ export default function AdminWeeklyNewsPage() {
               />
             </label>
             <div className="admin-form-footer-actions admin-field-span" style={{ justifyContent: "flex-start" }}>
-              <button type="submit" className="btn admin-btn-primary">
-                Create city
+              <button type="submit" className="btn admin-btn-primary" disabled={saving}>
+                {saving ? "Saving…" : "Create city"}
               </button>
-              <button type="button" className="btn admin-btn-ghost" onClick={resetDefaults}>
+              <button type="button" className="btn admin-btn-ghost" onClick={() => void resetDefaults()} disabled={saving}>
                 Reset defaults
               </button>
             </div>
@@ -143,7 +266,9 @@ export default function AdminWeeklyNewsPage() {
                 onClick={() => setCityId(city.id)}
               >
                 {city.name}
-                <span className="admin-city-pill-count">{getIssuesForCity(city.id, issues).length}</span>
+                <span className="admin-city-pill-count">
+                  {issues.filter((issue) => issue.cityId === city.id).length}
+                </span>
               </button>
             ))}
           </div>
@@ -164,7 +289,12 @@ export default function AdminWeeklyNewsPage() {
             <div className="d-flex flex-wrap gap-2 align-items-center">
               <AdminBadge tone="green">{selectedCity.name}</AdminBadge>
               <span className="admin-cell-sub mb-0">slug: {selectedCity.slug}</span>
-              <button type="button" className="btn admin-btn-ghost btn-sm ms-auto" onClick={() => deleteCity(selectedCity.id)}>
+              <button
+                type="button"
+                className="btn admin-btn-ghost btn-sm ms-auto"
+                disabled={saving}
+                onClick={() => void deleteCity(selectedCity.id)}
+              >
                 Remove city
               </button>
               <Link href={`/admin/news/weekly/new?city=${selectedCity.id}`} className="btn admin-btn-primary btn-sm">
@@ -212,7 +342,7 @@ export default function AdminWeeklyNewsPage() {
                 <td>
                   <AdminRowActions
                     editHref={`/admin/news/weekly/edit/${encodeURIComponent(issue.slug)}`}
-                    onDelete={() => deleteIssue(issue.slug)}
+                    onDelete={() => void deleteIssue(issue.slug)}
                     deleteLabel="Delete edition"
                   />
                 </td>

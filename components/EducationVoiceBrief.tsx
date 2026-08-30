@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  DAILY_AUDIO_FEED_PATH,
   DAILY_AUDIO_PUBLIC_PATH,
 } from "@/lib/dailyAudio";
+import { splitSpeechChunks } from "@/lib/articleAudio";
 import {
   VOICE_BRIEF_EVENT,
   buildEducationVoiceScript,
@@ -16,25 +15,31 @@ type VoiceState = "idle" | "speaking" | "paused";
 
 export default function EducationVoiceBrief() {
   const [stories, setStories] = useState<VoiceBriefStory[]>([]);
-  const script = useMemo(() => buildEducationVoiceScript(stories), [stories]);
+  const [listenIntro, setListenIntro] = useState("");
+  const script = useMemo(
+    () => buildEducationVoiceScript(stories, { listenIntro }),
+    [stories, listenIntro],
+  );
   const [state, setState] = useState<VoiceState>("idle");
   const [supported, setSupported] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [absoluteMp3Url, setAbsoluteMp3Url] = useState(DAILY_AUDIO_PUBLIC_PATH);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [liveLine, setLiveLine] = useState("");
 
-  useEffect(() => {
-    setAbsoluteMp3Url(`${window.location.origin}${DAILY_AUDIO_PUBLIC_PATH}`);
-  }, []);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const playTokenRef = useRef(0);
+  const chunkIndexRef = useRef(0);
+  const chunksRef = useRef<string[]>([]);
+
+  const chunks = useMemo(() => splitSpeechChunks(script), [script]);
 
   useEffect(() => {
     let cancelled = false;
     void fetch("/api/education-brief")
       .then((response) => response.json())
-      .then((data: { stories?: VoiceBriefStory[] }) => {
+      .then((data: { stories?: VoiceBriefStory[]; listenIntro?: string; script?: string }) => {
         if (!cancelled && Array.isArray(data.stories)) setStories(data.stories);
+        if (!cancelled && typeof data.listenIntro === "string") setListenIntro(data.listenIntro);
       })
       .catch(() => undefined);
     return () => {
@@ -44,8 +49,12 @@ export default function EducationVoiceBrief() {
 
   const stopSpeaking = useCallback(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
+    playTokenRef.current += 1;
     window.speechSynthesis.cancel();
     utteranceRef.current = null;
+    chunkIndexRef.current = 0;
+    chunksRef.current = [];
+    setLiveLine("");
     setState("idle");
   }, []);
 
@@ -57,33 +66,57 @@ export default function EducationVoiceBrief() {
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(script);
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    utterance.volume = 1;
+    const token = playTokenRef.current + 1;
+    playTokenRef.current = token;
+    chunksRef.current = chunks;
+    chunkIndexRef.current = 0;
+
+    if (!chunksRef.current.length) return;
 
     const voices = window.speechSynthesis.getVoices();
-    const preferred =
+    const preferredVoice =
       voices.find((voice) => /en-IN/i.test(voice.lang) && /female|zira|samantha|google/i.test(voice.name)) ||
       voices.find((voice) => /en-IN/i.test(voice.lang)) ||
       voices.find((voice) => /^en/i.test(voice.lang));
 
-    if (preferred) utterance.voice = preferred;
+    const speakChunk = (index: number) => {
+      if (token !== playTokenRef.current) return;
+      if (index >= chunksRef.current.length) {
+        utteranceRef.current = null;
+        setLiveLine("");
+        setState("idle");
+        return;
+      }
 
-    utterance.onstart = () => setState("speaking");
-    utterance.onend = () => {
-      utteranceRef.current = null;
-      setState("idle");
-    };
-    utterance.onerror = () => {
-      utteranceRef.current = null;
-      setState("idle");
+      chunkIndexRef.current = index;
+      const line = chunksRef.current[index];
+      setLiveLine(line);
+
+      const utterance = new SpeechSynthesisUtterance(line);
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      if (preferredVoice) utterance.voice = preferredVoice;
+
+      utterance.onstart = () => setState("speaking");
+      utterance.onend = () => {
+        if (token !== playTokenRef.current) return;
+        utteranceRef.current = null;
+        speakChunk(index + 1);
+      };
+      utterance.onerror = () => {
+        if (token !== playTokenRef.current) return;
+        utteranceRef.current = null;
+        speakChunk(index + 1);
+      };
+
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
     };
 
-    utteranceRef.current = utterance;
     setPanelOpen(true);
-    window.speechSynthesis.speak(utterance);
-  }, [script]);
+    speakChunk(0);
+  }, [chunks]);
 
   const pauseSpeaking = useCallback(() => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -152,16 +185,6 @@ export default function EducationVoiceBrief() {
     }
   };
 
-  const onCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(absoluteMp3Url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  };
-
   if (!panelOpen) return null;
 
   return (
@@ -185,25 +208,10 @@ export default function EducationVoiceBrief() {
           </button>
         </div>
 
-        <p className="enn-voice-note mb-2">
-          Listening to the top {stories.length} education headlines only — not general world or markets news.
-        </p>
-
-        <ol className="enn-voice-list list-unstyled mb-3">
-          {stories.map((story, index) => (
-            <li key={story.href} className="enn-voice-item">
-              <span className="enn-voice-num">{index + 1}</span>
-              <div>
-                <Link href={story.href} className="enn-voice-story-title" onClick={() => stopSpeaking()}>
-                  {story.title}
-                </Link>
-                <span className="enn-voice-story-meta">
-                  {story.category} · {story.date}
-                </span>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <div className="enn-voice-live">
+          <p className="enn-voice-live-label mb-1">What AI is speaking</p>
+          <p className="enn-voice-live-line mb-2">{liveLine || "Press Play to hear today’s education brief."}</p>
+        </div>
 
         <div className="enn-voice-controls">
           <button type="button" className="enn-voice-play" onClick={onPrimaryClick} disabled={!supported}>
@@ -221,36 +229,6 @@ export default function EducationVoiceBrief() {
           >
             {downloading ? "Saving…" : "Download MP3"}
           </button>
-        </div>
-
-        <div className="enn-voice-alarm">
-          <p className="enn-voice-alarm-label mb-1">Morning alarm / smart speaker link</p>
-          <p className="enn-voice-alarm-note mb-2">
-            This URL always serves today&apos;s latest education brief as an MP3 — use it in alarms, podcast apps, or
-            automations.
-          </p>
-          <code className="enn-voice-alarm-url">{absoluteMp3Url}</code>
-          <div className="enn-voice-alarm-actions">
-            <button type="button" className="enn-voice-alarm-btn" onClick={onCopyLink}>
-              {copied ? "Copied" : "Copy link"}
-            </button>
-            <a
-              className="enn-voice-alarm-btn"
-              href={DAILY_AUDIO_PUBLIC_PATH}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open MP3
-            </a>
-            <a
-              className="enn-voice-alarm-btn"
-              href={DAILY_AUDIO_FEED_PATH}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              RSS audio feed
-            </a>
-          </div>
         </div>
 
         {!supported ? (

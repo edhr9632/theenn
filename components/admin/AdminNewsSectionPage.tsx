@@ -1,5 +1,5 @@
 import { AdminBadge, AdminPageHeader, AdminTable } from "@/components/admin/AdminUi";
-import { AdminRowActions } from "@/components/admin/AdminRowActions";
+import AdminNewsRowActions from "@/components/admin/AdminNewsRowActions";
 import AdminNewsTabs from "@/components/admin/AdminNewsTabs";
 import { listNewsAdmin, mapNewsArticleRow } from "@/lib/newsDb";
 import type { NewsSection } from "@/lib/newsTypes";
@@ -46,8 +46,9 @@ export default async function AdminNewsSectionPage({ section }: { section: NewsS
   try {
     const rows = await listNewsAdmin(section);
     items = rows.map(mapNewsArticleRow);
-  } catch {
+  } catch (error) {
     dbError = true;
+    console.error("[AdminNewsSectionPage]", section, error);
   }
 
   return (
@@ -86,7 +87,11 @@ export default async function AdminNewsSectionPage({ section }: { section: NewsS
                   <AdminBadge tone="green">{meta.badge}</AdminBadge>
                 </td>
                 <td>
-                  <AdminRowActions editHref={`${meta.editPrefix}/${item.slug}`} />
+                  <AdminNewsRowActions
+                    slug={item.slug}
+                    title={item.title}
+                    editHref={`${meta.editPrefix}/${encodeURIComponent(item.slug)}`}
+                  />
                 </td>
               </tr>
             ))

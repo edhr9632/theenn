@@ -18,6 +18,15 @@ function SparkleIcon() {
   );
 }
 
+function SearchIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M16 16l4.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function ArrowIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -26,19 +35,15 @@ function ArrowIcon() {
   );
 }
 
-function BrandMark() {
+function BrandBubble() {
   return (
-    <span className="ask-enn-brand-mark" aria-hidden="true">
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
-        <path
-          d="M8 1.2c3.1 0 5.6 2.1 5.6 4.7 0 1.7-1 3.2-2.6 4.1L12.4 14l-3.2-1.7c-.4.05-.8.08-1.2.08C4.9 12.38 2.4 10.3 2.4 7.7 2.4 5.1 4.9 1.2 8 1.2z"
-          fill="#e11d2e"
-        />
-        <circle cx="6.2" cy="7.2" r="0.9" fill="#fff" />
-        <circle cx="8.1" cy="7.2" r="0.9" fill="#fff" />
-        <circle cx="10" cy="7.2" r="0.9" fill="#fff" />
-      </svg>
-    </span>
+    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <circle cx="6" cy="6" r="5.5" fill="#e11d2e" />
+      <path
+        d="M3.2 4.4c0-.9 1.2-1.6 2.8-1.6s2.8.7 2.8 1.6c0 .9-1.2 1.6-2.8 1.6-.4 0-.7-.06-1-.15L3.4 7.8l.3-1.6c-.3-.3-.5-.7-.5-1.2z"
+        fill="#fff"
+      />
+    </svg>
   );
 }
 
@@ -77,12 +82,20 @@ export default function AskEnnBar({ suggestions }: AskEnnBarProps) {
           goAsk();
         }}
       >
-        <button type="button" className="ask-enn-brand" onClick={() => openAskEnnOverlay()} aria-label="Open askENN">
-          <span className="ask-enn-brand-ask">ask</span>
-          <span className="ask-enn-brand-enn">ENN</span>
-          <BrandMark />
+        <button type="button" className="ask-enn-brand-badge" onClick={() => openAskEnnOverlay()} aria-label="Open askENN">
+          <span className="ask-enn-brand-badge-top">
+            <span className="ask-enn-brand-badge-ask">ask</span>
+            <BrandBubble />
+          </span>
+          <span className="ask-enn-brand-badge-enn">ENN</span>
         </button>
+
         <span className="ask-enn-divider" aria-hidden="true" />
+
+        <span className="ask-enn-search-icon" aria-hidden="true">
+          <SearchIcon />
+        </span>
+
         <input
           className="ask-enn-input"
           value={barValue}
@@ -96,14 +109,16 @@ export default function AskEnnBar({ suggestions }: AskEnnBarProps) {
             if (barValue.trim().length > 0) setSuggestionsOpen(true);
           }}
           onBlur={() => setFocused(false)}
-          placeholder="Search news or ask a question"
+          placeholder="Search news or ask a question..."
           aria-label="Search news or ask a question"
         />
-        <button
-          type="submit"
-          className={`ask-enn-submit${hasText ? " is-ready" : ""}`}
-          aria-label="Open Ask ENN"
-        >
+
+        <button type="button" className="ask-enn-ai-btn" onClick={() => goAsk()}>
+          <SparkleIcon />
+          <span>Get AI Answers</span>
+        </button>
+
+        <button type="submit" className="ask-enn-submit" aria-label="Open Ask ENN">
           <ArrowIcon />
         </button>
       </form>

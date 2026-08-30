@@ -31,7 +31,7 @@ export default function ArticleHeroMedia({
   if (image) {
     return (
       <figure className="article-hero-figure mb-4 mb-lg-5">
-        <div className="article-hero-media ratio ratio-21x9 rounded-3 overflow-hidden shadow-sm bg-light position-relative">
+        <div className="article-hero-media ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm bg-light position-relative">
           <Image
             src={image}
             alt={imageAlt}

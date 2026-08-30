@@ -27,35 +27,12 @@ function DailyGridCard({ item }: { item: NewsArticle }) {
   );
 }
 
-function TrendingItem({ item }: { item: NewsArticle }) {
-  return (
-    <li className="trending-news-item">
-      <article className="trending-news-article position-relative">
-        <div className="trending-news-thumb flex-shrink-0">
-          <Image
-            src={item.image}
-            alt={item.imageAlt}
-            fill
-            className="object-fit-cover"
-            sizes="96px"
-          />
-        </div>
-        <h3 className="trending-news-title mb-0">
-          <Link href={`/news/${item.slug}`} className="trending-news-link stretched-link">
-            {item.title}
-          </Link>
-        </h3>
-      </article>
-    </li>
-  );
-}
-
 type DailyTrendingNewsProps = {
   daily: NewsArticle[];
-  trending: NewsArticle[];
+  trending?: NewsArticle[];
 };
 
-export default function DailyTrendingNews({ daily, trending }: DailyTrendingNewsProps) {
+export default function DailyTrendingNews({ daily }: DailyTrendingNewsProps) {
   const dailyFeatured = daily[0];
   const dailyBullets = daily.slice(1, 6);
   const dailyGridLeft = daily.slice(6, 8);
@@ -74,50 +51,57 @@ export default function DailyTrendingNews({ daily, trending }: DailyTrendingNews
                 message="Publish daily stories in Admin → News → Daily News."
               />
             ) : (
-              <div className="daily-news-top row g-3 g-lg-4 align-items-stretch">
-                <div className="col-md-6 d-flex flex-column min-h-0">
-                  <article className="daily-news-feature position-relative flex-grow-1">
-                    <div className="daily-news-feature-media h-100">
-                      <Image
-                        src={dailyFeatured.image}
-                        alt={dailyFeatured.imageAlt}
-                        fill
-                        className="object-fit-cover"
-                        sizes="(max-width:768px) 100vw, 32vw"
-                        priority
-                      />
-                      <div className="daily-news-feature-overlay">
-                        <h3 className="daily-news-feature-title mb-0">
-                          <Link href={`/news/${dailyFeatured.slug}`} className="daily-news-feature-link stretched-link">
-                            {dailyFeatured.title}
-                          </Link>
-                        </h3>
+              <div className="daily-news-top">
+                <div className="daily-news-top-row">
+                  <div className="daily-news-top-feature">
+                    <article className="daily-news-feature">
+                      <div className="daily-news-feature-media">
+                        <Image
+                          src={dailyFeatured.image}
+                          alt={dailyFeatured.imageAlt}
+                          fill
+                          className="daily-news-feature-img"
+                          sizes="(max-width:768px) 100vw, 28vw"
+                          priority
+                        />
+                        <div className="daily-news-feature-overlay">
+                          <h3 className="daily-news-feature-title mb-0">
+                            <Link href={`/news/${dailyFeatured.slug}`} className="daily-news-feature-link">
+                              {dailyFeatured.title}
+                            </Link>
+                          </h3>
+                        </div>
                       </div>
-                    </div>
-                  </article>
+                    </article>
+                  </div>
 
-                  <div className="row g-3 g-lg-4 mt-1 mt-lg-3 daily-news-subgrid">
-                    {dailyGridLeft.map((item) => (
-                      <DailyGridCard key={item.slug} item={item} />
-                    ))}
+                  <div className="daily-news-top-list">
+                    <ul className="daily-news-list list-unstyled mb-0">
+                      {dailyBullets.map((item) => (
+                        <li key={item.slug} className="daily-news-list-item">
+                          <Link href={`/news/${item.slug}`} className="daily-news-list-link">
+                            {item.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
 
-                <div className="col-md-6 d-flex flex-column min-h-0">
-                  <ul className="daily-news-list list-unstyled mb-0 flex-grow-1">
-                    {dailyBullets.map((item) => (
-                      <li key={item.slug} className="daily-news-list-item">
-                        <Link href={`/news/${item.slug}`} className="daily-news-list-link">
-                          {item.title}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="row g-3 g-lg-4 mt-1 mt-lg-3 daily-news-subgrid">
-                    {dailyGridRight.map((item) => (
-                      <DailyGridCard key={item.slug} item={item} />
-                    ))}
+                <div className="daily-news-top-bottom row g-3 g-lg-4">
+                  <div className="col-md-6">
+                    <div className="row g-3 g-lg-4 daily-news-subgrid">
+                      {dailyGridLeft.map((item) => (
+                        <DailyGridCard key={item.slug} item={item} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="row g-3 g-lg-4 daily-news-subgrid">
+                      {dailyGridRight.map((item) => (
+                        <DailyGridCard key={item.slug} item={item} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -126,19 +110,11 @@ export default function DailyTrendingNews({ daily, trending }: DailyTrendingNews
 
           <div className="col-lg-3 trending-news-col">
             <SectionBroadcastHeader title="Trending News" href="/trending-news" className="mb-3" />
-            {!trending.length ? (
-              <ComingSoonBlock
-                compact
-                title="Trending coming soon"
-                message="Add trending stories in Admin → News → Trending News."
-              />
-            ) : (
-              <ul className="trending-news-list list-unstyled mb-0">
-                {trending.map((item) => (
-                  <TrendingItem key={`trending-${item.slug}`} item={item} />
-                ))}
-              </ul>
-            )}
+            <ComingSoonBlock
+              compact
+              title="Trending News coming soon"
+              message="This section will go live once trending stories are published."
+            />
           </div>
         </div>
       </div>

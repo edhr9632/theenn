@@ -2,6 +2,7 @@ import {
   getDailyBriefScript,
 } from "@/lib/educationVoiceBrief";
 import { getTopEducationStoriesFromDb } from "@/lib/educationVoiceBriefDb";
+import { getActiveFestivalListenIntro } from "@/lib/festivalDb";
 import { synthesizeMp3Cached, toArrayBuffer } from "@/lib/ttsMp3";
 
 export const runtime = "nodejs";
@@ -15,8 +16,11 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const stories = await getTopEducationStoriesFromDb(5);
-    const script = getDailyBriefScript(stories);
+    const [stories, listenIntro] = await Promise.all([
+      getTopEducationStoriesFromDb(5),
+      getActiveFestivalListenIntro(),
+    ]);
+    const script = getDailyBriefScript(stories, listenIntro);
     const mp3 = await synthesizeMp3Cached("daily-education-brief", script);
     const body = toArrayBuffer(mp3);
 

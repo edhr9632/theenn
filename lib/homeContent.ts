@@ -43,17 +43,32 @@ export async function getHomePageData(): Promise<HomePageData> {
   if (!isDbConfigured()) return empty;
 
   try {
-    const [topEducation, daily, trending, tvSchedule, partnerBanner, panels, videosConfig, shortVideos] =
-      await Promise.all([
-        getNewsBySection("top_education", 5),
-        getNewsBySection("daily", 10),
-        getNewsBySection("trending", 6),
-        getPromoBanner("tv_schedule"),
-        getPromoBanner("partner_msa"),
-        getPanelDiscussionsFromDb(HOME_VIDEOS_DISPLAY_MAX),
-        getVideosConfigFromDb(),
-        getShortVideosFromDb(HOME_SHORTS_DISPLAY_MAX),
-      ]);
+    const settled = await Promise.allSettled([
+      getNewsBySection("top_education", 8),
+      getNewsBySection("daily", 10),
+      getNewsBySection("trending", 6),
+      getPromoBanner("tv_schedule"),
+      getPromoBanner("partner_msa"),
+      getPanelDiscussionsFromDb(HOME_VIDEOS_DISPLAY_MAX),
+      getVideosConfigFromDb(),
+      getShortVideosFromDb(HOME_SHORTS_DISPLAY_MAX),
+    ]);
+
+    const value = <T,>(index: number, fallback: T): T => {
+      const result = settled[index];
+      if (result.status === "fulfilled") return result.value as T;
+      console.error(`[getHomePageData] query ${index} failed`, result.reason);
+      return fallback;
+    };
+
+    const topEducation = value(0, [] as NewsArticle[]);
+    const daily = value(1, [] as NewsArticle[]);
+    const trending = value(2, [] as NewsArticle[]);
+    const tvSchedule = value(3, null as PromoBanner | null);
+    const partnerBanner = value(4, null as PromoBanner | null);
+    const panels = value(5, [] as PanelDiscussionItem[]);
+    const videosConfig = value(6, null as SiteVideosConfig | null);
+    const shortVideos = value(7, [] as Awaited<ReturnType<typeof getShortVideosFromDb>>);
 
     const latest = daily.slice(0, 4);
     const trendingShown = trending.length
@@ -61,11 +76,14 @@ export async function getHomePageData(): Promise<HomePageData> {
       : [...daily, ...topEducation]
           .filter((article, index, list) => list.findIndex((item) => item.slug === article.slug) === index)
           .slice(0, 6);
-    const mostRead = trendingShown.length ? trendingShown : daily.slice(0, 6);
+    // Recent Blogs sidebar: newest published stories across sections (deduped).
+    const mostRead = [...daily, ...trending, ...topEducation]
+      .filter((article, index, list) => list.findIndex((item) => item.slug === article.slug) === index)
+      .slice(0, 6);
 
     return {
       dbConnected: true,
-      topEducation,
+      topEducation: topEducation.slice(0, 5),
       daily,
       trending: trendingShown,
       latest,

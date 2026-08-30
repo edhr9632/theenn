@@ -15,6 +15,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { href: "/admin/news", label: "News", icon: "news" },
   { href: "/admin/categories", label: "Categories", icon: "folder" },
   { href: "/admin/ads", label: "Ads", icon: "ads" },
+  { href: "/admin/festival", label: "Festival Popup", icon: "festival" },
   { href: "/admin/videos", label: "Videos", icon: "video" },
   { href: "/admin/shorts", label: "Shorts", icon: "video" },
   { href: "/admin/panels", label: "Panel Discussions", icon: "panels" },

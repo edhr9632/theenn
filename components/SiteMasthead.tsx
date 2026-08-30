@@ -1,10 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import TopDate from "./TopDate";
+import TopBarBengaluruWeather from "./TopBarBengaluruWeather";
 import PromoAnnouncementBar from "./PromoAnnouncementBar";
 import SpotifyHeaderAd from "./SpotifyHeaderAd";
 import SurveyFormModal from "./SurveyFormModal";
 import SiteSearchButton from "./SiteSearchButton";
+import FestivalTopBarTicker from "./FestivalTopBarTicker";
+import SiteAskEnnBar from "./SiteAskEnnBar";
+import SiteMastheadStickyFrame from "./SiteMastheadStickyFrame";
 import { getSurveyConfig, hasSurveyTarget } from "@/lib/survey";
 
 type SiteMastheadProps = {
@@ -22,17 +26,23 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
 
   return (
     <div className="site-masthead">
-      <SpotifyHeaderAd />
-      <PromoAnnouncementBar />
+      <div id="site-masthead-promo" className="site-masthead-promo">
+        <SpotifyHeaderAd />
+        <PromoAnnouncementBar />
+      </div>
 
-      <div className="site-masthead-sticky sticky-top">
+      <SiteMastheadStickyFrame>
         <div className="top-bar text-white py-2">
           <div className="container-fluid px-3 px-lg-4">
             <div className="d-flex flex-column flex-md-row align-items-center justify-content-md-between gap-2 gap-md-3">
-              <span className="top-bar-live small fw-semibold text-uppercase d-inline-flex align-items-center gap-2">
+              <span className="top-bar-live small fw-semibold text-uppercase d-inline-flex align-items-center gap-2 flex-shrink-0">
                 <span className="top-bar-live-dot" aria-hidden="true" />
-                <span className="top-bar-live-label">Live</span> <span className="text-white-50">•</span> <TopDate />
+                <span className="top-bar-live-label">Live</span> <span className="text-white-50">•</span> <TopDate />{" "}
+                <TopBarBengaluruWeather />
               </span>
+
+              <FestivalTopBarTicker />
+
               <div className="top-bar-links small text-center text-md-end flex-shrink-0">
                 <Link href="/insights" className="link-light link-underline-opacity-0 link-underline-opacity-100-hover">
                   Insights
@@ -158,6 +168,8 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
           </nav>
         </header>
 
+        <SiteAskEnnBar />
+
         {breakingItems.length > 0 ? (
           <div className="breaking-bar text-white py-2 overflow-hidden">
             <p className="visually-hidden">Breaking news ticker</p>
@@ -182,7 +194,7 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
             </div>
           </div>
         ) : null}
-      </div>
+      </SiteMastheadStickyFrame>
     </div>
   );
 }
