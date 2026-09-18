@@ -63,7 +63,7 @@ export default function AdminPressBitsPage() {
   const [videoFileName, setVideoFileName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [year, setYear] = useState(String(YEAR_OPTIONS[0]));
-  const [category, setCategory] = useState(EVENT_CATEGORY_OPTIONS[0]);
+  const [category, setCategory] = useState<string>(EVENT_CATEGORY_OPTIONS[0]);
   const [sortOrder, setSortOrder] = useState("0");
   const [enabled, setEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
