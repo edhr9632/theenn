@@ -109,7 +109,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     if (
       pathname.startsWith("/admin/events") ||
       pathname.startsWith("/admin/speakers") ||
-      pathname.startsWith("/admin/sponsors")
+      pathname.startsWith("/admin/sponsors") ||
+      pathname.startsWith("/admin/press-bits")
     ) {
       setEventsOpen(true);
     }

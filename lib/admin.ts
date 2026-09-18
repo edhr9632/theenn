@@ -27,6 +27,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     children: [
       { href: "/admin/speakers", label: "Speakers" },
       { href: "/admin/sponsors", label: "Sponsors" },
+      { href: "/admin/press-bits", label: "Press Bits" },
     ],
   },
   { href: "/admin/contacts", label: "Contact Messages", icon: "mail" },

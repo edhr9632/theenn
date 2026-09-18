@@ -1,4 +1,4 @@
-/* Education News Network ù palette */
+/* Education News Network ? palette */
 :root {
   --navy: #1a4099;
   --primary-blue: #3669b4;
@@ -35,7 +35,7 @@ body {
   color: var(--accent-blue-tag) !important;
 }
 
-/* Spotify header advertisement ù white sliding banner */
+/* Spotify header advertisement ? white sliding banner */
 .spotify-ad-bar {
   background: #fff;
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
@@ -367,7 +367,7 @@ body {
   filter: none;
 }
 
-/* Shared logo frame ù ET size is the source of truth for MSA + EDHR */
+/* Shared logo frame ? ET size is the source of truth for MSA + EDHR */
 .ad-brand-logo {
   display: inline-flex;
   align-items: center;
@@ -389,7 +389,7 @@ body {
   display: block;
 }
 
-/* ET Magazine ù logo from educationtoday.co */
+/* ET Magazine ? logo from educationtoday.co */
 .ad-layout-et {
   gap: 1rem 1.35rem;
   --ad-brand: #1a6bc8;
@@ -439,7 +439,7 @@ body {
   color: var(--ad-brand);
 }
 
-/* ENN ù Education News Network */
+/* ENN ? Education News Network */
 .ad-layout-enn {
   gap: 1rem 1.35rem;
   --ad-brand: #001a33;
@@ -496,7 +496,7 @@ body {
   background: linear-gradient(180deg, #2a5bb8 0%, #1a4099 55%, #001a33 100%);
 }
 
-/* MSA ù same logo frame size as ET */
+/* MSA ? same logo frame size as ET */
 .ad-layout-msa {
   gap: 1rem 1.2rem;
   --ad-brand: #00aeef;
@@ -571,7 +571,7 @@ body {
   color: var(--ad-brand-accent);
 }
 
-/* EDHR ù logo from edhr.in, same frame size as ET */
+/* EDHR ? logo from edhr.in, same frame size as ET */
 .ad-layout-edhr {
   gap: 1rem 1.35rem;
   --ad-brand: #080808;
@@ -726,7 +726,7 @@ body {
   }
 }
 
-/* Promo announcement ù scrolls away (not sticky) */
+/* Promo announcement ? scrolls away (not sticky) */
 .promo-announcement-bar {
   background: linear-gradient(
     90deg,
@@ -994,7 +994,7 @@ body {
   }
 }
 
-/* Footer ù white panel sized to match large logo */
+/* Footer ? white panel sized to match large logo */
 .footer-brand {
   background: none;
   padding: 0;
@@ -1066,7 +1066,6 @@ body {
 /* Sticky masthead: utility bar + nav + Ask ENN (promo scrolls away) */
 .site-masthead {
   position: relative;
-  overflow: visible;
 }
 
 .site-masthead-promo {
@@ -1074,86 +1073,14 @@ body {
   z-index: 1;
 }
 
-.site-masthead-placeholder {
-  width: 100%;
-  pointer-events: none;
-}
-
 .site-masthead-sticky {
-  position: fixed;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1200;
+  z-index: 1040;
   background-color: #fff;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
-  transition: box-shadow 0.2s ease;
-  top: 0;
-}
-
-.site-masthead-sticky.is-pinned {
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
-}
-
-.site-masthead-sticky.is-pinned .top-bar {
-  background-color: var(--navy);
-}
-
-.site-masthead-sticky.is-pinned .main-header,
-.site-masthead-sticky.is-pinned .site-ask-enn-strip,
-.site-masthead-sticky.is-pinned .breaking-bar {
-  background-color: #fff;
-}
-
-.site-masthead-sticky.is-scrolled {
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
-}
-
-.site-masthead-sticky .top-bar {
-  max-height: 6rem;
-  overflow: hidden;
-  transition:
-    max-height 0.25s ease,
-    opacity 0.2s ease,
-    padding 0.25s ease,
-    border-color 0.2s ease;
-}
-
-.site-masthead-sticky.is-pinned .top-bar,
-.site-masthead-sticky.is-scrolled .top-bar {
-  max-height: 0;
-  opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  border: 0;
-  pointer-events: none;
-}
-
-.site-masthead-sticky.is-pinned .breaking-bar,
-.site-masthead-sticky.is-scrolled .breaking-bar {
-  display: none;
-}
-
-.site-masthead-sticky.is-pinned .main-header .navbar,
-.site-masthead-sticky.is-scrolled .main-header .navbar {
-  padding-top: 0.35rem !important;
-  padding-bottom: 0.35rem !important;
-}
-
-.site-masthead-sticky.is-pinned .site-logo--header,
-.site-masthead-sticky.is-scrolled .site-logo--header {
-  max-height: 3.35rem;
-}
-
-.site-masthead-sticky.is-pinned .site-ask-enn-strip,
-.site-masthead-sticky.is-scrolled .site-ask-enn-strip {
-  padding-top: 0.55rem;
-  padding-bottom: 0.65rem;
+  box-shadow: 0 4px 20px rgba(26, 64, 153, 0.14);
 }
 
 .site-masthead-sticky .dropdown-menu {
-  z-index: 1210;
+  z-index: 1055;
 }
 
 /* Text / image logo lockup */
@@ -1281,7 +1208,7 @@ body {
   font-weight: 500;
 }
 
-/* Main ù fill viewport so footer matches every page */
+/* Main ? fill viewport so footer matches every page */
 .main-area,
 .news-page,
 .news-article-page,
@@ -1409,8 +1336,8 @@ body {
   }
 }
 
-/* Top Education News ù broadcast-style hero */
-/* ùùù askENN bar + full chat (home Top Education News) ùùù */
+/* Top Education News ? broadcast-style hero */
+/* ??? askENN bar + full chat (home Top Education News) ??? */
 .site-ask-enn-strip {
   background: #fff;
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
@@ -2175,7 +2102,7 @@ body {
   margin-bottom: 0.3rem;
 }
 
-/* Crawlable askENN copy ù kept in DOM for SEO, hidden from the chat UI */
+/* Crawlable askENN copy ? kept in DOM for SEO, hidden from the chat UI */
 .ask-enn-seo {
   position: absolute;
   width: 1px;
@@ -2415,7 +2342,7 @@ body {
   box-shadow: 0 4px 14px rgba(214, 40, 57, 0.35);
 }
 
-/* Bootstrap .ratio > * forces children to fill the box ù keep Watch now as a small pill */
+/* Bootstrap .ratio > * forces children to fill the box ? keep Watch now as a small pill */
 .top-edu-feature-media.ratio > .top-edu-watch-btn {
   position: absolute;
   inset: auto;
@@ -2578,7 +2505,7 @@ body {
   color: var(--navy);
 }
 
-/* Featured (legacy ù kept for other pages if referenced) */
+/* Featured (legacy ? kept for other pages if referenced) */
 .featured-media img {
   filter: brightness(0.72);
 }
@@ -2628,7 +2555,7 @@ body {
   letter-spacing: -0.015em;
 }
 
-/* Tall hero: larger vertical space for the image (ratio = height/width ù 100%) */
+/* Tall hero: larger vertical space for the image (ratio = height/width ? 100%) */
 .featured-ratio {
   --bs-aspect-ratio: 68%;
 }
@@ -2661,7 +2588,7 @@ body {
   max-width: 52rem;
 }
 
-/* Sponsored placement banner ù full viewport width, content in container */
+/* Sponsored placement banner ? full viewport width, content in container */
 .sponsor-banner-full {
   width: 100%;
   background: linear-gradient(90deg, #1a4099 0%, #3669b4 40%, #5691cc 75%, #2abcf3 100%);
@@ -2681,7 +2608,7 @@ body {
   }
 }
 
-/* Pulse Pro partner strip ù palette accent band */
+/* Pulse Pro partner strip ? palette accent band */
 .partner-pro-banner {
   width: 100%;
   background: linear-gradient(
@@ -2984,7 +2911,7 @@ body {
   color: var(--primary-blue);
 }
 
-/* News article detail ù main column + sidebar */
+/* News article detail ? main column + sidebar */
 .news-article-page {
   background-color: var(--page-bg);
 }
@@ -3026,7 +2953,7 @@ body {
   opacity: 0.45;
 }
 
-/* ùùù Shared ENN media player (articles + podcasts) ùùù */
+/* ??? Shared ENN media player (articles + podcasts) ??? */
 .enn-media {
   --enn-navy: #0b2a5c;
   --enn-sky: #5ba3e0;
@@ -3628,7 +3555,7 @@ body {
 }
 
 .article-content ul li::before {
-  content: "ù";
+  content: "?";
   position: absolute;
   left: 0;
   top: -0.02em;
@@ -3650,7 +3577,7 @@ body {
 }
 
 .article-content ul ul li::before {
-  content: "ù";
+  content: "?";
   font-size: 1rem;
   font-weight: 600;
   color: rgba(54, 105, 180, 0.75);
@@ -3872,7 +3799,7 @@ body {
   gap: 1.5rem;
 }
 
-/* Share ù icon tiles */
+/* Share ? icon tiles */
 .article-share-bar {
   padding: 1.35rem 1.4rem 1.45rem;
   border: 1px solid rgba(26, 64, 153, 0.12);
@@ -3970,7 +3897,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* FAQ accordion ù auto from article keywords */
+/* FAQ accordion ? auto from article keywords */
 .article-faq {
   padding: 1.4rem 1.4rem 1.5rem;
   border: 1px solid rgba(26, 64, 153, 0.12);
@@ -4058,7 +3985,7 @@ body {
   color: #2b3542;
 }
 
-/* Ask AI ù chat layout (page + floating panel) */
+/* Ask AI ? chat layout (page + floating panel) */
 .article-ask-ai {
   display: flex;
   flex-direction: column;
@@ -4863,8 +4790,8 @@ body {
   }
 }
 
-/* Home ù Panel Discussions (carousel) */
-/* ùùù Home Videos section (NDTV-style) ùùù */
+/* Home ? Panel Discussions (carousel) */
+/* ??? Home Videos section (NDTV-style) ??? */
 .home-videos-section {
   background: #fff;
 }
@@ -5478,7 +5405,7 @@ body {
   }
 }
 
-/* Home ù Daily News + Trending News */
+/* Home ? Daily News + Trending News */
 .daily-trending-section {
   background-color: var(--page-bg);
 }
@@ -5749,7 +5676,7 @@ body {
   color: var(--primary-blue);
 }
 
-/* Latest Coverage ù equal-height 2ù2 grid + sidebar */
+/* Latest Coverage ? equal-height 2?2 grid + sidebar */
 .latest-coverage {
   background-color: var(--page-bg);
 }
@@ -5847,7 +5774,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Morning Wire ù magazine-style promo card */
+/* Morning Wire ? magazine-style promo card */
 .morning-wire-box {
   border-radius: 1rem;
   padding: 1.75rem 1.5rem;
@@ -6392,7 +6319,7 @@ body {
   box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25);
 }
 
-/* Events ù hero, filters, event / speaker / sponsor grids */
+/* Events ? hero, filters, event / speaker / sponsor grids */
 .events-page {
   background-color: var(--page-bg);
 }
@@ -6632,7 +6559,7 @@ body {
   color: #fff;
 }
 
-/* Home ù Short Videos (responsive grid) */
+/* Home ? Short Videos (responsive grid) */
 .home-shorts-section {
   background: #fff;
 }
@@ -6937,7 +6864,7 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Bootstrap .ratio > * stretches every direct child to 100% ù keep tag pill-sized */
+/* Bootstrap .ratio > * stretches every direct child to 100% ? keep tag pill-sized */
 .event-card-media.ratio > .event-card-tag {
   width: auto;
   height: auto;
@@ -7139,7 +7066,114 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* About ù hero, overlapping stats, mission, values */
+.events-press-bit-card {
+  color: inherit;
+  transition: transform 0.18s ease;
+}
+
+.events-press-bit-card:hover {
+  color: inherit;
+  transform: translateY(-2px);
+}
+
+.events-press-bit-thumb {
+  background: #0f172a;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.events-press-bit-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: rgba(26, 64, 153, 0.92);
+  color: #fff;
+  font-size: 0.85rem;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+  pointer-events: none;
+}
+
+.events-press-bit-title {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--navy);
+}
+
+.events-press-bit-meta {
+  color: #64748b;
+}
+
+.events-press-bit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.events-press-bit-modal-panel {
+  width: min(100%, 28rem);
+  background: #0b1220;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.events-press-bit-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.events-press-bit-modal-title {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.events-press-bit-modal-close {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.events-press-bit-modal-body {
+  aspect-ratio: 9 / 16;
+  background: #000;
+}
+
+.events-press-bit-modal-body iframe,
+.events-press-bit-modal-body video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+
+/* About ? hero, overlapping stats, mission, values */
 .about-page {
   background-color: #fff;
 }
@@ -7339,7 +7373,7 @@ body {
   z-index: 1;
 }
 
-/* Contact ù hero, form, office, map */
+/* Contact ? hero, form, office, map */
 .contact-page {
   background-color: #fff;
 }
@@ -7546,7 +7580,7 @@ a.contact-office-text:hover {
   color: var(--accent-blue-tag) !important;
 }
 
-/* ùùù Privacy / Terms / Ethics ùùù */
+/* ??? Privacy / Terms / Ethics ??? */
 .legal-page {
   background:
     radial-gradient(ellipse 70% 40% at 100% 0%, rgba(42, 188, 243, 0.06), transparent 55%),
@@ -7873,7 +7907,7 @@ a.contact-office-text:hover {
   }
 }
 
-/* ùùù Subscribe / Newsletter / Sign in ùùù */
+/* ??? Subscribe / Newsletter / Sign in ??? */
 .account-page {
   background:
     radial-gradient(ellipse 70% 40% at 0% 0%, rgba(42, 188, 243, 0.07), transparent 55%),
@@ -8394,7 +8428,7 @@ a.contact-office-text:hover {
   color: #ffb4bc;
 }
 
-/* ùùù Weekly News magazine editions ùùù */
+/* ??? Weekly News magazine editions ??? */
 .weekly-news-page {
   background:
     radial-gradient(ellipse 55% 35% at 100% 0%, rgba(214, 40, 57, 0.05), transparent 55%),
@@ -8783,7 +8817,7 @@ a.contact-office-text:hover {
   cursor: pointer;
 }
 
-/* ùùù Weekly PDF fullscreen viewer ùùù */
+/* ??? Weekly PDF fullscreen viewer ??? */
 body.weekly-pdf-open {
   overflow: hidden;
 }
@@ -8895,7 +8929,7 @@ body.weekly-pdf-open {
   }
 }
 
-/* ùùù Floating survey CTA ùùù */
+/* ??? Floating survey CTA ??? */
 .enn-floating-survey {
   display: inline-flex;
   align-items: center;
@@ -9044,7 +9078,7 @@ body.weekly-pdf-open {
   }
 }
 
-/* ùùù AI dock: voice brief + Ask ENN ùùù */
+/* ??? AI dock: voice brief + Ask ENN ??? */
 .enn-ai-dock {
   position: fixed;
   right: 1rem;
@@ -9338,7 +9372,7 @@ body.weekly-pdf-open {
   color: #b91c1c;
 }
 
-/* ùùù Floating Now Playing (scroll PiP YouTube) ùùù */
+/* ??? Floating Now Playing (scroll PiP YouTube) ??? */
 .enn-pip {
   position: fixed;
   left: 1rem;
@@ -9767,7 +9801,7 @@ body.weekly-pdf-open {
   }
 }
 
-/* Ask ENN ù full-page overlay (welcome mock: waves + globe + prompt cards) */
+/* Ask ENN ? full-page overlay (welcome mock: waves + globe + prompt cards) */
 .ask-enn-fp-overlay {
   position: fixed;
   inset: 0;
@@ -10562,7 +10596,7 @@ body.weekly-pdf-open {
   color: var(--primary-blue);
 }
 
-/* Ask ENN ù in-overlay full story reader */
+/* Ask ENN ? in-overlay full story reader */
 .ask-enn-story-viewer {
   position: fixed;
   inset: 0;

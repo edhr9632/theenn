@@ -8,7 +8,6 @@ import SurveyFormModal from "./SurveyFormModal";
 import SiteSearchButton from "./SiteSearchButton";
 import FestivalTopBarTicker from "./FestivalTopBarTicker";
 import SiteAskEnnBar from "./SiteAskEnnBar";
-import SiteMastheadStickyFrame from "./SiteMastheadStickyFrame";
 import { getSurveyConfig, hasSurveyTarget } from "@/lib/survey";
 
 type SiteMastheadProps = {
@@ -31,7 +30,7 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
         <PromoAnnouncementBar />
       </div>
 
-      <SiteMastheadStickyFrame>
+      <div className="site-masthead-sticky sticky-top">
         <div className="top-bar text-white py-2">
           <div className="container-fluid px-3 px-lg-4">
             <div className="d-flex flex-column flex-md-row align-items-center justify-content-md-between gap-2 gap-md-3">
@@ -142,6 +141,7 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
                       <li><Link className="dropdown-item" href="/events">Featured events</Link></li>
                       <li><Link className="dropdown-item" href="/events/speakers">Speakers</Link></li>
                       <li><Link className="dropdown-item" href="/events/sponsors">Sponsors</Link></li>
+                      <li><Link className="dropdown-item" href="/events/press-bits">Press Bits</Link></li>
                     </ul>
                   </li>
                   <li className="nav-item">
@@ -194,7 +194,7 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
             </div>
           </div>
         ) : null}
-      </SiteMastheadStickyFrame>
+      </div>
     </div>
   );
 }
