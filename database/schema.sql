@@ -290,13 +290,15 @@ CREATE TABLE IF NOT EXISTS speakers (
   event_id   TEXT REFERENCES events(id) ON DELETE SET NULL,
   category   TEXT,
   year       SMALLINT,
-  youtube_url TEXT,
+  video_url  TEXT,
+  source_type TEXT NOT NULL DEFAULT 'youtube',
   sort_order INT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_speakers_event ON speakers(event_id);
+CREATE INDEX IF NOT EXISTS idx_speakers_year ON speakers (year DESC);
 
 CREATE TABLE IF NOT EXISTS sponsors (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -306,13 +308,15 @@ CREATE TABLE IF NOT EXISTS sponsors (
   event_id   TEXT REFERENCES events(id) ON DELETE SET NULL,
   category   TEXT,
   year       SMALLINT,
-  youtube_url TEXT,
+  video_url  TEXT,
+  source_type TEXT NOT NULL DEFAULT 'youtube',
   sort_order INT NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_sponsors_event ON sponsors(event_id);
+CREATE INDEX IF NOT EXISTS idx_sponsors_year ON sponsors (year DESC);
 
 -- ---------------------------------------------------------------------------
 -- Podcasts

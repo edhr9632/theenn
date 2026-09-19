@@ -7019,6 +7019,11 @@ body {
   background-color: #e8ecf1;
 }
 
+.events-speaker-card {
+  cursor: pointer;
+  color: inherit;
+}
+
 .events-speaker-name {
   color: var(--navy);
 }

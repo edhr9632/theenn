@@ -1,3 +1,8 @@
+import {
+  EVENT_CATEGORIES_BY_YEAR,
+  getEventCategoriesForYear as getConfiguredEventCategoriesForYear,
+} from "@/lib/eventCategories";
+
 export const siteConfig = {
   name: "Education News Network",
   tagline: "Independent journalism for a connected world.",
@@ -69,24 +74,27 @@ export type SponsorProfile = {
   youtube: string;
 };
 
-/** Categories for each year — filled from admin/backend when available. */
-export const eventCategoriesByYear: Record<number, string[]> = {
-  2026: [],
-  2025: [],
-};
+/** Categories for each year — used by public Events filters. */
+export { EVENT_CATEGORIES_BY_YEAR as eventCategoriesByYear };
 
 export const eventEditions: EventEdition[] = [];
 
 export function getEventYears(): number[] {
-  return Array.from(new Set(eventEditions.map((e) => e.year))).sort((a, b) => b - a);
+  const fromEditions = Array.from(new Set(eventEditions.map((e) => e.year)));
+  const defaults = [2026, 2025];
+  return Array.from(new Set([...fromEditions, ...defaults])).sort((a, b) => b - a);
 }
 
 export function getCategoriesForYear(year: string | number): string[] {
   if (year === "All" || year === "") {
-    return Array.from(new Set(eventEditions.map((e) => e.category)));
+    return Array.from(
+      new Set([...eventEditions.map((e) => e.category), ...Object.values(EVENT_CATEGORIES_BY_YEAR).flat()]),
+    );
   }
   const y = Number(year);
-  return eventCategoriesByYear[y] ?? eventEditions.filter((e) => e.year === y).map((e) => e.category);
+  const fromConfig = getConfiguredEventCategoriesForYear(y);
+  if (fromConfig.length) return fromConfig;
+  return eventEditions.filter((e) => e.year === y).map((e) => e.category);
 }
 
 export const speakers: SpeakerProfile[] = [];

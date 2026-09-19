@@ -144,12 +144,10 @@ export default function AdminFormLayout({
   );
 }
 
-export const EVENT_CATEGORY_OPTIONS = [
-  "North Educators' Summit & Awards",
-  "Maharashtra Educators' Summit & Awards",
-  "South India Educators' Summit",
-  "14th National Conference on K-12 Leadership",
-  "Maharashtra & North Educators' Summit & Awards",
-  "13th National Conference on K-12 Leadership",
-  "Bengaluru Leadership Roundtable",
-] as const;
+export {
+  EVENT_CATEGORIES_BY_YEAR,
+  EVENT_YEAR_OPTIONS,
+  EVENT_CATEGORY_OPTIONS,
+  getEventCategoriesForYear,
+  getDefaultEventCategory,
+} from "@/lib/eventCategories";

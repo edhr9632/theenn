@@ -1,6 +1,7 @@
 "use client";
 
-import AdminFormLayout, { EVENT_CATEGORY_OPTIONS } from "@/components/admin/AdminFormLayout";
+import AdminFormLayout from "@/components/admin/AdminFormLayout";
+import AdminYearCategoryFields from "@/components/admin/AdminYearCategoryFields";
 
 export default function AdminEventNewPage() {
   return (
@@ -9,16 +10,7 @@ export default function AdminEventNewPage() {
         Title
         <input className="admin-field" name="title" required />
       </label>
-      <label className="admin-field-label">
-        Category
-        <select className="admin-field" name="tag" defaultValue={EVENT_CATEGORY_OPTIONS[0]}>
-          {EVENT_CATEGORY_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      </label>
+      <AdminYearCategoryFields categoryName="tag" defaultYear={2026} />
       <label className="admin-field-label">
         Date
         <input className="admin-field" name="date" placeholder="September 10, 2026" />

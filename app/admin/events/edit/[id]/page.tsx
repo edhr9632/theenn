@@ -1,13 +1,20 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import AdminFormLayout, { EVENT_CATEGORY_OPTIONS } from "@/components/admin/AdminFormLayout";
+import AdminFormLayout from "@/components/admin/AdminFormLayout";
+import AdminYearCategoryFields from "@/components/admin/AdminYearCategoryFields";
 import { events } from "@/lib/data";
+
+function inferYearFromTag(tag?: string) {
+  const match = tag?.match(/(20\d{2})\s*$/);
+  return match ? Number(match[1]) : 2026;
+}
 
 export default function AdminEventEditPage() {
   const params = useParams<{ id: string }>();
   const title = decodeURIComponent(params.id);
   const event = events.find((item) => item.title === title);
+  const defaultYear = inferYearFromTag(event?.tag);
 
   return (
     <AdminFormLayout
@@ -20,16 +27,11 @@ export default function AdminEventEditPage() {
         Title
         <input className="admin-field" name="title" defaultValue={event?.title ?? title} required />
       </label>
-      <label className="admin-field-label">
-        Category
-        <select className="admin-field" name="tag" defaultValue={event?.tag ?? EVENT_CATEGORY_OPTIONS[0]}>
-          {[event?.tag, ...EVENT_CATEGORY_OPTIONS].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      </label>
+      <AdminYearCategoryFields
+        categoryName="tag"
+        defaultYear={defaultYear}
+        defaultCategory={event?.tag}
+      />
       <label className="admin-field-label">
         Date
         <input className="admin-field" name="date" defaultValue={event?.date ?? ""} />
