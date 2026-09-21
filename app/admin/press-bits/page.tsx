@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { AdminBadge, AdminPageHeader, AdminTable } from "@/components/admin/AdminUi";
 import { AdminRowActions } from "@/components/admin/AdminRowActions";
 import { EVENT_YEAR_OPTIONS, getDefaultEventCategory, getEventCategoriesForYear } from "@/lib/eventCategories";
-import { uploadPressBitAsset } from "@/lib/pressBitUpload";
+import { uploadEventMediaAsset, uploadPressBitAsset } from "@/lib/eventMediaUpload";
 import { youtubeThumb } from "@/lib/siteVideos";
 import type { PressBit, PressBitSourceType } from "@/lib/pressBitTypes";
 
@@ -68,6 +68,7 @@ export default function AdminPressBitsPage() {
   const [enabled, setEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
 
   const loadItems = async () => {
     setLoading(true);
@@ -144,8 +145,11 @@ export default function AdminPressBitsPage() {
   const onVideoFile = async (file: File | null) => {
     if (!file) return;
     setUploadingVideo(true);
+    setUploadPercent(0);
     try {
-      const publicUrl = await uploadPressBitAsset(file, "videos", title || "press-bit");
+      const publicUrl = await uploadEventMediaAsset(file, "videos", title || "press-bit", {
+        onProgress: setUploadPercent,
+      });
       setVideoUrl(publicUrl);
       setVideoFileName(file.name);
       setSourceType("upload");
@@ -154,6 +158,7 @@ export default function AdminPressBitsPage() {
       window.alert(error instanceof Error ? error.message : "Could not upload video.");
     } finally {
       setUploadingVideo(false);
+      setUploadPercent(null);
     }
   };
 
@@ -293,7 +298,9 @@ export default function AdminPressBitsPage() {
                     disabled={uploadingVideo}
                     onClick={() => videoRef.current?.click()}
                   >
-                    {uploadingVideo ? "Uploading…" : "Choose video file"}
+                    {uploadingVideo
+                      ? `Uploading…${uploadPercent != null ? ` ${uploadPercent}%` : ""}`
+                      : "Choose video file"}
                   </button>
                   {videoUrl ? (
                     <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="admin-link-btn">
@@ -304,7 +311,7 @@ export default function AdminPressBitsPage() {
                 <span className="small text-muted">
                   {videoFileName
                     ? `Selected: ${videoFileName}`
-                    : "MP4 / WebM / MOV up to 200 MB. Video uploads to Supabase storage."}
+                    : "MP4 / WebM / MOV up to 200 MB. Large files use resumable upload. If you see a size error, raise Supabase Storage → Settings → Global file size limit to 200 MB (Pro required above 50 MB), or paste a YouTube URL instead."}
                 </span>
                 <input
                   ref={videoRef}

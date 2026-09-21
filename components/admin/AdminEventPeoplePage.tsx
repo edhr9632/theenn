@@ -56,6 +56,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
   const [sortOrder, setSortOrder] = useState("0");
   const [saving, setSaving] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState<number | null>(null);
 
   const loadItems = async () => {
     setLoading(true);
@@ -153,8 +154,11 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
   const onVideoFile = async (file: File | null) => {
     if (!file) return;
     setUploadingVideo(true);
+    setUploadPercent(0);
     try {
-      const publicUrl = await uploadEventMediaAsset(file, videoFolder, name || label);
+      const publicUrl = await uploadEventMediaAsset(file, videoFolder, name || label, {
+        onProgress: setUploadPercent,
+      });
       setVideoUrl(publicUrl);
       setVideoFileName(file.name);
       setSourceType("upload");
@@ -163,6 +167,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
       window.alert(error instanceof Error ? error.message : "Could not upload video.");
     } finally {
       setUploadingVideo(false);
+      setUploadPercent(null);
     }
   };
 
@@ -331,7 +336,9 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
                     disabled={uploadingVideo}
                     onClick={() => videoRef.current?.click()}
                   >
-                    {uploadingVideo ? "Uploading…" : "Choose video file"}
+                    {uploadingVideo
+                      ? `Uploading…${uploadPercent != null ? ` ${uploadPercent}%` : ""}`
+                      : "Choose video file"}
                   </button>
                   {videoUrl ? (
                     <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="admin-link-btn">
@@ -342,7 +349,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
                 <span className="small text-muted">
                   {videoFileName
                     ? `Selected: ${videoFileName}`
-                    : "MP4 / WebM / MOV up to 200 MB. Uploads to Supabase storage."}
+                    : "MP4 / WebM / MOV up to 200 MB. Large files use resumable upload. If size errors appear, raise Supabase Storage → Settings → Global file size limit to 200 MB (Pro needed above 50 MB)."}
                 </span>
                 <input
                   ref={videoRef}
