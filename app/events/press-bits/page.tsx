@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import SiteMasthead from "@/components/SiteMasthead";
 import ComingSoonBlock from "@/components/ComingSoonBlock";
+import PressBitThumb from "@/components/PressBitThumb";
 import type { PressBit } from "@/lib/pressBitTypes";
 import { extractYoutubeId } from "@/lib/videoEmbed";
 
@@ -179,26 +179,7 @@ export default function PressBitsPage() {
                     onClick={() => setActiveBit(item)}
                   >
                     <div className="events-press-bit-thumb ratio ratio-9x16 position-relative overflow-hidden rounded-3">
-                      {item.image ? (
-                        item.image.startsWith("data:") || item.image.startsWith("/") ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-                          />
-                        ) : (
-                          <Image
-                            src={item.image}
-                            alt={item.title}
-                            fill
-                            className="object-fit-cover"
-                            sizes="(max-width:768px) 50vw, 25vw"
-                          />
-                        )
-                      ) : (
-                        <span className="position-absolute top-0 start-0 w-100 h-100 bg-dark" />
-                      )}
+                      <PressBitThumb item={item} />
                       <span className="events-press-bit-play" aria-hidden="true">
                         ▶
                       </span>
