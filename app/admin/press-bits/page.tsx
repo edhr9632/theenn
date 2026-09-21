@@ -86,6 +86,9 @@ export default function AdminPressBitsPage() {
 
   useEffect(() => {
     void loadItems();
+    void import("@/lib/compressVideoForStorage").then((mod) => {
+      mod.preloadVideoCompressor();
+    });
   }, []);
 
   const flash = (text: string) => {

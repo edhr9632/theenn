@@ -214,10 +214,10 @@ export default function PressBitsPage() {
               <button
                 type="button"
                 className="events-press-bit-modal-close"
-                aria-label="Close video"
+                aria-label="Cancel and close video"
                 onClick={() => setActiveBit(null)}
               >
-                ✕
+                ✕ Cancel
               </button>
             </div>
             <div className="events-press-bit-modal-body">

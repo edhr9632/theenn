@@ -5,7 +5,7 @@ import { MAX_VIDEO_BYTES, SAFE_STORAGE_UPLOAD_BYTES } from "@/lib/mediaUploadLim
 const BUCKET = "press-bits";
 export { MAX_VIDEO_BYTES, SAFE_STORAGE_UPLOAD_BYTES };
 const MAX_VIDEO_MB = Math.round(MAX_VIDEO_BYTES / (1024 * 1024));
-const RESUMABLE_THRESHOLD_BYTES = 6 * 1024 * 1024;
+const RESUMABLE_THRESHOLD_BYTES = 40 * 1024 * 1024;
 const TUS_CHUNK_SIZE = 6 * 1024 * 1024;
 
 export type EventMediaFolder =

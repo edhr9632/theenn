@@ -12,9 +12,10 @@ async function getFfmpeg(onStatus?: (message: string) => void): Promise<FFmpeg> 
   if (ffmpegLoadPromise) return ffmpegLoadPromise;
 
   ffmpegLoadPromise = (async () => {
-    onStatus?.("Loading video compressor (first time may take a minute)…");
+    onStatus?.("Loading fast compressor…");
     const ffmpeg = new FFmpeg();
-    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
+    // jsDelivr is typically faster than unpkg from India.
+    const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd";
     await ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
       wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
@@ -29,6 +30,14 @@ async function getFfmpeg(onStatus?: (message: string) => void): Promise<FFmpeg> 
     ffmpegLoadPromise = null;
     throw error;
   }
+}
+
+/** Warm the compressor in the background so the first large upload is faster. */
+export function preloadVideoCompressor() {
+  if (typeof window === "undefined") return;
+  void getFfmpeg().catch(() => {
+    // Ignore preload failures; upload path will retry.
+  });
 }
 
 function readVideoDuration(file: File): Promise<number> {
@@ -57,9 +66,17 @@ function formatMb(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function buildOutputFile(data: Uint8Array, originalName: string) {
+  const copy = new Uint8Array(data.byteLength);
+  copy.set(data);
+  return new File([copy], originalName.replace(/\.[^.]+$/, "") + "-compressed.mp4", {
+    type: "video/mp4",
+  });
+}
+
 /**
  * Compresses a large video in-browser so it fits Supabase Free/global storage limits.
- * Uses single-thread ffmpeg.wasm (no COOP/COEP headers required).
+ * Single-thread ffmpeg.wasm with a fast first pass (usually enough).
  */
 export async function compressVideoForStorage(
   file: File,
@@ -86,85 +103,80 @@ export async function compressVideoForStorage(
 
   try {
     options?.onStatus?.(
-      `Compressing ${formatMb(file.size)} video to under ${formatMb(maxBytes)}…`,
+      `Compressing ${formatMb(file.size)} → under ${formatMb(maxBytes)} (fast pass)…`,
     );
     await ffmpeg.writeFile(inputName, await fetchFile(file));
 
-    // Target ~85% of max so encode overhead still fits.
+    // Aim ~80% of max so one ultrafast pass usually fits.
     const targetBitsPerSec = Math.max(
-      250_000,
-      Math.floor(((maxBytes * 0.85) * 8) / duration) - 96_000,
+      220_000,
+      Math.floor(((maxBytes * 0.8) * 8) / duration) - 80_000,
     );
 
-    const attempts: string[][] = [
-      [
-        "-i",
-        inputName,
-        "-vf",
-        "scale='min(1280,iw)':-2",
-        "-c:v",
-        "libx264",
-        "-b:v",
-        String(targetBitsPerSec),
-        "-maxrate",
-        String(Math.floor(targetBitsPerSec * 1.15)),
-        "-bufsize",
-        String(targetBitsPerSec * 2),
-        "-preset",
-        "veryfast",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "96k",
-        "-movflags",
-        "+faststart",
-        outputName,
-      ],
-      [
-        "-i",
-        inputName,
-        "-vf",
-        "scale='min(960,iw)':-2",
-        "-c:v",
-        "libx264",
-        "-crf",
-        "32",
-        "-preset",
-        "veryfast",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "64k",
-        "-movflags",
-        "+faststart",
-        outputName,
-      ],
-      [
-        "-i",
-        inputName,
-        "-vf",
-        "scale='min(720,iw)':-2",
-        "-c:v",
-        "libx264",
-        "-crf",
-        "36",
-        "-preset",
-        "ultrafast",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "64k",
-        "-movflags",
-        "+faststart",
-        outputName,
-      ],
+    // Fast first: 720p + ultrafast. Second pass only if still too large.
+    const attempts: Array<{ label: string; args: string[] }> = [
+      {
+        label: "fast",
+        args: [
+          "-i",
+          inputName,
+          "-vf",
+          "scale='min(720,iw)':-2",
+          "-c:v",
+          "libx264",
+          "-b:v",
+          String(targetBitsPerSec),
+          "-maxrate",
+          String(Math.floor(targetBitsPerSec * 1.2)),
+          "-bufsize",
+          String(targetBitsPerSec * 2),
+          "-preset",
+          "ultrafast",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "80k",
+          "-ac",
+          "1",
+          "-movflags",
+          "+faststart",
+          outputName,
+        ],
+      },
+      {
+        label: "smaller",
+        args: [
+          "-i",
+          inputName,
+          "-vf",
+          "scale='min(540,iw)':-2",
+          "-c:v",
+          "libx264",
+          "-crf",
+          "34",
+          "-preset",
+          "ultrafast",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "64k",
+          "-ac",
+          "1",
+          "-movflags",
+          "+faststart",
+          outputName,
+        ],
+      },
     ];
 
     let compressed: File | null = null;
 
     for (let i = 0; i < attempts.length; i += 1) {
+      const attempt = attempts[i];
       options?.onStatus?.(
-        `Compressing video (pass ${i + 1}/${attempts.length})… this can take a few minutes`,
+        i === 0
+          ? `Compressing quickly (${formatMb(file.size)})…`
+          : "Still too large — running a smaller pass…",
       );
       try {
         await ffmpeg.deleteFile(outputName);
@@ -172,22 +184,14 @@ export async function compressVideoForStorage(
         // output may not exist yet
       }
 
-      await ffmpeg.exec(attempts[i]);
+      await ffmpeg.exec(attempt.args);
       const data = await ffmpeg.readFile(outputName);
       if (!(data instanceof Uint8Array)) {
         throw new Error("Unexpected compressor output.");
       }
-      const copy = new Uint8Array(data.byteLength);
-      copy.set(data);
-      const out = new File([copy], file.name.replace(/\.[^.]+$/, "") + "-compressed.mp4", {
-        type: "video/mp4",
-      });
-
-      if (out.size <= maxBytes) {
-        compressed = out;
-        break;
-      }
+      const out = buildOutputFile(data, file.name);
       compressed = out;
+      if (out.size <= maxBytes) break;
     }
 
     if (!compressed) {

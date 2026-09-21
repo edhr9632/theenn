@@ -237,10 +237,10 @@ export default function SponsorsPage() {
               <button
                 type="button"
                 className="events-press-bit-modal-close"
-                aria-label="Close video"
+                aria-label="Cancel and close video"
                 onClick={() => setActiveItem(null)}
               >
-                ✕
+                ✕ Cancel
               </button>
             </div>
             <div className="events-press-bit-modal-body">
