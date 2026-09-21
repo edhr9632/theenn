@@ -9,10 +9,6 @@ type PressBitThumbProps = {
   item: Pick<PressBit, "title" | "image" | "videoUrl" | "sourceType">;
 };
 
-function isLocalOrDataUrl(url: string) {
-  return url.startsWith("data:") || url.startsWith("/");
-}
-
 function UploadedVideoFrame({ src, alt }: { src: string; alt: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [frameUrl, setFrameUrl] = useState("");
@@ -92,7 +88,8 @@ function UploadedVideoFrame({ src, alt }: { src: string; alt: string }) {
       <img
         src={frameUrl}
         alt={alt}
-        className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+        className="position-absolute top-0 start-0 w-100 h-100"
+        style={{ objectFit: "cover" }}
       />
     );
   }
@@ -105,7 +102,8 @@ function UploadedVideoFrame({ src, alt }: { src: string; alt: string }) {
         muted
         playsInline
         preload="metadata"
-        className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+        className="position-absolute top-0 start-0 w-100 h-100"
+        style={{ objectFit: "cover" }}
       />
     );
   }
@@ -132,25 +130,14 @@ export default function PressBitThumb({ item }: PressBitThumbProps) {
   }
 
   if (storedImage) {
-    if (isLocalOrDataUrl(storedImage)) {
-      // eslint-disable-next-line @next/next/no-img-element
-      return (
-        <img
-          src={storedImage}
-          alt={item.title}
-          className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-        />
-      );
-    }
-
-    // Prefer native img for Supabase/CDN thumbs so Next image config can't block them.
     // eslint-disable-next-line @next/next/no-img-element
     return (
       <img
         src={storedImage}
         alt={item.title}
-        className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
-        loading="lazy"
+        className="position-absolute top-0 start-0 w-100 h-100"
+        style={{ objectFit: "cover" }}
+        loading="eager"
         decoding="async"
       />
     );

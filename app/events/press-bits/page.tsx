@@ -178,7 +178,7 @@ export default function PressBitsPage() {
                     className="events-press-bit-card h-100 d-flex flex-column text-decoration-none border-0 bg-transparent p-0 text-start w-100"
                     onClick={() => setActiveBit(item)}
                   >
-                    <div className="events-press-bit-thumb ratio ratio-9x16 position-relative overflow-hidden rounded-3">
+                    <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">
                       <PressBitThumb item={item} />
                       <span className="events-press-bit-play" aria-hidden="true">
                         ▶
