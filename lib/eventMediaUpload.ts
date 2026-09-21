@@ -1,9 +1,9 @@
 import { Upload } from "tus-js-client";
 import { createClient } from "@/utils/supabase/client";
+import { MAX_VIDEO_BYTES, SAFE_STORAGE_UPLOAD_BYTES } from "@/lib/mediaUploadLimits";
 
 const BUCKET = "press-bits";
-/** App-side cap. Supabase Free plan global limit is 50 MB; Pro can go higher in Storage settings. */
-export const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+export { MAX_VIDEO_BYTES, SAFE_STORAGE_UPLOAD_BYTES };
 const MAX_VIDEO_MB = Math.round(MAX_VIDEO_BYTES / (1024 * 1024));
 const RESUMABLE_THRESHOLD_BYTES = 6 * 1024 * 1024;
 const TUS_CHUNK_SIZE = 6 * 1024 * 1024;
@@ -15,6 +15,11 @@ export type EventMediaFolder =
   | "speakers/thumbs"
   | "sponsors/videos"
   | "sponsors/thumbs";
+
+export type UploadMediaOptions = {
+  onProgress?: (percent: number) => void;
+  onStatus?: (message: string) => void;
+};
 
 function extensionFor(file: File, fallback: string) {
   const fromName = file.name.split(".").pop()?.toLowerCase();
@@ -59,44 +64,6 @@ function formatMb(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function sizeLimitError(file: File, detail?: string) {
-  const projectRef = getSupabaseProjectRef();
-  const settingsUrl = projectRef
-    ? `https://supabase.com/dashboard/project/${projectRef}/storage/settings`
-    : "Supabase Dashboard → Storage → Settings";
-
-  return new Error(
-    [
-      `Upload failed for ${file.name} (${formatMb(file.size)}).`,
-      detail || "The file is larger than Supabase Storage allows.",
-      `Open ${settingsUrl} and set “Global file size limit” to at least ${MAX_VIDEO_MB} MB.`,
-      "Free plans are capped at 50 MB — upgrade to Pro for ~96 MB videos, or use a YouTube/Shorts URL instead.",
-    ].join(" "),
-  );
-}
-
-function mapUploadError(error: unknown, file: File): Error {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : "Upload failed.";
-
-  if (/exceeded the maximum allowed size|Payload too large|EntityTooLarge|413|file size/i.test(message)) {
-    return sizeLimitError(file, message.replace(/^Upload failed:\s*/i, ""));
-  }
-  if (/Bucket not found/i.test(message)) {
-    return new Error("Media storage bucket is missing. Create a public Supabase bucket named press-bits.");
-  }
-  if (/mime|not allowed|invalid|content.?type/i.test(message)) {
-    return new Error(
-      `Upload rejected for ${file.name}. Use MP4, WebM, or MOV. (${message})`,
-    );
-  }
-  return new Error(message.startsWith("Upload failed:") ? message : `Upload failed: ${message}`);
-}
-
 function getSupabaseProjectRef() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
   try {
@@ -111,11 +78,47 @@ function getPublishableKey() {
   return process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() || "";
 }
 
-async function uploadWithStandard(
-  path: string,
-  file: File,
-  contentType: string,
-): Promise<void> {
+function sizeLimitError(file: File, detail?: string) {
+  const projectRef = getSupabaseProjectRef();
+  const settingsUrl = projectRef
+    ? `https://supabase.com/dashboard/project/${projectRef}/storage/settings`
+    : "Supabase Dashboard → Storage → Settings";
+
+  return new Error(
+    [
+      `Upload failed for ${file.name} (${formatMb(file.size)}).`,
+      detail || "The file is larger than Supabase Storage allows.",
+      `Open ${settingsUrl} and set “Global file size limit” to at least ${MAX_VIDEO_MB} MB (Pro plan required above 50 MB),`,
+      "or paste a YouTube/Shorts URL instead.",
+    ].join(" "),
+  );
+}
+
+function mapUploadError(error: unknown, file: File): Error {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "Upload failed.";
+
+  if (
+    /exceeded the maximum allowed size|Payload too large|EntityTooLarge|413|Maximum size exceeded|file size/i.test(
+      message,
+    )
+  ) {
+    return sizeLimitError(file, message.replace(/^Upload failed:\s*/i, ""));
+  }
+  if (/Bucket not found/i.test(message)) {
+    return new Error("Media storage bucket is missing. Create a public Supabase bucket named press-bits.");
+  }
+  if (/mime|not allowed|invalid|content.?type/i.test(message)) {
+    return new Error(`Upload rejected for ${file.name}. Use MP4, WebM, or MOV. (${message})`);
+  }
+  return new Error(message.startsWith("Upload failed:") ? message : `Upload failed: ${message}`);
+}
+
+async function uploadWithStandard(path: string, file: File, contentType: string): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
     cacheControl: "3600",
@@ -180,11 +183,33 @@ async function uploadWithResumable(
   });
 }
 
+async function prepareVideoFile(file: File, options?: UploadMediaOptions): Promise<File> {
+  if (file.size <= SAFE_STORAGE_UPLOAD_BYTES) return file;
+
+  options?.onStatus?.(
+    `${formatMb(file.size)} is over the 50 MB storage cap — compressing automatically…`,
+  );
+
+  try {
+    const { compressVideoForStorage } = await import("@/lib/compressVideoForStorage");
+    return await compressVideoForStorage(file, {
+      maxBytes: SAFE_STORAGE_UPLOAD_BYTES,
+      onProgress: (percent) => options?.onProgress?.(Math.round(percent * 0.7)),
+      onStatus: options?.onStatus,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Compression failed.";
+    throw new Error(
+      `${message} Tip: paste a YouTube/Shorts URL, or upgrade Supabase and raise Global file size limit to 200 MB.`,
+    );
+  }
+}
+
 export async function uploadEventMediaAsset(
   file: File,
   folder: EventMediaFolder,
   titleHint: string,
-  options?: { onProgress?: (percent: number) => void },
+  options?: UploadMediaOptions,
 ): Promise<string> {
   const isVideo = folder.endsWith("videos");
 
@@ -199,23 +224,35 @@ export async function uploadEventMediaAsset(
     throw new Error("Please choose an image file (JPG, PNG, or WebP).");
   }
 
-  const contentType = contentTypeFor(file, isVideo);
+  let uploadFile = file;
+  if (isVideo) {
+    uploadFile = await prepareVideoFile(file, options);
+  }
+
+  const contentType = contentTypeFor(uploadFile, isVideo);
   const path = `${folder}/${safeSlug(titleHint)}-${Date.now()}.${extensionFor(
-    file,
+    uploadFile,
     isVideo ? "mp4" : "jpg",
   )}`;
 
+  options?.onStatus?.(`Uploading ${formatMb(uploadFile.size)}…`);
+
   try {
-    if (isVideo && file.size >= RESUMABLE_THRESHOLD_BYTES) {
-      await uploadWithResumable(path, file, contentType, options?.onProgress);
+    if (isVideo && uploadFile.size >= RESUMABLE_THRESHOLD_BYTES) {
+      await uploadWithResumable(path, uploadFile, contentType, (percent) => {
+        options?.onProgress?.(70 + Math.round(percent * 0.3));
+      });
     } else {
-      options?.onProgress?.(5);
-      await uploadWithStandard(path, file, contentType);
+      options?.onProgress?.(75);
+      await uploadWithStandard(path, uploadFile, contentType);
       options?.onProgress?.(100);
     }
   } catch (error) {
-    throw mapUploadError(error, file);
+    throw mapUploadError(error, uploadFile);
   }
+
+  options?.onProgress?.(100);
+  options?.onStatus?.("Upload complete");
 
   const supabase = createClient();
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);

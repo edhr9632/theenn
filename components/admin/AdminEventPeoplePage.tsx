@@ -57,6 +57,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
   const [saving, setSaving] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   const loadItems = async () => {
     setLoading(true);
@@ -155,9 +156,11 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
     if (!file) return;
     setUploadingVideo(true);
     setUploadPercent(0);
+    setUploadStatus("Preparing video…");
     try {
       const publicUrl = await uploadEventMediaAsset(file, videoFolder, name || label, {
         onProgress: setUploadPercent,
+        onStatus: setUploadStatus,
       });
       setVideoUrl(publicUrl);
       setVideoFileName(file.name);
@@ -168,6 +171,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
     } finally {
       setUploadingVideo(false);
       setUploadPercent(null);
+      setUploadStatus("");
     }
   };
 
@@ -337,7 +341,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
                     onClick={() => videoRef.current?.click()}
                   >
                     {uploadingVideo
-                      ? `Uploading…${uploadPercent != null ? ` ${uploadPercent}%` : ""}`
+                      ? `Working…${uploadPercent != null ? ` ${uploadPercent}%` : ""}`
                       : "Choose video file"}
                   </button>
                   {videoUrl ? (
@@ -347,9 +351,11 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
                   ) : null}
                 </div>
                 <span className="small text-muted">
-                  {videoFileName
-                    ? `Selected: ${videoFileName}`
-                    : "MP4 / WebM / MOV up to 200 MB. Large files use resumable upload. If size errors appear, raise Supabase Storage → Settings → Global file size limit to 200 MB (Pro needed above 50 MB)."}
+                  {uploadingVideo && uploadStatus
+                    ? uploadStatus
+                    : videoFileName
+                      ? `Selected: ${videoFileName}`
+                      : "MP4 / WebM / MOV up to 200 MB. Files over ~45 MB are auto-compressed to fit storage, then uploaded."}
                 </span>
                 <input
                   ref={videoRef}

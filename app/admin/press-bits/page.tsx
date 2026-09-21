@@ -69,6 +69,7 @@ export default function AdminPressBitsPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number | null>(null);
+  const [uploadStatus, setUploadStatus] = useState("");
 
   const loadItems = async () => {
     setLoading(true);
@@ -146,9 +147,11 @@ export default function AdminPressBitsPage() {
     if (!file) return;
     setUploadingVideo(true);
     setUploadPercent(0);
+    setUploadStatus("Preparing video…");
     try {
       const publicUrl = await uploadEventMediaAsset(file, "videos", title || "press-bit", {
         onProgress: setUploadPercent,
+        onStatus: setUploadStatus,
       });
       setVideoUrl(publicUrl);
       setVideoFileName(file.name);
@@ -159,6 +162,7 @@ export default function AdminPressBitsPage() {
     } finally {
       setUploadingVideo(false);
       setUploadPercent(null);
+      setUploadStatus("");
     }
   };
 
@@ -299,7 +303,7 @@ export default function AdminPressBitsPage() {
                     onClick={() => videoRef.current?.click()}
                   >
                     {uploadingVideo
-                      ? `Uploading…${uploadPercent != null ? ` ${uploadPercent}%` : ""}`
+                      ? `Working…${uploadPercent != null ? ` ${uploadPercent}%` : ""}`
                       : "Choose video file"}
                   </button>
                   {videoUrl ? (
@@ -309,9 +313,11 @@ export default function AdminPressBitsPage() {
                   ) : null}
                 </div>
                 <span className="small text-muted">
-                  {videoFileName
-                    ? `Selected: ${videoFileName}`
-                    : "MP4 / WebM / MOV up to 200 MB. Large files use resumable upload. If you see a size error, raise Supabase Storage → Settings → Global file size limit to 200 MB (Pro required above 50 MB), or paste a YouTube URL instead."}
+                  {uploadingVideo && uploadStatus
+                    ? uploadStatus
+                    : videoFileName
+                      ? `Selected: ${videoFileName}`
+                      : "MP4 / WebM / MOV up to 200 MB. Files over ~45 MB are auto-compressed to fit Supabase storage, then uploaded. Or paste a YouTube/Shorts URL."}
                 </span>
                 <input
                   ref={videoRef}
