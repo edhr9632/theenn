@@ -233,6 +233,24 @@ export default function AdminPressBitsPage() {
     }
   };
 
+  const toggleEnabled = async (item: PressBit) => {
+    try {
+      const response = await fetch(`/api/admin/press-bits/${encodeURIComponent(item.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !item.enabled }),
+      });
+      if (!response.ok) {
+        window.alert("Could not update Live/Hidden status.");
+        return;
+      }
+      flash(!item.enabled ? "Now Live on Press Bits page" : "Hidden from Press Bits page");
+      await loadItems();
+    } catch {
+      window.alert("Network error while updating status.");
+    }
+  };
+
   const previewSrc =
     imageUrl.trim() ||
     (sourceType === "youtube" && videoUrl.trim() ? youtubeThumb(videoUrl.trim()) : "");
@@ -374,9 +392,9 @@ export default function AdminPressBitsPage() {
               onChange={(e) => setSortOrder(e.target.value)}
             />
           </label>
-          <label className="admin-field-label admin-check-row">
+          <label className="admin-field-label admin-check-row admin-field-span">
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-            Show on Press Bits page
+            Live on website (unchecked = Hidden — will not appear on /events/press-bits)
           </label>
 
           <div className="admin-field-label admin-field-span">
@@ -485,9 +503,16 @@ export default function AdminPressBitsPage() {
                   <AdminBadge>{item.category}</AdminBadge>
                 </td>
                 <td>
-                  <AdminBadge tone={item.enabled ? "green" : "gray"}>
-                    {item.enabled ? "Live" : "Hidden"}
-                  </AdminBadge>
+                  <button
+                    type="button"
+                    className="border-0 bg-transparent p-0"
+                    title={item.enabled ? "Click to hide from website" : "Click to make Live on website"}
+                    onClick={() => void toggleEnabled(item)}
+                  >
+                    <AdminBadge tone={item.enabled ? "green" : "gray"}>
+                      {item.enabled ? "Live" : "Hidden"}
+                    </AdminBadge>
+                  </button>
                 </td>
                 <td>
                   <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" className="admin-link-btn">
