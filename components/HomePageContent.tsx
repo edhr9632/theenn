@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getHomePageData } from "@/lib/homeContent";
-import HomeSurveyBanner from "./HomeSurveyBanner";
 import TopEducationNewsSection from "./TopEducationNewsSection";
 import HomeSponsorBanner from "./HomeSponsorBanner";
 import DailyTrendingNews from "./DailyTrendingNews";
@@ -18,10 +17,6 @@ export default async function HomePageContent() {
   return (
     <>
       <main className="main-area py-4 py-lg-5">
-        <div className="container">
-          <HomeSurveyBanner />
-        </div>
-
         <TopEducationNewsSection articles={home.topEducation} />
 
         <HomeSponsorBanner banner={home.tvSchedule} />

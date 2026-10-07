@@ -4,11 +4,9 @@ import TopDate from "./TopDate";
 import TopBarBengaluruWeather from "./TopBarBengaluruWeather";
 import PromoAnnouncementBar from "./PromoAnnouncementBar";
 import SpotifyHeaderAd from "./SpotifyHeaderAd";
-import SurveyFormModal from "./SurveyFormModal";
 import SiteSearchButton from "./SiteSearchButton";
 import FestivalTopBarTicker from "./FestivalTopBarTicker";
 import SiteAskEnnBar from "./SiteAskEnnBar";
-import { getSurveyConfig, hasSurveyTarget } from "@/lib/survey";
 
 type SiteMastheadProps = {
   activeNav?: "home" | "news" | "podcasts" | "events" | "about" | "contact" | "panel" | "insights";
@@ -20,9 +18,6 @@ type SiteMastheadProps = {
 };
 
 export default function SiteMasthead({ activeNav, newsActive, breakingItems = [] }: SiteMastheadProps) {
-  const surveyConfig = getSurveyConfig();
-  const hasSurvey = hasSurveyTarget(surveyConfig);
-
   return (
     <div className="site-masthead">
       <div id="site-masthead-promo" className="site-masthead-promo">
@@ -52,16 +47,6 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
                 </Link>
                 <span className="text-white-50 mx-2">|</span>
                 <SiteSearchButton asTopBarLink />
-                {hasSurvey ? (
-                  <>
-                    <span className="text-white-50 mx-2">|</span>
-                    <SurveyFormModal
-                      embedUrl={surveyConfig.embedUrl}
-                      directUrl={surveyConfig.directUrl}
-                      label="Survey"
-                    />
-                  </>
-                ) : null}
               </div>
             </div>
           </div>
