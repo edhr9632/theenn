@@ -16,7 +16,7 @@ const UPCOMING_EVENTS = [
     href: "https://www.educationtoday.co/events/south-india-educators-summit-hyderabad/2026",
   },
   {
-    text: "14th National Conference on K-12 Leadership 2026: Bengaluru — 3rd December 2026. Get your ticket now.",
+    text: "14th National Conference on K-12 Leadership 2026: Bengaluru — 7th December 2026. Get your ticket now.",
     href: "https://educationtoday.co/events/13th-national-conference-bangalore",
   },
 ] as const;
