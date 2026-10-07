@@ -4,18 +4,6 @@ import { useEffect, useState } from "react";
 
 const UPCOMING_EVENTS = [
   {
-    text: "North Educators' Summit & Awards 2026: Gurugram — 10th September 2026. Get your ticket now.",
-    href: "https://www.educationtoday.co/events/north-india-educators-summit-2026",
-  },
-  {
-    text: "Maharashtra Educators' Summit & Awards 2026: Mumbai — 29th September 2026. Get your ticket now.",
-    href: "https://www.educationtoday.co/events/maharashtra-educators-summit-2026",
-  },
-  {
-    text: "South India Educators' Summit 2026: Hyderabad — 7th October 2026. Get your ticket now.",
-    href: "https://www.educationtoday.co/events/south-india-educators-summit-hyderabad/2026",
-  },
-  {
     text: "14th National Conference on K-12 Leadership 2026: Bengaluru — 7th December 2026. Get your ticket now.",
     href: "https://educationtoday.co/events/13th-national-conference-bangalore",
   },
