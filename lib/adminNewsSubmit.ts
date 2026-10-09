@@ -1,4 +1,6 @@
 import { hasVideoInHtml } from "@/lib/videoEmbed";
+import { compressDataUrl, isDataImageUrl } from "@/lib/compressImageClient";
+import { prepareNewsImageFromDataUrl, rewriteDataImagesInHtml } from "@/lib/newsImageUpload";
 import type { FormEvent } from "react";
 import type { NewsSection } from "@/lib/newsTypes";
 
@@ -39,6 +41,21 @@ export function parseAdminArticleForm(form: HTMLFormElement) {
   };
 }
 
+async function preparePayloadForSave(payload: ReturnType<typeof parseAdminArticleForm>) {
+  const hint = payload.slug || payload.title || "article";
+  let imageUrl = payload.imageUrl;
+  if (isDataImageUrl(imageUrl)) {
+    try {
+      imageUrl = await prepareNewsImageFromDataUrl(imageUrl, hint);
+    } catch {
+      imageUrl = await compressDataUrl(imageUrl);
+    }
+  }
+
+  const content = await rewriteDataImagesInHtml(payload.content, hint);
+  return { ...payload, imageUrl, content };
+}
+
 export async function submitAdminArticleForm(
   event: FormEvent<HTMLFormElement>,
   mode: "create" | "update",
@@ -46,7 +63,14 @@ export async function submitAdminArticleForm(
 ) {
   event.preventDefault();
   const form = event.currentTarget;
-  const payload = parseAdminArticleForm(form);
+  let payload = parseAdminArticleForm(form);
+
+  try {
+    payload = await preparePayloadForSave(payload);
+  } catch (error) {
+    window.alert(error instanceof Error ? error.message : "Could not prepare images for upload.");
+    return false;
+  }
 
   const url =
     mode === "create" ? "/api/admin/news" : `/api/admin/news/${encodeURIComponent(originalSlug ?? payload.slug)}`;
@@ -58,7 +82,21 @@ export async function submitAdminArticleForm(
     body: JSON.stringify(payload),
   });
 
-  const data = (await response.json()) as { error?: string };
+  const raw = await response.text();
+  let data: { error?: string } = {};
+  try {
+    data = raw ? (JSON.parse(raw) as { error?: string }) : {};
+  } catch {
+    if (response.status === 413) {
+      window.alert(
+        "The article is still too large to save (usually a very large photo). Remove the image, upload it again so it can compress, then publish.",
+      );
+      return false;
+    }
+    window.alert("Could not save article. Please try again.");
+    return false;
+  }
+
   if (!response.ok) {
     window.alert(data.error ?? "Could not save article. Is PostgreSQL running?");
     return false;

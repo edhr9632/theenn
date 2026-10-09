@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { prepareNewsImage } from "@/lib/newsImageUpload";
 
 type AdminBlogEditorProps = {
   name?: string;
@@ -41,6 +42,7 @@ export default function AdminBlogEditor({
   const [linkUrl, setLinkUrl] = useState("https://");
   const [videoUrl, setVideoUrl] = useState("");
   const [wordCount, setWordCount] = useState(0);
+  const [imageBusy, setImageBusy] = useState(false);
   const uid = useId();
 
   const syncFromEditor = useCallback(() => {
@@ -88,16 +90,19 @@ export default function AdminBlogEditor({
     setVideoUrl("");
   };
 
-  const onImageFile = (file: File | null) => {
+  const onImageFile = async (file: File | null) => {
     if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const src = String(reader.result ?? "");
+    setImageBusy(true);
+    try {
+      const src = await prepareNewsImage(file, "article-inline");
       insertHtml(
         `<figure class="wp-block-image"><img src="${src}" alt="" /><figcaption>Image caption</figcaption></figure><p></p>`,
       );
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not insert image.");
+    } finally {
+      setImageBusy(false);
+    }
   };
 
   return (
@@ -189,9 +194,10 @@ export default function AdminBlogEditor({
               type="button"
               className="admin-blog-tool"
               title="Insert image"
+              disabled={imageBusy}
               onClick={() => fileRef.current?.click()}
             >
-              Image
+              {imageBusy ? "…" : "Image"}
             </button>
             <button
               type="button"
@@ -215,7 +221,7 @@ export default function AdminBlogEditor({
               accept="image/*"
               className="d-none"
               onChange={(e) => {
-                onImageFile(e.target.files?.[0] ?? null);
+                void onImageFile(e.target.files?.[0] ?? null);
                 e.target.value = "";
               }}
             />

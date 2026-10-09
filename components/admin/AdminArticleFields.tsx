@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import AdminBlogEditor from "@/components/admin/AdminBlogEditor";
 import { readCategories, type NewsCategory } from "@/lib/categories";
+import { prepareNewsImage } from "@/lib/newsImageUpload";
 
 export type ArticleFormValues = {
   title?: string;
@@ -39,6 +40,7 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
   const [slugTouched, setSlugTouched] = useState(Boolean(defaults.slug));
   const [featuredPreview, setFeaturedPreview] = useState(defaults.image ?? "");
   const [featuredVideo, setFeaturedVideo] = useState(defaults.featuredVideo ?? "");
+  const [imageBusy, setImageBusy] = useState(false);
   const [categories, setCategories] = useState<NewsCategory[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
@@ -64,11 +66,17 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
     [categories, categoryId],
   );
 
-  const onFeaturedFile = (file: File | null) => {
+  const onFeaturedFile = async (file: File | null) => {
     if (!file || !file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = () => setFeaturedPreview(String(reader.result ?? ""));
-    reader.readAsDataURL(file);
+    setImageBusy(true);
+    try {
+      const url = await prepareNewsImage(file, title || slug || "article");
+      setFeaturedPreview(url);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not prepare image.");
+    } finally {
+      setImageBusy(false);
+    }
   };
 
   return (
@@ -201,13 +209,19 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
             <div className="admin-featured-empty">No featured image selected</div>
           )}
           <div className="admin-featured-actions">
-            <button type="button" className="btn admin-btn-primary btn-sm" onClick={() => fileRef.current?.click()}>
-              Upload image
+            <button
+              type="button"
+              className="btn admin-btn-primary btn-sm"
+              disabled={imageBusy}
+              onClick={() => fileRef.current?.click()}
+            >
+              {imageBusy ? "Preparing image…" : "Upload image"}
             </button>
             {featuredPreview ? (
               <button
                 type="button"
                 className="btn admin-btn-ghost btn-sm"
+                disabled={imageBusy}
                 onClick={() => {
                   setFeaturedPreview("");
                   if (fileRef.current) fileRef.current.value = "";
@@ -217,6 +231,9 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
               </button>
             ) : null}
           </div>
+          <p className="admin-blog-hint mb-0">
+            Large DSLR / phone photos are compressed automatically before save.
+          </p>
           <label className="admin-field-label mb-0" htmlFor={`${uid}-img-url`}>
             Or image URL
             <input
@@ -226,6 +243,7 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
               value={featuredPreview.startsWith("data:") ? "" : featuredPreview}
               onChange={(e) => setFeaturedPreview(e.target.value)}
               placeholder="https://…/cover.jpg"
+              disabled={imageBusy}
             />
           </label>
           {featuredPreview.startsWith("data:") ? (
@@ -237,7 +255,7 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
             accept="image/*"
             className="d-none"
             onChange={(e) => {
-              onFeaturedFile(e.target.files?.[0] ?? null);
+              void onFeaturedFile(e.target.files?.[0] ?? null);
               e.target.value = "";
             }}
           />
