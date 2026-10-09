@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import LegalPageLayout from "@/components/LegalPageLayout";
 import { termsPage } from "@/lib/legalPages";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Terms of Use",
-  description: termsPage.deck,
+  title: PAGE_SEO.terms.title,
+  description: termsPage.deck || PAGE_SEO.terms.description,
   path: "/terms",
-  keywords: ["ENN terms of use", "website terms", "Education News Network"],
+  keywords: [...PAGE_SEO.terms.keywords],
 });
 
 export default function TermsPage() {

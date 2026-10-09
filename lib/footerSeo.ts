@@ -5,38 +5,38 @@ export type FooterSeoGroup = {
   links: FooterLink[];
 };
 
-/** Static SEO-friendly discovery links shown at the bottom of the footer. */
+/** High-volume education topic hubs + brand discovery links for crawl paths */
 export const footerSeoGroups: FooterSeoGroup[] = [
   {
-    title: "Education topics",
+    title: "Education news topics",
     links: [
       { label: "Education news India", href: "/news" },
-      { label: "School leadership & policy", href: "/insights" },
-      { label: "Trending education headlines", href: "/trending-news" },
+      { label: "CBSE & board exam news", href: "/trending-news" },
+      { label: "School admission updates", href: "/news" },
+      { label: "NEET & JEE education news", href: "/trending-news" },
+      { label: "Education policy & NEP", href: "/insights" },
       { label: "Weekly education magazine", href: "/weekly-news" },
-      { label: "Press releases", href: "/press-release" },
-      { label: "Panel discussions", href: "/panel-discussions" },
     ],
   },
   {
     title: "Discover ENN",
     links: [
       { label: "Ask ENN — AI education briefings", href: "/ask" },
-      { label: "Daily news archive", href: "/news" },
-      { label: "Weekly news editions", href: "/weekly-news" },
-      { label: "Education events", href: "/events" },
-      { label: "Newsletter signup", href: "/newsletter" },
-      { label: "Subscribe to ENN", href: "/subscribe" },
+      { label: "Daily education news", href: "/news" },
+      { label: "Press releases", href: "/press-release" },
+      { label: "Educators summit & events", href: "/events" },
+      { label: "Panel discussions", href: "/panel-discussions" },
+      { label: "Education podcasts", href: "/podcasts" },
     ],
   },
   {
     title: "Site & policies",
     links: [
       { label: "About Education News Network", href: "/about" },
-      { label: "Contact ENN", href: "/contact" },
+      { label: "Contact ENN Bengaluru", href: "/contact" },
+      { label: "Newsletter signup", href: "/newsletter" },
       { label: "Privacy policy", href: "/privacy" },
       { label: "Terms of use", href: "/terms" },
-      { label: "Ethics policy", href: "/ethics" },
       { label: "XML sitemap", href: "/sitemap.xml" },
     ],
   },

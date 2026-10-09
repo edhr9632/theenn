@@ -4,13 +4,13 @@ import SiteMasthead from "@/components/SiteMasthead";
 import ComingSoonBlock from "@/components/ComingSoonBlock";
 import { events } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Events",
-  description:
-    "Educators’ summits, workshops, and live conversations from Education News Network — connect with policymakers and school leaders.",
+  title: PAGE_SEO.events.title,
+  description: PAGE_SEO.events.description,
   path: "/events",
-  keywords: ["educators summit", "education events india", "K-12 conference", "ENN events"],
+  keywords: [...PAGE_SEO.events.keywords],
 });
 
 export default function EventsPage() {

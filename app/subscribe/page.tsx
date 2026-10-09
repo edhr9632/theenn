@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 import Link from "next/link";
 import SiteMasthead from "@/components/SiteMasthead";
 import SubscribePlans from "@/components/SubscribePlans";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Subscribe",
-  description:
-    "Subscribe to Education News Network for unlimited education journalism, briefings, and member benefits.",
+  title: PAGE_SEO.subscribe.title,
+  description: PAGE_SEO.subscribe.description,
   path: "/subscribe",
-  keywords: ["subscribe ENN", "education membership", "Education News Network"],
+  keywords: [...PAGE_SEO.subscribe.keywords],
 });
 
 export default function SubscribePage() {

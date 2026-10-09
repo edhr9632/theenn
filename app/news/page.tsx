@@ -1,11 +1,12 @@
 import { NewsListPage } from "@/components/NewsListPage";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Daily News",
-  description: "The day's most important education stories from Education News Network.",
+  title: PAGE_SEO.news.title,
+  description: PAGE_SEO.news.description,
   path: "/news",
-  keywords: ["daily education news", "school news", "ENN news", "education journalism"],
+  keywords: [...PAGE_SEO.news.keywords],
 });
 
 export default function DailyNewsPage() {

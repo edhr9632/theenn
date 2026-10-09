@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 import Link from "next/link";
 import SiteMasthead from "@/components/SiteMasthead";
 import NewsletterForm from "@/components/NewsletterForm";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Newsletter",
-  description:
-    "Get Education News Network’s morning briefing and weekly education highlights delivered to your inbox.",
+  title: PAGE_SEO.newsletter.title,
+  description: PAGE_SEO.newsletter.description,
   path: "/newsletter",
-  keywords: ["education newsletter", "ENN briefing", "school news email"],
+  keywords: [...PAGE_SEO.newsletter.keywords],
 });
 
 const perks = [

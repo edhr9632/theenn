@@ -2,13 +2,13 @@ import Image from "next/image";
 import SiteMasthead from "@/components/SiteMasthead";
 import { siteConfig } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "About",
-  description:
-    "Learn about Education News Network — independent education journalism covering schools, summits, and policy across India.",
+  title: PAGE_SEO.about.title,
+  description: PAGE_SEO.about.description,
   path: "/about",
-  keywords: ["about ENN", "Education News Network", "Education Today", "education journalism"],
+  keywords: [...PAGE_SEO.about.keywords],
 });
 
 const stats = [

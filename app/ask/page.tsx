@@ -4,22 +4,13 @@ import AskEnnPageLauncher from "@/components/AskEnnPageLauncher";
 import { faqItemsFromStories } from "@/lib/askEnnSuggestions";
 import { getTopEducationStoriesFromDb } from "@/lib/educationVoiceBriefDb";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "askENN — Education News Answers & Briefings",
-  description:
-    "Ask ENN about today's education news. Get AI briefings on ENN stories, trending education headlines, weekly magazines, and the latest podcasts from Education News Network.",
+  title: PAGE_SEO.ask.title,
+  description: PAGE_SEO.ask.description,
   path: "/ask",
-  keywords: [
-    "ask ENN",
-    "education news AI",
-    "ENN assistant",
-    "education news search",
-    "education headlines India",
-    "weekly education magazine",
-    "education podcasts",
-    "trending education news",
-  ],
+  keywords: [...PAGE_SEO.ask.keywords],
 });
 
 export const dynamic = "force-dynamic";

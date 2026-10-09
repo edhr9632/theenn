@@ -1,22 +1,15 @@
 import SiteMasthead from "@/components/SiteMasthead";
 import HomePageContent from "@/components/HomePageContent";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = buildPageMetadata({
   path: "/",
-  description:
-    "Education News Network — daily education news, weekly magazines, panel discussions, educator summits, and insights for schools across India.",
-  keywords: [
-    "education news india",
-    "ENN",
-    "Education Today",
-    "school news",
-    "educators summit",
-    "K-12 leadership",
-    "panel discussions",
-  ],
+  title: PAGE_SEO.home.title,
+  description: PAGE_SEO.home.description,
+  keywords: [...PAGE_SEO.home.keywords],
 });
 
 export default function HomePage() {

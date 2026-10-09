@@ -1,11 +1,11 @@
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Sponsors",
-  description:
-    "Meet sponsors of Education News Network summits and conferences — filter by year and event category.",
+  title: PAGE_SEO.sponsors.title,
+  description: PAGE_SEO.sponsors.description,
   path: "/events/sponsors",
-  keywords: ["education sponsors", "summit partners", "ENN sponsors"],
+  keywords: [...PAGE_SEO.sponsors.keywords],
 });
 
 export default function SponsorsLayout({ children }: { children: React.ReactNode }) {

@@ -101,7 +101,7 @@ export default function AdminSettingsPage() {
             </label>
             <label className="admin-field-label">
               Canonical site URL
-              <input className="admin-field" name="siteUrl" defaultValue="https://ennnews.com" />
+              <input className="admin-field" name="siteUrl" defaultValue="https://www.theenn.com" />
             </label>
             <label className="admin-field-label">
               Twitter / X handle

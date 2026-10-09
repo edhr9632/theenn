@@ -1,11 +1,11 @@
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Speakers",
-  description:
-    "Browse speakers from Education News Network summits and conferences — filter by year and event category.",
+  title: PAGE_SEO.speakers.title,
+  description: PAGE_SEO.speakers.description,
   path: "/events/speakers",
-  keywords: ["education speakers", "summit speakers", "educators summit", "ENN speakers"],
+  keywords: [...PAGE_SEO.speakers.keywords],
 });
 
 export default function SpeakersLayout({ children }: { children: React.ReactNode }) {

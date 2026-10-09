@@ -1,11 +1,12 @@
 import { NewsListPage } from "@/components/NewsListPage";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Trending News",
-  description: "Stories gaining momentum across Education News Network — education headlines readers are following now.",
+  title: PAGE_SEO.trending.title,
+  description: PAGE_SEO.trending.description,
   path: "/trending-news",
-  keywords: ["trending education news", "viral school stories", "ENN trending"],
+  keywords: [...PAGE_SEO.trending.keywords],
 });
 
 export default function TrendingNewsPage() {

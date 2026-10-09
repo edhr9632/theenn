@@ -6,12 +6,13 @@ import ComingSoonBlock from "@/components/ComingSoonBlock";
 import { isDbConfigured } from "@/lib/db";
 import { getNewsBySection } from "@/lib/newsDb";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Insights",
-  description: "In-depth education insights, analysis, and expert perspectives from Education News Network.",
+  title: PAGE_SEO.insights.title,
+  description: PAGE_SEO.insights.description,
   path: "/insights",
-  keywords: ["education insights", "school analysis", "education policy", "ENN insights"],
+  keywords: [...PAGE_SEO.insights.keywords],
 });
 
 export const dynamic = "force-dynamic";

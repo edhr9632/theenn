@@ -1,12 +1,12 @@
 import SiteMasthead from "@/components/SiteMasthead";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Contact Us",
-  description:
-    "Contact Education News Network in Bengaluru — tips, partnerships, subscriptions, and press inquiries.",
+  title: PAGE_SEO.contact.title,
+  description: PAGE_SEO.contact.description,
   path: "/contact",
-  keywords: ["contact ENN", "Education Today Bengaluru", "education news contact"],
+  keywords: [...PAGE_SEO.contact.keywords],
 });
 
 const OFFICE_ADDRESS =

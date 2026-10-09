@@ -1,13 +1,13 @@
 import SiteMasthead from "@/components/SiteMasthead";
 import ComingSoonBlock from "@/components/ComingSoonBlock";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Podcasts",
-  description:
-    "Listen to Education News Network podcasts — Knowledge Plus and more education shows from ENN.",
+  title: PAGE_SEO.podcasts.title,
+  description: PAGE_SEO.podcasts.description,
   path: "/podcasts",
-  keywords: ["education podcasts", "Knowledge Plus", "ENN podcast"],
+  keywords: [...PAGE_SEO.podcasts.keywords],
 });
 
 export default function PodcastsIndexPage() {

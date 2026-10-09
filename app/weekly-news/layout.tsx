@@ -1,11 +1,11 @@
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Weekly News",
-  description:
-    "Education Today weekly Bengaluru magazine editions — open and download each PDF from Education News Network.",
+  title: PAGE_SEO.weekly.title,
+  description: PAGE_SEO.weekly.description,
   path: "/weekly-news",
-  keywords: ["weekly education magazine", "Education Today Bengaluru", "ENN weekly news"],
+  keywords: [...PAGE_SEO.weekly.keywords],
 });
 
 export default function WeeklyNewsLayout({ children }: { children: React.ReactNode }) {

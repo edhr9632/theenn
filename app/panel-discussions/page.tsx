@@ -5,13 +5,13 @@ import ComingSoonBlock from "@/components/ComingSoonBlock";
 import { isDbConfigured } from "@/lib/db";
 import { getPanelDiscussionsFromDb } from "@/lib/panelsDb";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Panel Discussions",
-  description:
-    "Watch all Education News Network panel discussions with education leaders, policymakers, and experts.",
+  title: PAGE_SEO.panels.title,
+  description: PAGE_SEO.panels.description,
   path: "/panel-discussions",
-  keywords: ["education panel discussions", "ENN panels", "education leaders youtube"],
+  keywords: [...PAGE_SEO.panels.keywords],
 });
 
 export const dynamic = "force-dynamic";

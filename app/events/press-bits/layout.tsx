@@ -1,11 +1,11 @@
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Press Bits",
-  description:
-    "Event press bits and reel videos from Education News Network summits, awards, and leadership conferences.",
+  title: PAGE_SEO.pressBits.title,
+  description: PAGE_SEO.pressBits.description,
   path: "/events/press-bits",
-  keywords: ["press bits", "education event reels", "ENN events", "educators summit videos"],
+  keywords: [...PAGE_SEO.pressBits.keywords],
 });
 
 export default function PressBitsLayout({ children }: { children: React.ReactNode }) {

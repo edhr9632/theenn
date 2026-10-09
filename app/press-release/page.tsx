@@ -1,11 +1,12 @@
 import { NewsListPage } from "@/components/NewsListPage";
 import { buildPageMetadata } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 export const metadata = buildPageMetadata({
-  title: "Press Release",
-  description: "Official announcements and press releases from Education News Network and Education Today.",
+  title: PAGE_SEO.press.title,
+  description: PAGE_SEO.press.description,
   path: "/press-release",
-  keywords: ["education press release", "ENN announcements", "media release"],
+  keywords: [...PAGE_SEO.press.keywords],
 });
 
 export default function PressReleasePage() {

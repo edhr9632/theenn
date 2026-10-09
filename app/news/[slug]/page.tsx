@@ -16,7 +16,7 @@ import {
 } from "@/lib/articleAskAi";
 import { listApprovedComments } from "@/lib/commentsDb";
 import { getPublishedNewsDetail } from "@/lib/newsDb";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildArticleMetadata, buildNewsArticleJsonLd } from "@/lib/seo";
 import type { NewsSection } from "@/lib/newsTypes";
 
 export const dynamic = "force-dynamic";
@@ -48,13 +48,15 @@ export async function generateMetadata({ params }: Props) {
   const resolved = await resolveArticle(slug);
   if (!resolved) return { title: "Article not found" };
 
-  const { article } = resolved;
-  return buildPageMetadata({
+  const { article, publishDateIso } = resolved;
+  return buildArticleMetadata({
     title: article.title,
-    description: article.excerpt,
+    description: article.excerpt || `${article.title} — education news India from Education News Network.`,
     path: `/news/${article.slug}`,
     image: article.image,
-    keywords: [article.category, "education news", "ENN", article.author],
+    keywords: [article.category, article.author, "education news India", "CBSE news", "school education"],
+    author: article.author,
+    publishedTime: publishDateIso,
   });
 }
 
@@ -93,8 +95,21 @@ export default async function NewsArticlePage({ params }: Props) {
   // Hide “points”/highlights on the article page (we still speak/read the full article via the audio player).
   const listenHighlights: string[] = [];
 
+  const articleJsonLd = buildNewsArticleJsonLd({
+    title: article.title,
+    description: article.excerpt || article.title,
+    path: `/news/${article.slug}`,
+    image: imageUrl || article.image,
+    author: article.author,
+    publishedTime: publishDateIso,
+  });
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <SiteMasthead activeNav="news" newsActive={sectionNav.newsActive} />
       <main className="news-article-page">
         <div className="container py-4 py-lg-5">

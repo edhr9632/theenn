@@ -16,10 +16,17 @@ export async function generateMetadata({ params }: PageProps) {
   const show = getPodcastBySlug(slug);
   if (!show) return { title: "Podcast" };
   return buildPageMetadata({
-    title: show.title,
+    title: `${show.title} — Education Podcast`,
     description: show.description,
     path: `/podcasts/${show.slug}`,
-    keywords: ["education podcast", show.title, "ENN podcast", show.host],
+    keywords: [
+      "education podcasts India",
+      "education podcast",
+      show.title,
+      show.host,
+      "Education News Network",
+      "ENN podcast",
+    ],
   });
 }
 

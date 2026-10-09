@@ -9,6 +9,7 @@ import EnnAssistant from "@/components/EnnAssistant";
 import FloatingNowPlayingLoader from "@/components/FloatingNowPlayingLoader";
 import FestivalPopup from "@/components/FestivalPopup";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
+import { PAGE_SEO } from "@/lib/seoKeywords";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -24,11 +25,13 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   ...buildPageMetadata({
     path: "/",
-    description: siteSeo.defaultDescription,
+    title: PAGE_SEO.home.title,
+    description: PAGE_SEO.home.description,
+    keywords: [...PAGE_SEO.home.keywords],
   }),
   referrer: "strict-origin-when-cross-origin",
   applicationName: siteSeo.siteName,
-  category: "news",
+  category: "Education News",
   formatDetection: {
     telephone: false,
     email: false,
@@ -48,8 +51,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         "@type": "NewsMediaOrganization",
         "@id": `${siteSeo.siteUrl}/#organization`,
         name: siteSeo.siteName,
+        alternateName: ["ENN", "Education Today", "theenn"],
         url: siteSeo.siteUrl,
-        logo: `${siteSeo.siteUrl}${siteSeo.ogImage}`,
+        logo: {
+          "@type": "ImageObject",
+          url: `${siteSeo.siteUrl}${siteSeo.ogImage}`,
+        },
+        description: siteSeo.defaultDescription,
+        foundingLocation: {
+          "@type": "Place",
+          name: "Bengaluru, Karnataka, India",
+        },
+        areaServed: "IN",
         sameAs: [
           "https://www.youtube.com/@educationtoday7909",
           "https://www.facebook.com/edutodayk12/",
@@ -61,9 +74,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         "@id": `${siteSeo.siteUrl}/#website`,
         url: siteSeo.siteUrl,
         name: siteSeo.siteName,
+        alternateName: "theenn.com",
         description: siteSeo.defaultDescription,
         publisher: { "@id": `${siteSeo.siteUrl}/#organization` },
         inLanguage: "en-IN",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${siteSeo.siteUrl}/ask?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   };
