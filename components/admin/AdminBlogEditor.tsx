@@ -2,31 +2,17 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { prepareNewsImage } from "@/lib/newsImageUpload";
+import {
+  toVideoEditorPlaceholderHtml,
+  videoEmbedsToPlaceholders,
+  videoPlaceholdersToEmbeds,
+} from "@/lib/videoEmbed";
 
 type AdminBlogEditorProps = {
   name?: string;
   defaultValue?: string;
   placeholder?: string;
 };
-
-function toEmbedHtml(rawUrl: string): string | null {
-  const url = rawUrl.trim();
-  if (!url) return null;
-
-  const yt =
-    url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/) ??
-    null;
-  if (yt?.[1]) {
-    return `<div class="wp-block-embed is-type-video is-provider-youtube"><div class="admin-embed-frame"><iframe src="https://www.youtube.com/embed/${yt[1]}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div></div><p></p>`;
-  }
-
-  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vimeo?.[1]) {
-    return `<div class="wp-block-embed is-type-video is-provider-vimeo"><div class="admin-embed-frame"><iframe src="https://player.vimeo.com/video/${vimeo[1]}" title="Vimeo video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div></div><p></p>`;
-  }
-
-  return `<div class="wp-block-embed is-type-video"><div class="admin-embed-frame"><iframe src="${url.replace(/"/g, "&quot;")}" title="Embedded video" allowfullscreen loading="lazy"></iframe></div></div><p></p>`;
-}
 
 export default function AdminBlogEditor({
   name = "content",
@@ -35,7 +21,8 @@ export default function AdminBlogEditor({
 }: AdminBlogEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [html, setHtml] = useState(defaultValue);
+  const savedRangeRef = useRef<Range | null>(null);
+  const [html, setHtml] = useState(() => videoPlaceholdersToEmbeds(defaultValue));
   const [mode, setMode] = useState<"visual" | "code" | "preview">("visual");
   const [showLink, setShowLink] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -45,33 +32,91 @@ export default function AdminBlogEditor({
   const [imageBusy, setImageBusy] = useState(false);
   const uid = useId();
 
+  const countWords = (rawHtml: string) => {
+    const text = rawHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    return text ? text.split(" ").length : 0;
+  };
+
   const syncFromEditor = useCallback(() => {
     const el = editorRef.current;
     if (!el) return;
-    const next = el.innerHTML;
+    const next = videoPlaceholdersToEmbeds(el.innerHTML);
     setHtml(next);
-    const text = el.innerText.replace(/\s+/g, " ").trim();
-    setWordCount(text ? text.split(" ").length : 0);
+    setWordCount(countWords(next));
+  }, []);
+
+  const rememberSelection = useCallback(() => {
+    const el = editorRef.current;
+    const selection = window.getSelection();
+    if (!el || !selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    if (!el.contains(range.commonAncestorContainer)) return;
+    savedRangeRef.current = range.cloneRange();
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    const el = editorRef.current;
+    const selection = window.getSelection();
+    if (!el || !selection) return false;
+
+    el.focus();
+    selection.removeAllRanges();
+
+    if (savedRangeRef.current) {
+      selection.addRange(savedRangeRef.current);
+      return true;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    selection.addRange(range);
+    return true;
   }, []);
 
   useEffect(() => {
-    if (editorRef.current && defaultValue && !editorRef.current.innerHTML) {
-      editorRef.current.innerHTML = defaultValue;
-      syncFromEditor();
-    }
+    const el = editorRef.current;
+    if (!el || el.innerHTML) return;
+    if (!defaultValue) return;
+    el.innerHTML = videoEmbedsToPlaceholders(defaultValue);
+    syncFromEditor();
   }, [defaultValue, syncFromEditor]);
 
-  const focusEditor = () => editorRef.current?.focus();
-
   const run = (command: string, value?: string) => {
-    focusEditor();
+    restoreSelection();
     document.execCommand(command, false, value);
     syncFromEditor();
+    rememberSelection();
   };
 
-  const insertHtml = (snippet: string) => {
-    focusEditor();
-    document.execCommand("insertHTML", false, snippet);
+  const insertHtmlAtCursor = (snippet: string) => {
+    restoreSelection();
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      const el = editorRef.current;
+      if (el) {
+        el.insertAdjacentHTML("beforeend", snippet);
+        syncFromEditor();
+      }
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    const template = document.createElement("template");
+    template.innerHTML = snippet;
+    const fragment = template.content;
+    const lastNode = fragment.lastChild;
+    range.insertNode(fragment);
+
+    if (lastNode) {
+      range.setStartAfter(lastNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      savedRangeRef.current = range.cloneRange();
+    }
+
     syncFromEditor();
   };
 
@@ -83,9 +128,12 @@ export default function AdminBlogEditor({
   };
 
   const applyVideo = () => {
-    const embed = toEmbedHtml(videoUrl);
-    if (!embed) return;
-    insertHtml(embed);
+    const embed = toVideoEditorPlaceholderHtml(videoUrl);
+    if (!embed) {
+      window.alert("Paste a valid YouTube or Vimeo URL.");
+      return;
+    }
+    insertHtmlAtCursor(embed);
     setShowVideo(false);
     setVideoUrl("");
   };
@@ -95,7 +143,7 @@ export default function AdminBlogEditor({
     setImageBusy(true);
     try {
       const src = await prepareNewsImage(file, "article-inline");
-      insertHtml(
+      insertHtmlAtCursor(
         `<figure class="wp-block-image"><img src="${src}" alt="" /><figcaption>Image caption</figcaption></figure><p></p>`,
       );
     } catch (error) {
@@ -103,6 +151,18 @@ export default function AdminBlogEditor({
     } finally {
       setImageBusy(false);
     }
+  };
+
+  const openVideoPopover = () => {
+    rememberSelection();
+    setShowLink(false);
+    setShowVideo(true);
+  };
+
+  const openLinkPopover = () => {
+    rememberSelection();
+    setShowVideo(false);
+    setShowLink(true);
   };
 
   return (
@@ -125,6 +185,9 @@ export default function AdminBlogEditor({
               className={`admin-blog-mode-tab${mode === key ? " is-active" : ""}`}
               onClick={() => {
                 if (mode === "visual") syncFromEditor();
+                if (key === "visual" && editorRef.current) {
+                  editorRef.current.innerHTML = videoEmbedsToPlaceholders(html);
+                }
                 setMode(key);
               }}
             >
@@ -137,57 +200,37 @@ export default function AdminBlogEditor({
       {mode === "visual" ? (
         <>
           <div className="admin-blog-toolbar" role="toolbar" aria-label="Formatting">
-            <button type="button" className="admin-blog-tool" title="Bold" onClick={() => run("bold")}>
+            <button type="button" className="admin-blog-tool" title="Bold" onMouseDown={(e) => e.preventDefault()} onClick={() => run("bold")}>
               <strong>B</strong>
             </button>
-            <button type="button" className="admin-blog-tool" title="Italic" onClick={() => run("italic")}>
+            <button type="button" className="admin-blog-tool" title="Italic" onMouseDown={(e) => e.preventDefault()} onClick={() => run("italic")}>
               <em>I</em>
             </button>
-            <button type="button" className="admin-blog-tool" title="Underline" onClick={() => run("underline")}>
+            <button type="button" className="admin-blog-tool" title="Underline" onMouseDown={(e) => e.preventDefault()} onClick={() => run("underline")}>
               <span style={{ textDecoration: "underline" }}>U</span>
             </button>
             <span className="admin-blog-tool-sep" aria-hidden="true" />
-            <button type="button" className="admin-blog-tool" title="Heading 2" onClick={() => run("formatBlock", "h2")}>
+            <button type="button" className="admin-blog-tool" title="Heading 2" onMouseDown={(e) => e.preventDefault()} onClick={() => run("formatBlock", "h2")}>
               H2
             </button>
-            <button type="button" className="admin-blog-tool" title="Heading 3" onClick={() => run("formatBlock", "h3")}>
+            <button type="button" className="admin-blog-tool" title="Heading 3" onMouseDown={(e) => e.preventDefault()} onClick={() => run("formatBlock", "h3")}>
               H3
             </button>
-            <button
-              type="button"
-              className="admin-blog-tool"
-              title="Paragraph"
-              onClick={() => run("formatBlock", "p")}
-            >
+            <button type="button" className="admin-blog-tool" title="Paragraph" onMouseDown={(e) => e.preventDefault()} onClick={() => run("formatBlock", "p")}>
               ¶
             </button>
             <span className="admin-blog-tool-sep" aria-hidden="true" />
-            <button
-              type="button"
-              className="admin-blog-tool"
-              title="Bullet list"
-              onClick={() => run("insertUnorderedList")}
-            >
+            <button type="button" className="admin-blog-tool" title="Bullet list" onMouseDown={(e) => e.preventDefault()} onClick={() => run("insertUnorderedList")}>
               • List
             </button>
-            <button
-              type="button"
-              className="admin-blog-tool"
-              title="Numbered list"
-              onClick={() => run("insertOrderedList")}
-            >
+            <button type="button" className="admin-blog-tool" title="Numbered list" onMouseDown={(e) => e.preventDefault()} onClick={() => run("insertOrderedList")}>
               1. List
             </button>
-            <button
-              type="button"
-              className="admin-blog-tool"
-              title="Quote"
-              onClick={() => run("formatBlock", "blockquote")}
-            >
+            <button type="button" className="admin-blog-tool" title="Quote" onMouseDown={(e) => e.preventDefault()} onClick={() => run("formatBlock", "blockquote")}>
               “ ”
             </button>
             <span className="admin-blog-tool-sep" aria-hidden="true" />
-            <button type="button" className="admin-blog-tool" title="Insert link" onClick={() => setShowLink(true)}>
+            <button type="button" className="admin-blog-tool" title="Insert link" onMouseDown={(e) => e.preventDefault()} onClick={openLinkPopover}>
               Link
             </button>
             <button
@@ -195,6 +238,10 @@ export default function AdminBlogEditor({
               className="admin-blog-tool"
               title="Insert image"
               disabled={imageBusy}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                rememberSelection();
+              }}
               onClick={() => fileRef.current?.click()}
             >
               {imageBusy ? "…" : "Image"}
@@ -203,16 +250,12 @@ export default function AdminBlogEditor({
               type="button"
               className="admin-blog-tool admin-blog-tool--accent"
               title="Embed video"
-              onClick={() => setShowVideo(true)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={openVideoPopover}
             >
               ▶ Video
             </button>
-            <button
-              type="button"
-              className="admin-blog-tool"
-              title="Horizontal line"
-              onClick={() => insertHtml("<hr /><p></p>")}
-            >
+            <button type="button" className="admin-blog-tool" title="Horizontal line" onMouseDown={(e) => e.preventDefault()} onClick={() => insertHtmlAtCursor("<hr /><p></p>")}>
               ―
             </button>
             <input
@@ -261,10 +304,16 @@ export default function AdminBlogEditor({
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
                       placeholder="https://www.youtube.com/watch?v=…"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          applyVideo();
+                        }
+                      }}
                     />
                   </label>
                   <p className="admin-blog-hint mb-0">
-                    Paste a YouTube or Vimeo link — it will embed like WordPress media blocks.
+                    Click in the article where the video should appear, then paste the URL and embed. It stays in that spot.
                   </p>
                   <div className="admin-blog-popover-actions">
                     <button type="button" className="btn admin-btn-ghost btn-sm" onClick={() => setShowVideo(false)}>
@@ -289,7 +338,12 @@ export default function AdminBlogEditor({
             aria-label="Article content"
             data-placeholder={placeholder}
             onInput={syncFromEditor}
-            onBlur={syncFromEditor}
+            onBlur={() => {
+              rememberSelection();
+              syncFromEditor();
+            }}
+            onMouseUp={rememberSelection}
+            onKeyUp={rememberSelection}
           />
         </>
       ) : null}
@@ -300,8 +354,7 @@ export default function AdminBlogEditor({
           value={html}
           onChange={(e) => {
             setHtml(e.target.value);
-            const text = e.target.value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-            setWordCount(text ? text.split(" ").length : 0);
+            setWordCount(countWords(e.target.value));
           }}
           rows={18}
           spellCheck={false}
@@ -309,13 +362,16 @@ export default function AdminBlogEditor({
       ) : null}
 
       {mode === "preview" ? (
-        <div className="admin-blog-preview" dangerouslySetInnerHTML={{ __html: html || "<p><em>Nothing to preview yet.</em></p>" }} />
+        <div
+          className="admin-blog-preview"
+          dangerouslySetInnerHTML={{ __html: html || "<p><em>Nothing to preview yet.</em></p>" }}
+        />
       ) : null}
 
       <input type="hidden" name={name} value={html} readOnly />
       <div className="admin-blog-footer">
         <span>{wordCount} words</span>
-        <span>Tip: use ▶ Video to embed YouTube/Vimeo like WordPress</span>
+        <span>Tip: click in the text first, then ▶ Video — the clip stays where your cursor was</span>
       </div>
     </div>
   );
