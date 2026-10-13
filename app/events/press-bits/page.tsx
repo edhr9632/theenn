@@ -180,9 +180,6 @@ export default function PressBitsPage() {
                   >
                     <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">
                       <PressBitThumb item={item} />
-                      <span className="events-press-bit-play" aria-hidden="true">
-                        ▶
-                      </span>
                     </div>
                     <div className="pt-3 d-flex flex-column flex-grow-1">
                       <h3 className="events-press-bit-title mb-1">{item.title}</h3>

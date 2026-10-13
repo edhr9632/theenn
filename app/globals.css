@@ -7112,18 +7112,21 @@ body {
   object-fit: cover;
 }
 
-.events-press-bit-play {
-  position: absolute;
-  left: 50%;
-  top: 50%;
+/* Keep play chip small — Bootstrap .ratio stretches every direct child to 100% */
+.events-press-bit-play,
+.ratio > .events-press-bit-play {
+  position: absolute !important;
+  inset: auto !important;
+  left: 50% !important;
+  top: 50% !important;
   z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  display: none; /* remove blue circle overlay from event video thumbs */
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  max-width: 2.75rem;
+  max-height: 2.75rem;
   border-radius: 999px;
-  background: rgba(26, 64, 153, 0.92);
+  background: rgba(15, 23, 42, 0.55);
   color: #fff;
   font-size: 0.85rem;
   transform: translate(-50%, -50%);

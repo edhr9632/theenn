@@ -197,9 +197,6 @@ export default function SpeakersPage() {
                       ) : (
                         <span className="position-absolute top-0 start-0 w-100 h-100 bg-light" />
                       )}
-                      <span className="events-press-bit-play" aria-hidden="true">
-                        ▶
-                      </span>
                     </div>
                     <div className="p-3 p-md-4 d-flex flex-column flex-grow-1">
                       <h3 className="events-speaker-name serif-headline h6 mb-1">{speaker.name}</h3>
