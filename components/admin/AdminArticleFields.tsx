@@ -271,7 +271,9 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
           onChange={(e) => setFeaturedVideo(e.target.value)}
           placeholder="https://www.youtube.com/watch?v=… or Vimeo URL"
         />
-        <span className="admin-blog-hint">Shown at the top of the article like a WordPress video block.</span>
+        <span className="admin-blog-hint">
+          Only for a top hero player. To place a video in the middle of the story, leave this empty and use ▶ Video in the content editor.
+        </span>
       </label>
 
       <label className="admin-field-label admin-field-span">

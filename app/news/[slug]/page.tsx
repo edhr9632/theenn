@@ -16,6 +16,8 @@ import {
 } from "@/lib/articleAskAi";
 import { listApprovedComments } from "@/lib/commentsDb";
 import { getPublishedNewsDetail } from "@/lib/newsDb";
+import { placeLeadingVideoMidContent } from "@/lib/articleContentLayout";
+import { hasVideoInHtml } from "@/lib/videoEmbed";
 import { buildArticleMetadata, buildNewsArticleJsonLd } from "@/lib/seo";
 import type { NewsSection } from "@/lib/newsTypes";
 
@@ -62,7 +64,8 @@ export async function generateMetadata({ params }: Props) {
 
 function ArticleBody({ content }: { content: string }) {
   if (content) {
-    return <div className="article-content" dangerouslySetInnerHTML={{ __html: content }} />;
+    const laidOut = placeLeadingVideoMidContent(content);
+    return <div className="article-content" dangerouslySetInnerHTML={{ __html: laidOut }} />;
   }
 
   return (
@@ -79,6 +82,8 @@ export default async function NewsArticlePage({ params }: Props) {
 
   const { article, content, section, publishDateIso, featuredVideo, imageUrl, imageAlt } = resolved;
   const sectionNav = SECTION_NAV[section];
+  // Keep inline body videos mid-article; only use the hero player when there is no body embed.
+  const heroVideo = hasVideoInHtml(content) ? "" : featuredVideo;
 
   let comments: Awaited<ReturnType<typeof listApprovedComments>> = [];
 
@@ -152,8 +157,8 @@ export default async function NewsArticlePage({ params }: Props) {
                 />
 
                 <ArticleHeroMedia
-                  featuredVideo={featuredVideo}
-                  imageUrl={featuredVideo ? "" : imageUrl}
+                  featuredVideo={heroVideo}
+                  imageUrl={heroVideo ? "" : imageUrl}
                   imageAlt={imageAlt}
                 />
 

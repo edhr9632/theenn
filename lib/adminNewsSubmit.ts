@@ -1,3 +1,4 @@
+import { placeLeadingVideoMidContent } from "@/lib/articleContentLayout";
 import { hasVideoInHtml } from "@/lib/videoEmbed";
 import { compressDataUrl, isDataImageUrl } from "@/lib/compressImageClient";
 import { prepareNewsImageFromDataUrl, rewriteDataImagesInHtml } from "@/lib/newsImageUpload";
@@ -52,8 +53,11 @@ async function preparePayloadForSave(payload: ReturnType<typeof parseAdminArticl
     }
   }
 
-  const content = await rewriteDataImagesInHtml(payload.content, hint);
-  return { ...payload, imageUrl, content };
+  const withImages = await rewriteDataImagesInHtml(payload.content, hint);
+  const content = placeLeadingVideoMidContent(withImages);
+  // Body embeds stay in the story; don't also pin the same clip as the hero.
+  const featuredVideo = hasVideoInHtml(content) ? "" : payload.featuredVideo;
+  return { ...payload, imageUrl, content, featuredVideo };
 }
 
 export async function submitAdminArticleForm(
