@@ -7078,23 +7078,23 @@ body {
   justify-content: center;
   align-self: center;
   margin-top: auto;
-  padding: 0.55rem 1rem;
-  border-radius: 0.4rem;
-  background: var(--breaking-red);
-  color: #fff !important;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--breaking-red) !important;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  box-shadow: 0 4px 12px rgba(214, 40, 57, 0.28);
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: none;
+  transition: color 0.15s ease;
 }
 
 .events-speaker-card:hover .events-video-link,
 .events-sponsor-card:hover .events-video-link {
-  background: var(--breaking-red-dark);
-  color: #fff !important;
-  box-shadow: 0 6px 16px rgba(184, 31, 46, 0.35);
+  background: transparent;
+  color: var(--breaking-red-dark) !important;
+  box-shadow: none;
 }
 
 .events-press-bit-card {
