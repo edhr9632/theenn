@@ -7076,11 +7076,25 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  align-self: flex-start;
   margin-top: auto;
-  color: var(--navy);
+  padding: 0.55rem 1rem;
+  border-radius: 0.4rem;
+  background: var(--breaking-red);
+  color: #fff !important;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+  line-height: 1.2;
+  box-shadow: 0 4px 12px rgba(214, 40, 57, 0.28);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.events-speaker-card:hover .events-video-link,
+.events-sponsor-card:hover .events-video-link {
+  background: var(--breaking-red-dark);
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(184, 31, 46, 0.35);
 }
 
 .events-press-bit-card {
