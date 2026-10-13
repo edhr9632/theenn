@@ -2,7 +2,7 @@
 :root {
   --navy: #1a4099;
   --primary-blue: #3669b4;
-  --accent-red: #2abcf3;
+  --accent-red: #d62839;
   --page-bg: #ffffff;
   --accent-blue-tag: #2abcf3;
   --charcoal: #3a3a3a;
@@ -2885,11 +2885,23 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #fff;
-  background-color: var(--accent-red);
+  background-color: var(--breaking-red);
   padding: 0.3rem 0.55rem;
-  border-radius: 999px;
+  border-radius: 0.25rem;
   line-height: 1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Bootstrap .ratio stretches every child to 100% — keep the badge a small chip */
+.news-archive-media.ratio > .news-card-video-badge {
+  position: absolute;
+  inset: auto;
+  top: 0.65rem;
+  left: 0.65rem;
+  width: auto !important;
+  height: auto !important;
+  max-width: none;
+  max-height: none;
 }
 
 .news-archive-cat {
