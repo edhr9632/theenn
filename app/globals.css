@@ -7076,7 +7076,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;
+  align-self: center;
   margin-top: auto;
   padding: 0.55rem 1rem;
   border-radius: 0.4rem;
