@@ -204,29 +204,29 @@ export default function AdminPressBitsPage() {
       });
       const data = (await response.json()) as { error?: string };
       if (!response.ok) {
-        window.alert(data.error ?? "Could not save press bit.");
+        window.alert(data.error ?? "Could not save press byte.");
         return;
       }
-      flash(editingId ? "Press bit updated" : "Press bit added");
+      flash(editingId ? "Press byte updated" : "Press byte added");
       resetForm();
       await loadItems();
     } catch {
-      window.alert("Network error. Could not save press bit.");
+      window.alert("Network error. Could not save press byte.");
     } finally {
       setSaving(false);
     }
   };
 
   const removeItem = async (id: string) => {
-    if (!window.confirm("Delete this press bit?")) return;
+    if (!window.confirm("Delete this press byte?")) return;
     try {
       const response = await fetch(`/api/admin/press-bits/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!response.ok) {
-        window.alert("Could not delete press bit.");
+        window.alert("Could not delete press byte.");
         return;
       }
       if (editingId === id) resetForm();
-      flash("Press bit deleted");
+      flash("Press byte deleted");
       await loadItems();
     } catch {
       window.alert("Network error while deleting.");
@@ -244,7 +244,7 @@ export default function AdminPressBitsPage() {
         window.alert("Could not update Live/Hidden status.");
         return;
       }
-      flash(!item.enabled ? "Now Live on Press Bits page" : "Hidden from Press Bits page");
+      flash(!item.enabled ? "Now Live on Press Bytes page" : "Hidden from Press Bytes page");
       await loadItems();
     } catch {
       window.alert("Network error while updating status.");
@@ -258,14 +258,14 @@ export default function AdminPressBitsPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Press Bits"
-        description="Event reel videos for Events → Press Bits. Add a YouTube/Shorts URL or upload a video file. Filterable by year and category."
+        title="Press Bytes"
+        description="Event reel videos for Events → Press Bytes. Add a YouTube/Shorts URL or upload a video file. Filterable by year and category."
       />
 
       {message ? <p className="admin-flash mb-3">{message}</p> : null}
 
       <div className="admin-panel mb-4">
-        <h2 className="h6 mb-3">{editingId ? "Edit press bit" : "Add press bit"}</h2>
+        <h2 className="h6 mb-3">{editingId ? "Edit press byte" : "Add press byte"}</h2>
         <form className="admin-form-grid" onSubmit={onSubmit}>
           <label className="admin-field-label admin-field-span">
             Title
@@ -273,7 +273,7 @@ export default function AdminPressBitsPage() {
               className="admin-field"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Reel / press bit title"
+              placeholder="Reel / press byte title"
               required
             />
           </label>
@@ -452,7 +452,7 @@ export default function AdminPressBitsPage() {
 
           <div className="admin-field-span d-flex flex-wrap gap-2">
             <button type="submit" className="btn admin-btn-primary" disabled={saving || uploadingVideo}>
-              {saving ? "Saving…" : editingId ? "Update press bit" : "Add press bit"}
+              {saving ? "Saving…" : editingId ? "Update press byte" : "Add press byte"}
             </button>
             {editingId ? (
               <button type="button" className="btn admin-btn-ghost" onClick={resetForm}>
@@ -468,7 +468,7 @@ export default function AdminPressBitsPage() {
           {loading ? (
             <tr>
               <td colSpan={8}>
-                <p className="mb-0 text-muted py-3">Loading press bits…</p>
+                <p className="mb-0 text-muted py-3">Loading press bytes…</p>
               </td>
             </tr>
           ) : items.length ? (
@@ -528,7 +528,7 @@ export default function AdminPressBitsPage() {
             <tr>
               <td colSpan={8}>
                 <p className="mb-0 text-muted py-3">
-                  No press bits yet. Paste a YouTube/Shorts URL or upload an MP4 reel above.
+                  No press bytes yet. Paste a YouTube/Shorts URL or upload an MP4 reel above.
                 </p>
               </td>
             </tr>

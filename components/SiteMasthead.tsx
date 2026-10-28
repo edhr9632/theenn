@@ -126,7 +126,7 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
                       <li><Link className="dropdown-item" href="/events">Featured events</Link></li>
                       <li><Link className="dropdown-item" href="/events/speakers">Speakers</Link></li>
                       <li><Link className="dropdown-item" href="/events/sponsors">Sponsors</Link></li>
-                      <li><Link className="dropdown-item" href="/events/press-bits">Press Bits</Link></li>
+                      <li><Link className="dropdown-item" href="/events/press-bits">Press Bytes</Link></li>
                     </ul>
                   </li>
                   <li className="nav-item">

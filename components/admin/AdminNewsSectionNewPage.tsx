@@ -41,7 +41,12 @@ export default function AdminNewsSectionNewPage({ section }: { section: NewsSect
       }}
     >
       <input type="hidden" name="newsSection" value={section} />
-      <AdminArticleFields defaults={{ category: "Education", status: "published" }} />
+      <AdminArticleFields
+        defaults={{
+          category: "Education",
+          status: "published",
+        }}
+      />
     </AdminFormLayout>
   );
 }

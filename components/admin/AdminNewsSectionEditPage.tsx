@@ -44,6 +44,7 @@ export default async function AdminNewsSectionEditPage({
   let content = "";
   let featuredVideo = "";
   let imageUrl = "";
+  let publishDate = "";
 
   try {
     const row = await getNewsBySlug(slug);
@@ -52,6 +53,7 @@ export default async function AdminNewsSectionEditPage({
       content = row.content ?? "";
       featuredVideo = row.featured_video?.trim() ?? "";
       imageUrl = row.image_url?.trim() ?? "";
+      publishDate = row.publish_date?.trim() ?? "";
     }
   } catch {
     /* db unavailable */
@@ -66,6 +68,7 @@ export default async function AdminNewsSectionEditPage({
       content={content}
       featuredVideo={featuredVideo}
       imageUrl={imageUrl}
+      publishDate={publishDate}
     />
   );
 }

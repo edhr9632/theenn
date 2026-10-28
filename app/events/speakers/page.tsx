@@ -114,7 +114,7 @@ export default function SpeakersPage() {
                 Sponsors
               </Link>
               <Link className="events-filter-pill" href="/events/press-bits">
-                Press Bits
+                Press Bytes
               </Link>
             </nav>
           </div>

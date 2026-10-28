@@ -98,7 +98,7 @@ export default function PressBitsPage() {
               Convene. Discuss. Build.
             </h1>
             <p className="events-hero-deck mb-0">
-              Short press bits and reel highlights from ENN summits, awards, and leadership events.
+              Short press bytes and reel highlights from ENN summits, awards, and leadership events.
             </p>
           </div>
         </section>
@@ -116,7 +116,7 @@ export default function PressBitsPage() {
                 Sponsors
               </Link>
               <Link className="events-filter-pill is-active" href="/events/press-bits" aria-current="page">
-                Press Bits
+                Press Bytes
               </Link>
             </nav>
           </div>
@@ -133,7 +133,7 @@ export default function PressBitsPage() {
                   setYearFilter(e.target.value);
                   setCategoryFilter("All");
                 }}
-                aria-label="Filter press bits by year"
+                aria-label="Filter press bytes by year"
               >
                 {years.map((year) => (
                   <option key={year} value={year}>
@@ -149,7 +149,7 @@ export default function PressBitsPage() {
                 className="events-subfilter-select form-select"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                aria-label="Filter press bits by category"
+                aria-label="Filter press bytes by category"
               >
                 {categories.map((category) => (
                   <option key={category} value={category}>
@@ -160,14 +160,14 @@ export default function PressBitsPage() {
             </div>
           </div>
 
-          <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4">Press Bits</h2>
+          <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4">Press Bytes</h2>
 
           {loading ? (
-            <p className="text-secondary mb-0">Loading press bits…</p>
+            <p className="text-secondary mb-0">Loading press bytes…</p>
           ) : items.length === 0 ? (
             <ComingSoonBlock
-              title="Press Bits coming soon"
-              message="Add press bit reels in Admin → Events → Press Bits — they will appear here automatically."
+              title="Press Bytes coming soon"
+              message="Add press byte reels in Admin → Events → Press Bytes — they will appear here automatically."
             />
           ) : (
             <div className="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 g-lg-4">

@@ -20,6 +20,7 @@ type AdminNewsSectionEditClientProps = {
   content?: string;
   featuredVideo?: string;
   imageUrl?: string;
+  publishDate?: string;
 };
 
 export default function AdminNewsSectionEditClient({
@@ -30,6 +31,7 @@ export default function AdminNewsSectionEditClient({
   content = "",
   featuredVideo = "",
   imageUrl = "",
+  publishDate = "",
 }: AdminNewsSectionEditClientProps) {
   const router = useRouter();
 
@@ -65,6 +67,7 @@ export default function AdminNewsSectionEditClient({
           excerpt: article?.excerpt,
           image: imageUrl || (article?.image?.includes("img.youtube.com") ? "" : article?.image),
           featuredVideo,
+          publishDate,
           status: "published",
           content: content || (article ? `<p>${article.excerpt}</p>` : ""),
         }}

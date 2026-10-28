@@ -34,12 +34,36 @@ function slugify(value: string) {
     .replace(/-+/g, "-");
 }
 
+/** Normalize DB / ISO values for `<input type="date" />` (YYYY-MM-DD). */
+function toDateInputValue(value?: string) {
+  if (!value?.trim()) return "";
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) return trimmed.slice(0, 10);
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return "";
+  const yyyy = parsed.getFullYear();
+  const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+  const dd = String(parsed.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function todayDateInputValue() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function AdminArticleFields({ defaults = {} }: AdminArticleFieldsProps) {
   const [title, setTitle] = useState(defaults.title ?? "");
   const [slug, setSlug] = useState(defaults.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(defaults.slug));
   const [featuredPreview, setFeaturedPreview] = useState(defaults.image ?? "");
   const [featuredVideo, setFeaturedVideo] = useState(defaults.featuredVideo ?? "");
+  const [publishDate, setPublishDate] = useState(
+    () => toDateInputValue(defaults.publishDate) || todayDateInputValue(),
+  );
   const [imageBusy, setImageBusy] = useState(false);
   const [categories, setCategories] = useState<NewsCategory[]>([]);
   const [categoryId, setCategoryId] = useState("");
@@ -194,10 +218,13 @@ export default function AdminArticleFields({ defaults = {} }: AdminArticleFields
         Publish date
         <input
           className="admin-field"
-          type="datetime-local"
+          type="date"
           name="publishDate"
-          defaultValue={defaults.publishDate ?? ""}
+          value={publishDate}
+          onChange={(e) => setPublishDate(e.target.value)}
+          required
         />
+        <span className="admin-blog-hint">Shown on the article and in the blog list. Defaults to today.</span>
       </label>
 
       <div className="admin-field-label admin-field-span">

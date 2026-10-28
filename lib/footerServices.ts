@@ -26,7 +26,7 @@ export const footerServiceGroups: FooterServiceGroup[] = [
       { label: "Featured Events", href: "/events" },
       { label: "Speakers", href: "/events/speakers" },
       { label: "Sponsors", href: "/events/sponsors" },
-      { label: "Press Bits", href: "/events/press-bits" },
+      { label: "Press Bytes", href: "/events/press-bits" },
       { label: "Newsletter Signup", href: "/newsletter" },
       { label: "Subscribe", href: "/subscribe" },
       { label: "About ENN", href: "/about" },
@@ -51,7 +51,7 @@ export const footerCompanyLinks: FooterLink[] = [
   { label: "Featured Events", href: "/events" },
   { label: "Speakers", href: "/events/speakers" },
   { label: "Sponsors", href: "/events/sponsors" },
-  { label: "Press Bits", href: "/events/press-bits" },
+  { label: "Press Bytes", href: "/events/press-bits" },
   { label: "Newsletter", href: "/newsletter" },
   { label: "Subscribe", href: "/subscribe" },
 ];

@@ -19,7 +19,16 @@ export function parseAdminArticleForm(form: HTMLFormElement) {
   const imageAlt = String(fd.get("imageAlt") ?? title).trim();
   const featuredVideo = String(fd.get("featuredVideo") ?? "").trim();
   const status = String(fd.get("status") ?? "published").trim();
-  const publishDate = String(fd.get("publishDate") ?? "").trim();
+  const rawPublishDate = String(fd.get("publishDate") ?? "").trim();
+  // Accept YYYY-MM-DD or datetime-local; store as date for Postgres.
+  const fallbackToday = (() => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  })();
+  const publishDate = rawPublishDate ? rawPublishDate.slice(0, 10) : fallbackToday;
   const sortOrder = Number(fd.get("sortOrder") ?? 0) || 0;
   const hasVideo = Boolean(featuredVideo) || hasVideoInHtml(content);
 
@@ -36,7 +45,7 @@ export function parseAdminArticleForm(form: HTMLFormElement) {
     imageAlt,
     featuredVideo,
     status,
-    publishDate: publishDate || undefined,
+    publishDate,
     sortOrder,
     hasVideo,
   };
