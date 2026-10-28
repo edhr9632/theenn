@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin/", "/admin", "/signin", "/api/"],
       },
     ],
-    sitemap: `${siteSeo.siteUrl}/sitemap.xml`,
+    sitemap: [`${siteSeo.siteUrl}/sitemap.xml`, `${siteSeo.siteUrl}/sitemap-full.xml`],
     host: siteSeo.siteUrl,
   };
 }
