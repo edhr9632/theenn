@@ -7,6 +7,7 @@ import SpotifyHeaderAd from "./SpotifyHeaderAd";
 import SiteSearchButton from "./SiteSearchButton";
 import FestivalTopBarTicker from "./FestivalTopBarTicker";
 import SiteAskEnnBar from "./SiteAskEnnBar";
+import NavDropdown from "./NavDropdown";
 
 type SiteMastheadProps = {
   activeNav?: "home" | "news" | "podcasts" | "events" | "about" | "contact" | "panel" | "insights";
@@ -83,22 +84,12 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
                       Home
                     </Link>
                   </li>
-                  <li className="nav-item dropdown">
-                    <button
-                      type="button"
-                      className={`nav-link dropdown-toggle px-3 fw-medium bg-transparent border-0${activeNav === "news" ? " active" : ""}`}
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      News Blogs
-                    </button>
-                    <ul className="dropdown-menu border-0 shadow">
-                      <li><Link className={`dropdown-item${newsActive === "daily" ? " active" : ""}`} href="/news">Daily News</Link></li>
-                      <li><Link className={`dropdown-item${newsActive === "weekly" ? " active" : ""}`} href="/weekly-news">Weekly News</Link></li>
-                      <li><Link className={`dropdown-item${newsActive === "trending" ? " active" : ""}`} href="/trending-news">Trending News</Link></li>
-                      <li><Link className={`dropdown-item${newsActive === "press" ? " active" : ""}`} href="/press-release">Press Release</Link></li>
-                    </ul>
-                  </li>
+                  <NavDropdown label="News Blogs" active={activeNav === "news"}>
+                    <li><Link className={`dropdown-item${newsActive === "daily" ? " active" : ""}`} href="/news">Daily News</Link></li>
+                    <li><Link className={`dropdown-item${newsActive === "weekly" ? " active" : ""}`} href="/weekly-news">Weekly News</Link></li>
+                    <li><Link className={`dropdown-item${newsActive === "trending" ? " active" : ""}`} href="/trending-news">Trending News</Link></li>
+                    <li><Link className={`dropdown-item${newsActive === "press" ? " active" : ""}`} href="/press-release">Press Release</Link></li>
+                  </NavDropdown>
                   <li className="nav-item">
                     <Link
                       className={`nav-link px-3 fw-medium${activeNav === "podcasts" ? " active" : ""}`}
@@ -113,22 +104,12 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
                       Panel Discussion
                     </Link>
                   </li>
-                  <li className="nav-item dropdown">
-                    <button
-                      type="button"
-                      className={`nav-link dropdown-toggle px-3 fw-medium bg-transparent border-0${activeNav === "events" ? " active" : ""}`}
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      Events
-                    </button>
-                    <ul className="dropdown-menu border-0 shadow">
-                      <li><Link className="dropdown-item" href="/events">Featured events</Link></li>
-                      <li><Link className="dropdown-item" href="/events/speakers">Speakers</Link></li>
-                      <li><Link className="dropdown-item" href="/events/sponsors">Sponsors</Link></li>
-                      <li><Link className="dropdown-item" href="/events/press-bits">Press Bytes</Link></li>
-                    </ul>
-                  </li>
+                  <NavDropdown label="Events" active={activeNav === "events"}>
+                    <li><Link className="dropdown-item" href="/events">Featured events</Link></li>
+                    <li><Link className="dropdown-item" href="/events/speakers">Speakers</Link></li>
+                    <li><Link className="dropdown-item" href="/events/sponsors">Sponsors</Link></li>
+                    <li><Link className="dropdown-item" href="/events/press-bits">Press Bytes</Link></li>
+                  </NavDropdown>
                   <li className="nav-item">
                     <Link className={`nav-link px-3 fw-medium${activeNav === "insights" ? " active" : ""}`} href="/insights">
                       Insights

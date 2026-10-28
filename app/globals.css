@@ -1075,12 +1075,28 @@ body {
 
 .site-masthead-sticky {
   z-index: 1040;
+  overflow: visible;
   background-color: #fff;
   box-shadow: 0 4px 20px rgba(26, 64, 153, 0.14);
 }
 
+.site-masthead-sticky .main-header,
+.site-masthead-sticky .navbar,
+.site-masthead-sticky .navbar-collapse,
+.site-masthead-sticky .navbar-nav {
+  overflow: visible;
+}
+
 .site-masthead-sticky .dropdown-menu {
-  z-index: 1055;
+  z-index: 1060;
+}
+
+.main-header .nav-item.dropdown {
+  position: relative;
+}
+
+.main-header .dropdown-menu.show {
+  display: block;
 }
 
 /* Text / image logo lockup */

@@ -7,7 +7,11 @@ export default function BootstrapClient() {
   const pathname = usePathname();
 
   useEffect(() => {
+    let cancelled = false;
+
     void import("bootstrap").then(({ Dropdown, Collapse }) => {
+      if (cancelled) return;
+
       document.querySelectorAll<HTMLElement>('[data-bs-toggle="dropdown"]').forEach((el) => {
         Dropdown.getOrCreateInstance(el);
       });
@@ -16,6 +20,10 @@ export default function BootstrapClient() {
         Collapse.getOrCreateInstance(el);
       });
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [pathname]);
 
   return null;
