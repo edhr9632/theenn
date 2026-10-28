@@ -11,6 +11,20 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.storage.supabase.co" },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/events/press-bits",
+        destination: "/events/press-bytes",
+        permanent: true,
+      },
+      {
+        source: "/events/press-bits/:path*",
+        destination: "/events/press-bytes/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

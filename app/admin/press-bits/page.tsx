@@ -394,7 +394,7 @@ export default function AdminPressBitsPage() {
           </label>
           <label className="admin-field-label admin-check-row admin-field-span">
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-            Live on website (unchecked = Hidden — will not appear on /events/press-bits)
+            Live on website (unchecked = Hidden — will not appear on /events/press-bytes)
           </label>
 
           <div className="admin-field-label admin-field-span">

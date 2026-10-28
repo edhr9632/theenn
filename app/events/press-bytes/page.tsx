@@ -115,7 +115,7 @@ export default function PressBitsPage() {
               <Link className="events-filter-pill" href="/events/sponsors">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill is-active" href="/events/press-bits" aria-current="page">
+              <Link className="events-filter-pill is-active" href="/events/press-bytes" aria-current="page">
                 Press Bytes
               </Link>
             </nav>
