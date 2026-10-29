@@ -2,9 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteMasthead from "@/components/SiteMasthead";
 import PressBitThumb from "@/components/PressBitThumb";
-import PressByteShareLink from "@/components/PressByteShareLink";
 import { getPressBitBySlug, getPressBitsFromDb } from "@/lib/pressBitsDb";
-import { buildPageMetadata, siteSeo } from "@/lib/seo";
+import { buildPageMetadata } from "@/lib/seo";
 import { extractYoutubeId } from "@/lib/videoEmbed";
 
 type PressBytePageProps = {
@@ -56,7 +55,6 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
   if (!item) notFound();
 
   const youtubeId = extractYoutubeId(item.videoUrl);
-  const fullUrl = `${siteSeo.siteUrl}/events/press-bytes/${item.slug}`;
 
   return (
     <>
@@ -83,44 +81,39 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
 
         <section className="press-byte-detail" aria-labelledby="press-byte-heading">
           <div className="container">
-            <div className="press-byte-detail-inner">
-              <Link href="/events/press-bytes" className="press-byte-back">
-                ← All Press Bytes
-              </Link>
+            <Link href="/events/press-bytes" className="press-byte-back">
+              ← All Press Bytes
+            </Link>
 
-              <div className="press-byte-stage">
-                <div className="press-byte-player-shell">
-                  <div className="press-byte-player">
-                    {youtubeId ? (
-                      <iframe
-                        src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&modestbranding=1&playsinline=1`}
-                        title={item.title}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <video
-                        src={item.videoUrl}
-                        controls
-                        playsInline
-                        poster={item.image || undefined}
-                      />
-                    )}
-                  </div>
+            <div className="press-byte-stage">
+              <div className="press-byte-player-shell">
+                <div className="press-byte-player">
+                  {youtubeId ? (
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0&modestbranding=1&playsinline=1`}
+                      title={item.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video
+                      src={item.videoUrl}
+                      controls
+                      playsInline
+                      poster={item.image || undefined}
+                    />
+                  )}
                 </div>
+              </div>
 
-                <div className="press-byte-copy">
-                  <p className="press-byte-kicker text-uppercase mb-2">Press Bytes</p>
-                  <h1 id="press-byte-heading" className="press-byte-title serif-headline">
-                    {item.title}
-                  </h1>
-                  <div className="press-byte-meta">
-                    <span>{item.year}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{item.category}</span>
-                  </div>
-
-                  <PressByteShareLink url={fullUrl} />
+              <div className="press-byte-copy">
+                <p className="press-byte-kicker text-uppercase mb-2">Press Bytes</p>
+                <h1 id="press-byte-heading" className="press-byte-title serif-headline">
+                  {item.title}
+                </h1>
+                <div className="press-byte-meta">
+                  <span className="press-byte-chip">{item.year}</span>
+                  <span className="press-byte-chip">{item.category}</span>
                 </div>
               </div>
             </div>
