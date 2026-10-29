@@ -62,7 +62,7 @@ const SELECT_FIELDS = `
 `;
 
 async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<string> {
-  const base = slugifyPressBit(baseSlug, 48) || "press-byte";
+  const base = slugifyPressBit(baseSlug, 72) || "press-byte";
   let candidate = base;
   let attempt = 0;
 
@@ -75,10 +75,10 @@ async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<s
     );
     if (!existing) return candidate;
     attempt += 1;
-    candidate = `${base.slice(0, 40)}-${attempt + 1}`;
+    candidate = `${base.slice(0, 64)}-${attempt + 1}`;
   }
 
-  return `${base.slice(0, 36)}-${Date.now().toString(36)}`;
+  return `${base.slice(0, 56)}-${Date.now().toString(36)}`;
 }
 
 export async function listPressBitsAdmin(): Promise<PressBit[]> {

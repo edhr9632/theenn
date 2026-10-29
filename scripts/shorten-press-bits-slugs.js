@@ -1,5 +1,5 @@
 /**
- * Rebuild short SEO slugs for all Press Bytes.
+ * Rebuild SEO slugs: school/org + event name.
  * Usage: node scripts/shorten-press-bits-slugs.js
  */
 const fs = require("fs");
@@ -20,7 +20,7 @@ function loadEnvLocal() {
   }
 }
 
-function slugify(value, maxLength = 60) {
+function slugify(value, maxLength = 72) {
   return String(value || "")
     .toLowerCase()
     .trim()
@@ -30,34 +30,58 @@ function slugify(value, maxLength = 60) {
     .replace(/-+$/g, "");
 }
 
-function buildPressBitSeoSlug(title, maxLength = 48) {
-  const primary = String(title || "").split("|")[0]?.trim() || String(title || "");
-  const cleaned = primary
-    .replace(/\bawards?\b/gi, " ")
-    .replace(/\bwinner(?:'s)?\b/gi, " ")
-    .replace(/\binterview(?:s)?\b/gi, " ")
-    .replace(/\bkeynote\b/gi, " ")
-    .replace(/\bspeaker\b/gi, " ")
-    .replace(/\bpanel\b/gi, " ")
-    .replace(/\bmaharashtra\b/gi, " ")
-    .replace(/\beducators?\b/gi, " ")
-    .replace(/\bsummit\b/gi, " ")
-    .replace(/\bnorth india\b/gi, " ")
-    .replace(/\bschool merit awards?\b/gi, " ")
-    .replace(/\b20\d{2}(?:-\d{2})?\b/g, " ")
+function cleanSlugPhrase(value) {
+  return String(value || "")
     .replace(/\s*[-–—|:·]+\s*/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
 
-  let slug = slugify(cleaned || primary, maxLength);
-  if (!slug) slug = slugify(title, maxLength) || "press-byte";
+function extractEventYear(value) {
+  const match = String(value || "").match(/\b(20\d{2})(?:-\d{2})?\b/);
+  return match?.[1] ?? "";
+}
 
-  if (slug.length >= maxLength) {
-    const cut = slug.lastIndexOf("-", maxLength);
-    if (cut >= 18) slug = slug.slice(0, cut);
+function buildPressBitSeoSlug(title, maxLength = 72) {
+  const parts = String(title || "")
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const schoolRaw = parts[0] || String(title || "");
+  const eventRaw = parts.length > 1 ? parts[parts.length - 1] : "";
+
+  const school = cleanSlugPhrase(
+    schoolRaw
+      .replace(/\bawards?\b/gi, " ")
+      .replace(/\bwinner(?:'s)?\b/gi, " ")
+      .replace(/\binterview(?:s)?\b/gi, " ")
+      .replace(/\bkeynote\b/gi, " ")
+      .replace(/\bspeaker\b/gi, " ")
+      .replace(/\bpanel\b/gi, " ")
+      .replace(/\bsponsor\b/gi, " ")
+      .replace(/\b20\d{2}(?:-\d{2})?\b/g, " "),
+  );
+
+  const eventYear = extractEventYear(eventRaw);
+  const event = cleanSlugPhrase(
+    eventRaw
+      .replace(/\band\b/gi, " ")
+      .replace(/\bawards?\b/gi, " ")
+      .replace(/\b20\d{2}(?:-\d{2})?\b/g, " "),
+  );
+
+  const eventSlug = slugify(event, 40);
+  const eventPart = [eventSlug, eventYear].filter(Boolean).join("-");
+  const schoolBudget = Math.max(18, maxLength - (eventPart ? eventPart.length + 1 : 0));
+  let schoolSlug = slugify(school || schoolRaw, schoolBudget);
+  if (schoolSlug.length >= schoolBudget) {
+    const cut = schoolSlug.lastIndexOf("-", schoolBudget);
+    if (cut >= 12) schoolSlug = schoolSlug.slice(0, cut);
   }
 
-  return slug || "press-byte";
+  const combined = [schoolSlug, eventPart].filter(Boolean).join("-");
+  return slugify(combined || title, maxLength) || "press-byte";
 }
 
 async function main() {
@@ -69,8 +93,6 @@ async function main() {
   }
 
   const pool = createPool(databaseUrl);
-
-  // Keep one previous slug for redirects from older long URLs.
   await pool.query(`ALTER TABLE press_bits ADD COLUMN IF NOT EXISTS previous_slug TEXT`);
 
   const { rows } = await pool.query("SELECT id, title, slug FROM press_bits ORDER BY created_at ASC");
@@ -82,7 +104,7 @@ async function main() {
     let n = 1;
     while (used.has(candidate)) {
       n += 1;
-      candidate = `${base.slice(0, 40)}-${n}`;
+      candidate = `${base.slice(0, 64)}-${n}`;
     }
     used.add(candidate);
 
