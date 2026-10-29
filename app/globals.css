@@ -7267,6 +7267,26 @@ body {
   background: #000;
 }
 
+.events-press-bit-detail-player {
+  position: relative;
+  width: 100%;
+  max-width: 56rem;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.events-press-bit-detail-player iframe,
+.events-press-bit-detail-player video {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+  object-fit: contain;
+}
+
 .events-press-bit-modal-body iframe,
 .events-press-bit-modal-body video {
   display: block;

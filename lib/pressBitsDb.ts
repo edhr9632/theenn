@@ -2,12 +2,14 @@ import "server-only";
 
 import { query, queryOne } from "@/lib/db";
 import type { PressBit, PressBitInput, PressBitSourceType } from "@/lib/pressBitTypes";
+import { slugifyPressBit } from "@/lib/pressBitTypes";
 import { upgradeYoutubeThumbUrl, youtubeThumb } from "@/lib/siteVideos";
 
 export type { PressBit, PressBitInput } from "@/lib/pressBitTypes";
 
 type PressBitRow = {
   id: string;
+  slug: string;
   title: string;
   video_url: string;
   source_type: string;
@@ -42,6 +44,7 @@ function mapRow(row: PressBitRow): PressBit {
   const sourceType = detectSourceType(row.video_url, row.source_type as PressBitSourceType);
   return {
     id: row.id,
+    slug: row.slug?.trim() || slugifyPressBit(row.title) || row.id,
     title: row.title,
     videoUrl: row.video_url,
     sourceType,
@@ -54,8 +57,28 @@ function mapRow(row: PressBitRow): PressBit {
 }
 
 const SELECT_FIELDS = `
-  id, title, video_url, source_type, image_url, year, category, sort_order, enabled
+  id, slug, title, video_url, source_type, image_url, year, category, sort_order, enabled
 `;
+
+async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<string> {
+  const base = slugifyPressBit(baseSlug) || "press-byte";
+  let candidate = base;
+  let attempt = 0;
+
+  while (attempt < 40) {
+    const existing = await queryOne<{ id: string }>(
+      excludeId
+        ? `SELECT id FROM press_bits WHERE slug = $1 AND id <> $2 LIMIT 1`
+        : `SELECT id FROM press_bits WHERE slug = $1 LIMIT 1`,
+      excludeId ? [candidate, excludeId] : [candidate],
+    );
+    if (!existing) return candidate;
+    attempt += 1;
+    candidate = `${base}-${attempt + 1}`;
+  }
+
+  return `${base}-${Date.now().toString(36)}`;
+}
 
 export async function listPressBitsAdmin(): Promise<PressBit[]> {
   const rows = await query<PressBitRow>(
@@ -127,16 +150,33 @@ export async function getPressBitById(id: string): Promise<PressBit | null> {
   return row ? mapRow(row) : null;
 }
 
+export async function getPressBitBySlug(slug: string): Promise<PressBit | null> {
+  const clean = slugifyPressBit(slug);
+  if (!clean) return null;
+  const row = await queryOne<PressBitRow>(
+    `SELECT ${SELECT_FIELDS}
+     FROM press_bits
+     WHERE slug = $1 AND enabled = TRUE
+     LIMIT 1`,
+    [clean],
+  );
+  return row ? mapRow(row) : null;
+}
+
 export async function createPressBit(input: PressBitInput): Promise<PressBit | null> {
   const videoUrl = input.videoUrl.trim();
   const sourceType = detectSourceType(videoUrl, input.sourceType);
   const imageUrl = resolveImage(input.imageUrl, videoUrl, sourceType);
+  const title = input.title.trim();
+  const slug = await ensureUniqueSlug(input.slug?.trim() || title);
+
   const row = await queryOne<PressBitRow>(
-    `INSERT INTO press_bits (title, video_url, source_type, image_url, year, category, sort_order, enabled)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO press_bits (slug, title, video_url, source_type, image_url, year, category, sort_order, enabled)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING ${SELECT_FIELDS}`,
     [
-      input.title.trim(),
+      slug,
+      title,
       videoUrl,
       sourceType,
       imageUrl || null,
@@ -158,23 +198,27 @@ export async function updatePressBit(id: string, input: Partial<PressBitInput>):
   const imageSource =
     input.imageUrl !== undefined ? input.imageUrl.trim() || "" : existing.image || "";
   const imageUrl = resolveImage(imageSource, videoUrl, sourceType);
+  const title = input.title?.trim() ?? existing.title;
+  const slug = await ensureUniqueSlug(input.slug?.trim() || title, id);
 
   const row = await queryOne<PressBitRow>(
     `UPDATE press_bits SET
-      title = $2,
-      video_url = $3,
-      source_type = $4,
-      image_url = $5,
-      year = $6,
-      category = $7,
-      sort_order = $8,
-      enabled = $9,
+      slug = $2,
+      title = $3,
+      video_url = $4,
+      source_type = $5,
+      image_url = $6,
+      year = $7,
+      category = $8,
+      sort_order = $9,
+      enabled = $10,
       updated_at = NOW()
      WHERE id = $1
      RETURNING ${SELECT_FIELDS}`,
     [
       id,
-      input.title?.trim() ?? existing.title,
+      slug,
+      title,
       videoUrl,
       sourceType,
       imageUrl || null,

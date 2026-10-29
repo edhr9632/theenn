@@ -6,7 +6,6 @@ import SiteMasthead from "@/components/SiteMasthead";
 import ComingSoonBlock from "@/components/ComingSoonBlock";
 import PressBitThumb from "@/components/PressBitThumb";
 import type { PressBit } from "@/lib/pressBitTypes";
-import { extractYoutubeId } from "@/lib/videoEmbed";
 
 type PressBitsResponse = {
   items?: PressBit[];
@@ -21,7 +20,6 @@ export default function PressBitsPage() {
   const [yearFilter, setYearFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [loading, setLoading] = useState(true);
-  const [activeBit, setActiveBit] = useState<PressBit | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,19 +52,6 @@ export default function PressBitsPage() {
     };
   }, [yearFilter, categoryFilter]);
 
-  useEffect(() => {
-    if (!activeBit) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setActiveBit(null);
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [activeBit]);
-
   const years = useMemo(() => ["All", ...yearsFromApi.map(String)], [yearsFromApi]);
 
   const categories = useMemo(() => {
@@ -84,8 +69,6 @@ export default function PressBitsPage() {
       setCategoryFilter("All");
     }
   }, [categories, categoryFilter]);
-
-  const youtubeId = activeBit ? extractYoutubeId(activeBit.videoUrl) : null;
 
   return (
     <>
@@ -173,10 +156,9 @@ export default function PressBitsPage() {
             <div className="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 g-lg-4">
               {items.map((item) => (
                 <div key={item.id} className="col">
-                  <button
-                    type="button"
-                    className="events-press-bit-card h-100 d-flex flex-column text-decoration-none border-0 bg-transparent p-0 text-start w-100"
-                    onClick={() => setActiveBit(item)}
+                  <Link
+                    href={`/events/press-bytes/${item.slug}`}
+                    className="events-press-bit-card h-100 d-flex flex-column text-decoration-none"
                   >
                     <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">
                       <PressBitThumb item={item} />
@@ -187,51 +169,13 @@ export default function PressBitsPage() {
                         {item.year} · {item.category}
                       </p>
                     </div>
-                  </button>
+                  </Link>
                 </div>
               ))}
             </div>
           )}
         </div>
       </main>
-
-      {activeBit ? (
-        <div
-          className="events-press-bit-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label={activeBit.title}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setActiveBit(null);
-          }}
-        >
-          <div className="events-press-bit-modal-panel">
-            <div className="events-press-bit-modal-head">
-              <p className="events-press-bit-modal-title mb-0">{activeBit.title}</p>
-              <button
-                type="button"
-                className="events-press-bit-modal-close"
-                aria-label="Cancel and close video"
-                onClick={() => setActiveBit(null)}
-              >
-                ✕ Cancel
-              </button>
-            </div>
-            <div className="events-press-bit-modal-body">
-              {youtubeId ? (
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
-                  title={activeBit.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              ) : (
-                <video src={activeBit.videoUrl} controls autoPlay playsInline />
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </>
   );
 }

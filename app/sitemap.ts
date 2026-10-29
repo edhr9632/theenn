@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { listPublishedNewsKnowledge } from "@/lib/newsDb";
+import { getPressBitsFromDb } from "@/lib/pressBitsDb";
 import { siteSeo } from "@/lib/seo";
 import { getWeeklyAdminState } from "@/lib/weeklyDb";
 
@@ -61,6 +62,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     /* weekly unavailable */
+  }
+
+  try {
+    const pressBytes = await getPressBitsFromDb({ limit: 500 });
+    for (const item of pressBytes) {
+      if (!item.slug) continue;
+      entries.push({
+        url: `${siteSeo.siteUrl}/events/press-bytes/${item.slug}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
+  } catch {
+    /* press bytes unavailable */
   }
 
   return entries;

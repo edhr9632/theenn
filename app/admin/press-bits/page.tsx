@@ -491,7 +491,9 @@ export default function AdminPressBitsPage() {
                 </td>
                 <td>
                   <p className="admin-cell-title mb-0">{item.title}</p>
-                  <p className="admin-cell-sub mb-0">Order {item.sortOrder}</p>
+                  <p className="admin-cell-sub mb-0">
+                    /events/press-bytes/{item.slug || "…"} · Order {item.sortOrder}
+                  </p>
                 </td>
                 <td>
                   <AdminBadge tone={item.sourceType === "upload" ? "orange" : "blue"}>
@@ -515,7 +517,12 @@ export default function AdminPressBitsPage() {
                   </button>
                 </td>
                 <td>
-                  <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" className="admin-link-btn">
+                  <a
+                    href={item.slug ? `/events/press-bytes/${item.slug}` : item.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-link-btn"
+                  >
                     Open
                   </a>
                 </td>
