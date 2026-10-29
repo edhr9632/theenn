@@ -1,5 +1,5 @@
 /**
- * Shorten press_bits.slug values for cleaner public URLs.
+ * Rebuild short SEO slugs for all Press Bytes.
  * Usage: node scripts/shorten-press-bits-slugs.js
  */
 const fs = require("fs");
@@ -20,13 +20,44 @@ function loadEnvLocal() {
   }
 }
 
-function slugify(value) {
+function slugify(value, maxLength = 60) {
   return String(value || "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
+    .slice(0, maxLength)
+    .replace(/-+$/g, "");
+}
+
+function buildPressBitSeoSlug(title, maxLength = 48) {
+  const primary = String(title || "").split("|")[0]?.trim() || String(title || "");
+  const cleaned = primary
+    .replace(/\bawards?\b/gi, " ")
+    .replace(/\bwinner(?:'s)?\b/gi, " ")
+    .replace(/\binterview(?:s)?\b/gi, " ")
+    .replace(/\bkeynote\b/gi, " ")
+    .replace(/\bspeaker\b/gi, " ")
+    .replace(/\bpanel\b/gi, " ")
+    .replace(/\bmaharashtra\b/gi, " ")
+    .replace(/\beducators?\b/gi, " ")
+    .replace(/\bsummit\b/gi, " ")
+    .replace(/\bnorth india\b/gi, " ")
+    .replace(/\bschool merit awards?\b/gi, " ")
+    .replace(/\b20\d{2}(?:-\d{2})?\b/g, " ")
+    .replace(/\s*[-–—|:·]+\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  let slug = slugify(cleaned || primary, maxLength);
+  if (!slug) slug = slugify(title, maxLength) || "press-byte";
+
+  if (slug.length >= maxLength) {
+    const cut = slug.lastIndexOf("-", maxLength);
+    if (cut >= 18) slug = slug.slice(0, cut);
+  }
+
+  return slug || "press-byte";
 }
 
 async function main() {
@@ -38,27 +69,38 @@ async function main() {
   }
 
   const pool = createPool(databaseUrl);
+
+  // Keep one previous slug for redirects from older long URLs.
+  await pool.query(`ALTER TABLE press_bits ADD COLUMN IF NOT EXISTS previous_slug TEXT`);
+
   const { rows } = await pool.query("SELECT id, title, slug FROM press_bits ORDER BY created_at ASC");
   const used = new Set();
 
   for (const row of rows) {
-    let base = slugify(row.title) || String(row.id).slice(0, 8);
+    let base = buildPressBitSeoSlug(row.title);
     let candidate = base;
     let n = 1;
     while (used.has(candidate)) {
       n += 1;
-      candidate = `${base.slice(0, 70)}-${n}`;
+      candidate = `${base.slice(0, 40)}-${n}`;
     }
     used.add(candidate);
 
     if (candidate !== row.slug) {
-      await pool.query("UPDATE press_bits SET slug = $1, updated_at = NOW() WHERE id = $2", [
-        candidate,
-        row.id,
-      ]);
-      console.log("updated:", candidate);
+      await pool.query(
+        `UPDATE press_bits
+         SET previous_slug = CASE
+               WHEN $1::text IS DISTINCT FROM slug THEN slug
+               ELSE previous_slug
+             END,
+             slug = $1,
+             updated_at = NOW()
+         WHERE id = $2`,
+        [candidate, row.id],
+      );
+      console.log(`${row.slug}\n  → ${candidate}\n`);
     } else {
-      console.log("keep:", candidate);
+      console.log(`keep: ${candidate}`);
     }
   }
 

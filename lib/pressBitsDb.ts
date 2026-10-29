@@ -2,7 +2,7 @@ import "server-only";
 
 import { query, queryOne } from "@/lib/db";
 import type { PressBit, PressBitInput, PressBitSourceType } from "@/lib/pressBitTypes";
-import { slugifyPressBit } from "@/lib/pressBitTypes";
+import { buildPressBitSeoSlug, slugifyPressBit } from "@/lib/pressBitTypes";
 import { upgradeYoutubeThumbUrl, youtubeThumb } from "@/lib/siteVideos";
 
 export type { PressBit, PressBitInput } from "@/lib/pressBitTypes";
@@ -10,6 +10,7 @@ export type { PressBit, PressBitInput } from "@/lib/pressBitTypes";
 type PressBitRow = {
   id: string;
   slug: string;
+  previous_slug?: string | null;
   title: string;
   video_url: string;
   source_type: string;
@@ -44,7 +45,7 @@ function mapRow(row: PressBitRow): PressBit {
   const sourceType = detectSourceType(row.video_url, row.source_type as PressBitSourceType);
   return {
     id: row.id,
-    slug: row.slug?.trim() || slugifyPressBit(row.title) || row.id,
+    slug: row.slug?.trim() || buildPressBitSeoSlug(row.title) || row.id,
     title: row.title,
     videoUrl: row.video_url,
     sourceType,
@@ -57,11 +58,11 @@ function mapRow(row: PressBitRow): PressBit {
 }
 
 const SELECT_FIELDS = `
-  id, slug, title, video_url, source_type, image_url, year, category, sort_order, enabled
+  id, slug, previous_slug, title, video_url, source_type, image_url, year, category, sort_order, enabled
 `;
 
 async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<string> {
-  const base = slugifyPressBit(baseSlug) || "press-byte";
+  const base = slugifyPressBit(baseSlug, 48) || "press-byte";
   let candidate = base;
   let attempt = 0;
 
@@ -74,10 +75,10 @@ async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<s
     );
     if (!existing) return candidate;
     attempt += 1;
-    candidate = `${base}-${attempt + 1}`;
+    candidate = `${base.slice(0, 40)}-${attempt + 1}`;
   }
 
-  return `${base}-${Date.now().toString(36)}`;
+  return `${base.slice(0, 36)}-${Date.now().toString(36)}`;
 }
 
 export async function listPressBitsAdmin(): Promise<PressBit[]> {
@@ -151,12 +152,13 @@ export async function getPressBitById(id: string): Promise<PressBit | null> {
 }
 
 export async function getPressBitBySlug(slug: string): Promise<PressBit | null> {
-  const clean = slugifyPressBit(slug);
+  const clean = slugifyPressBit(slug, 120);
   if (!clean) return null;
   const row = await queryOne<PressBitRow>(
     `SELECT ${SELECT_FIELDS}
      FROM press_bits
-     WHERE slug = $1 AND enabled = TRUE
+     WHERE enabled = TRUE
+       AND (slug = $1 OR previous_slug = $1)
      LIMIT 1`,
     [clean],
   );
@@ -168,7 +170,7 @@ export async function createPressBit(input: PressBitInput): Promise<PressBit | n
   const sourceType = detectSourceType(videoUrl, input.sourceType);
   const imageUrl = resolveImage(input.imageUrl, videoUrl, sourceType);
   const title = input.title.trim();
-  const slug = await ensureUniqueSlug(input.slug?.trim() || title);
+  const slug = await ensureUniqueSlug(input.slug?.trim() || buildPressBitSeoSlug(title));
 
   const row = await queryOne<PressBitRow>(
     `INSERT INTO press_bits (slug, title, video_url, source_type, image_url, year, category, sort_order, enabled)
@@ -199,7 +201,12 @@ export async function updatePressBit(id: string, input: Partial<PressBitInput>):
     input.imageUrl !== undefined ? input.imageUrl.trim() || "" : existing.image || "";
   const imageUrl = resolveImage(imageSource, videoUrl, sourceType);
   const title = input.title?.trim() ?? existing.title;
-  const slug = await ensureUniqueSlug(input.slug?.trim() || title, id);
+  const titleChanged = input.title !== undefined && title !== existing.title;
+  const slug = input.slug?.trim()
+    ? await ensureUniqueSlug(input.slug.trim(), id)
+    : titleChanged
+      ? await ensureUniqueSlug(buildPressBitSeoSlug(title), id)
+      : existing.slug;
 
   const row = await queryOne<PressBitRow>(
     `UPDATE press_bits SET

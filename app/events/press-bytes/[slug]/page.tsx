@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import SiteMasthead from "@/components/SiteMasthead";
 import PressBitThumb from "@/components/PressBitThumb";
 import { getPressBitBySlug, getPressBitsFromDb } from "@/lib/pressBitsDb";
 import { buildPageMetadata } from "@/lib/seo";
 import { extractYoutubeId } from "@/lib/videoEmbed";
+import { slugifyPressBit } from "@/lib/pressBitTypes";
 
 type PressBytePageProps = {
   params: Promise<{ slug: string }>;
@@ -53,6 +54,12 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
   }
 
   if (!item) notFound();
+
+  // Old long URLs redirect to the short SEO slug.
+  const requested = slugifyPressBit(slug, 120);
+  if (requested && item.slug && requested !== item.slug) {
+    permanentRedirect(`/events/press-bytes/${item.slug}`);
+  }
 
   const youtubeId = extractYoutubeId(item.videoUrl);
 
