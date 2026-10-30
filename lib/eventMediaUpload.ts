@@ -1,10 +1,14 @@
 import { Upload } from "tus-js-client";
 import { createClient } from "@/utils/supabase/client";
-import { MAX_VIDEO_BYTES, SAFE_STORAGE_UPLOAD_BYTES } from "@/lib/mediaUploadLimits";
+import {
+  MAX_VIDEO_BYTES,
+  MAX_VIDEO_MB,
+  SAFE_STORAGE_UPLOAD_BYTES,
+  SAFE_STORAGE_UPLOAD_MB,
+} from "@/lib/mediaUploadLimits";
 
 const BUCKET = "press-bits";
-export { MAX_VIDEO_BYTES, SAFE_STORAGE_UPLOAD_BYTES };
-const MAX_VIDEO_MB = Math.round(MAX_VIDEO_BYTES / (1024 * 1024));
+export { MAX_VIDEO_BYTES, MAX_VIDEO_MB, SAFE_STORAGE_UPLOAD_BYTES, SAFE_STORAGE_UPLOAD_MB };
 const RESUMABLE_THRESHOLD_BYTES = 40 * 1024 * 1024;
 const TUS_CHUNK_SIZE = 6 * 1024 * 1024;
 
@@ -200,7 +204,7 @@ async function prepareVideoFile(file: File, options?: UploadMediaOptions): Promi
   } catch (error) {
     const message = error instanceof Error ? error.message : "Compression failed.";
     throw new Error(
-      `${message} Tip: paste a YouTube/Shorts URL, or upgrade Supabase and raise Global file size limit to 200 MB.`,
+      `${message} Tip: paste a YouTube/Shorts URL, or upgrade Supabase and raise Global file size limit to ${MAX_VIDEO_MB} MB.`,
     );
   }
 }

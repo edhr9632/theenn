@@ -5,6 +5,7 @@ import { AdminBadge, AdminPageHeader, AdminTable } from "@/components/admin/Admi
 import { AdminRowActions } from "@/components/admin/AdminRowActions";
 import { EVENT_YEAR_OPTIONS, getDefaultEventCategory, getEventCategoriesForYear } from "@/lib/eventCategories";
 import { uploadEventMediaAsset, uploadPressBitAsset } from "@/lib/eventMediaUpload";
+import { MAX_VIDEO_MB, SAFE_STORAGE_UPLOAD_MB } from "@/lib/mediaUploadLimits";
 import { youtubeThumb } from "@/lib/siteVideos";
 import type { PressBit, PressBitSourceType } from "@/lib/pressBitTypes";
 
@@ -338,7 +339,7 @@ export default function AdminPressBitsPage() {
                     ? uploadStatus
                     : videoFileName
                       ? `Selected: ${videoFileName}`
-                      : "MP4 / WebM / MOV up to 200 MB. Files over ~45 MB are auto-compressed to fit Supabase storage, then uploaded. Or paste a YouTube/Shorts URL."}
+                      : `MP4 / WebM / MOV up to ${MAX_VIDEO_MB} MB. Files over ~${SAFE_STORAGE_UPLOAD_MB} MB are auto-compressed to fit storage, then uploaded. Or paste a YouTube/Shorts URL.`}
                 </span>
                 <input
                   ref={videoRef}

@@ -9,6 +9,7 @@ import {
   getEventCategoriesForYear,
 } from "@/lib/eventCategories";
 import { uploadEventMediaAsset } from "@/lib/eventMediaUpload";
+import { MAX_VIDEO_MB, SAFE_STORAGE_UPLOAD_MB } from "@/lib/mediaUploadLimits";
 import { youtubeThumb } from "@/lib/siteVideos";
 import { detectVideoSourceType, type EventVideoSourceType } from "@/lib/eventPeopleTypes";
 
@@ -355,7 +356,7 @@ export default function AdminEventPeoplePage({ kind }: AdminEventPeoplePageProps
                     ? uploadStatus
                     : videoFileName
                       ? `Selected: ${videoFileName}`
-                      : "MP4 / WebM / MOV up to 200 MB. Files over ~45 MB are auto-compressed to fit storage, then uploaded."}
+                      : `MP4 / WebM / MOV up to ${MAX_VIDEO_MB} MB. Files over ~${SAFE_STORAGE_UPLOAD_MB} MB are auto-compressed to fit storage, then uploaded.`}
                 </span>
                 <input
                   ref={videoRef}
