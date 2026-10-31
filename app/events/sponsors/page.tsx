@@ -115,7 +115,7 @@ export default function SponsorsPage() {
               <Link className="events-filter-pill is-active" href="/events/sponsors" aria-current="page">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill" href="/events/leader-bytes">
+              <Link className="events-filter-pill" href="/events/press-bytes">
                 Leader Bytes
               </Link>
             </nav>
