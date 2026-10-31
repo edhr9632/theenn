@@ -7,11 +7,11 @@ import { buildPageMetadata } from "@/lib/seo";
 import { extractYoutubeId } from "@/lib/videoEmbed";
 import { slugifyPressBit } from "@/lib/pressBitTypes";
 
-type PressBytePageProps = {
+type LeaderBytePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: PressBytePageProps) {
+export async function generateMetadata({ params }: LeaderBytePageProps) {
   const { slug } = await params;
   try {
     const item = await getPressBitBySlug(slug);
@@ -19,25 +19,25 @@ export async function generateMetadata({ params }: PressBytePageProps) {
       return buildPageMetadata({
         title: "Leader Byte",
         description: "Leader Bytes video from Education News Network events.",
-        path: `/events/press-bytes/${slug}`,
+        path: `/events/leader-bytes/${slug}`,
       });
     }
     return buildPageMetadata({
       title: `${item.title} - Leader Bytes`,
       description: `${item.title} | ${item.year} | ${item.category} - Leader Bytes from Education News Network events.`,
-      path: `/events/press-bytes/${item.slug}`,
+      path: `/events/leader-bytes/${item.slug}`,
       image: item.image || undefined,
     });
   } catch {
     return buildPageMetadata({
       title: "Leader Byte",
       description: "Leader Bytes video from Education News Network events.",
-      path: `/events/press-bytes/${slug}`,
+      path: `/events/leader-bytes/${slug}`,
     });
   }
 }
 
-export default async function PressByteDetailPage({ params }: PressBytePageProps) {
+export default async function LeaderByteDetailPage({ params }: LeaderBytePageProps) {
   const { slug } = await params;
   let item = null;
   let related: Awaited<ReturnType<typeof getPressBitsFromDb>> = [];
@@ -57,7 +57,7 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
 
   const requested = slugifyPressBit(slug, 120);
   if (requested && item.slug && requested !== item.slug) {
-    permanentRedirect(`/events/press-bytes/${item.slug}`);
+    permanentRedirect(`/events/leader-bytes/${item.slug}`);
   }
 
   const youtubeId = extractYoutubeId(item.videoUrl);
@@ -78,16 +78,16 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
               <Link className="events-filter-pill" href="/events/sponsors">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill is-active" href="/events/press-bytes" aria-current="page">
+              <Link className="events-filter-pill is-active" href="/events/leader-bytes" aria-current="page">
                 Leader Bytes
               </Link>
             </nav>
           </div>
         </div>
 
-        <section className="press-byte-detail" aria-labelledby="press-byte-heading">
+        <section className="press-byte-detail" aria-labelledby="leader-byte-heading">
           <div className="container">
-            <Link href="/events/press-bytes" className="press-byte-back">
+            <Link href="/events/leader-bytes" className="press-byte-back">
               Back to all Leader Bytes
             </Link>
 
@@ -114,7 +114,7 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
 
               <div className="press-byte-copy">
                 <p className="press-byte-kicker text-uppercase mb-2">Leader Bytes</p>
-                <h1 id="press-byte-heading" className="press-byte-title serif-headline">
+                <h1 id="leader-byte-heading" className="press-byte-title serif-headline">
                   {item.title}
                 </h1>
                 <div className="press-byte-meta">
@@ -135,7 +135,7 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
               {related.slice(0, 4).map((row) => (
                 <div key={row.id} className="col">
                   <Link
-                    href={`/events/press-bytes/${row.slug}`}
+                    href={`/events/leader-bytes/${row.slug}`}
                     className="events-press-bit-card h-100 d-flex flex-column text-decoration-none"
                   >
                     <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">

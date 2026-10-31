@@ -224,7 +224,7 @@ function eventsReply(): AssistantReply {
       { title: "Featured Events", href: "/events", meta: "Summits & awards" },
       { title: "Speakers", href: "/events/speakers", meta: "Expert profiles" },
       { title: "Sponsors", href: "/events/sponsors", meta: "Partners" },
-      { title: "Leader Bytes", href: "/events/press-bytes", meta: "Event reels" },
+      { title: "Leader Bytes", href: "/events/leader-bytes", meta: "Event reels" },
     ],
     suggestions: ["Daily news", "Weekly news"],
   };

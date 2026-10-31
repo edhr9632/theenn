@@ -98,7 +98,7 @@ export default function PressBitsPage() {
               <Link className="events-filter-pill" href="/events/sponsors">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill is-active" href="/events/press-bytes" aria-current="page">
+              <Link className="events-filter-pill is-active" href="/events/leader-bytes" aria-current="page">
                 Leader Bytes
               </Link>
             </nav>
@@ -157,7 +157,7 @@ export default function PressBitsPage() {
               {items.map((item) => (
                 <div key={item.id} className="col">
                   <Link
-                    href={`/events/press-bytes/${item.slug}`}
+                    href={`/events/leader-bytes/${item.slug}`}
                     className="events-press-bit-card h-100 d-flex flex-column text-decoration-none"
                   >
                     <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">

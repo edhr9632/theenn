@@ -395,7 +395,7 @@ export default function AdminPressBitsPage() {
           </label>
           <label className="admin-field-label admin-check-row admin-field-span">
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-            Live on website (unchecked = Hidden — will not appear on /events/press-bytes)
+            Live on website (unchecked = Hidden — will not appear on /events/leader-bytes)
           </label>
 
           <div className="admin-field-label admin-field-span">
@@ -493,7 +493,7 @@ export default function AdminPressBitsPage() {
                 <td>
                   <p className="admin-cell-title mb-0">{item.title}</p>
                   <p className="admin-cell-sub mb-0">
-                    /events/press-bytes/{item.slug || "…"} · Order {item.sortOrder}
+                    /events/leader-bytes/{item.slug || "…"} · Order {item.sortOrder}
                   </p>
                 </td>
                 <td>
@@ -519,7 +519,7 @@ export default function AdminPressBitsPage() {
                 </td>
                 <td>
                   <a
-                    href={item.slug ? `/events/press-bytes/${item.slug}` : item.videoUrl}
+                    href={item.slug ? `/events/leader-bytes/${item.slug}` : item.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="admin-link-btn"

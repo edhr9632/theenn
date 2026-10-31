@@ -4,7 +4,7 @@ import { PAGE_SEO } from "@/lib/seoKeywords";
 export const metadata = buildPageMetadata({
   title: PAGE_SEO.pressBits.title,
   description: PAGE_SEO.pressBits.description,
-  path: "/events/press-bytes",
+  path: "/events/leader-bytes",
   keywords: [...PAGE_SEO.pressBits.keywords],
 });
 
