@@ -12,7 +12,7 @@ type RouteContext = {
 };
 
 function dbMissingResponse() {
-  return NextResponse.json({ error: "Could not save press byte." }, { status: 503 });
+  return NextResponse.json({ error: "Could not save Leader Byte." }, { status: 503 });
 }
 
 export async function GET(_request: Request, context: RouteContext) {

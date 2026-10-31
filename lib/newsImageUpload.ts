@@ -7,7 +7,7 @@ import {
   isDataImageUrl,
 } from "@/lib/compressImageClient";
 
-/** Reuse existing public upload bucket (already live for Press Bytes). */
+/** Reuse existing public upload bucket (already live for Leader Bytes). */
 const BUCKET = "press-bits";
 const FOLDER = "article-images";
 

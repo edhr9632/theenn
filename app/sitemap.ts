@@ -16,7 +16,7 @@ const staticPaths: { path: string; changeFrequency: MetadataRoute.Sitemap[number
   { path: "/events", changeFrequency: "weekly", priority: 0.85 },
   { path: "/events/speakers", changeFrequency: "weekly", priority: 0.75 },
   { path: "/events/sponsors", changeFrequency: "weekly", priority: 0.7 },
-  { path: "/events/press-bytes", changeFrequency: "weekly", priority: 0.75 },
+  { path: "/events/leader-bytes", changeFrequency: "weekly", priority: 0.75 },
   { path: "/ask", changeFrequency: "daily", priority: 0.8 },
   { path: "/about", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.65 },
@@ -69,14 +69,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const item of pressBytes) {
       if (!item.slug) continue;
       entries.push({
-        url: `${siteSeo.siteUrl}/events/press-bytes/${item.slug}`,
+        url: `${siteSeo.siteUrl}/events/leader-bytes/${item.slug}`,
         lastModified: now,
         changeFrequency: "weekly",
         priority: 0.7,
       });
     }
   } catch {
-    /* press bytes unavailable */
+    /* Leader Bytes unavailable */
   }
 
   return entries;

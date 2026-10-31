@@ -41,8 +41,8 @@ export default function EventsPage() {
               <Link className="events-filter-pill" href="/events/sponsors">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill" href="/events/press-bytes">
-                Press Bytes
+              <Link className="events-filter-pill" href="/events/leader-bytes">
+                Leader Bytes
               </Link>
             </nav>
           </div>

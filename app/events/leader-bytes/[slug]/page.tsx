@@ -7,37 +7,37 @@ import { buildPageMetadata } from "@/lib/seo";
 import { extractYoutubeId } from "@/lib/videoEmbed";
 import { slugifyPressBit } from "@/lib/pressBitTypes";
 
-type PressBytePageProps = {
+type LeaderBytePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({ params }: PressBytePageProps) {
+export async function generateMetadata({ params }: LeaderBytePageProps) {
   const { slug } = await params;
   try {
     const item = await getPressBitBySlug(slug);
     if (!item) {
       return buildPageMetadata({
-        title: "Press Byte",
-        description: "Press Bytes video from Education News Network events.",
-        path: `/events/press-bytes/${slug}`,
+        title: "Leader Byte",
+        description: "Leader Bytes video from Education News Network events.",
+        path: `/events/leader-bytes/${slug}`,
       });
     }
     return buildPageMetadata({
-      title: `${item.title} ‚Äî Press Bytes`,
-      description: `${item.title} ¬∑ ${item.year} ¬∑ ${item.category} ‚Äî Press Bytes from Education News Network events.`,
-      path: `/events/press-bytes/${item.slug}`,
+      title: `${item.title} ó Leader Bytes`,
+      description: `${item.title} ∑ ${item.year} ∑ ${item.category} ó Leader Bytes from Education News Network events.`,
+      path: `/events/leader-bytes/${item.slug}`,
       image: item.image || undefined,
     });
   } catch {
     return buildPageMetadata({
-      title: "Press Byte",
-      description: "Press Bytes video from Education News Network events.",
-      path: `/events/press-bytes/${slug}`,
+      title: "Leader Byte",
+      description: "Leader Bytes video from Education News Network events.",
+      path: `/events/leader-bytes/${slug}`,
     });
   }
 }
 
-export default async function PressByteDetailPage({ params }: PressBytePageProps) {
+export default async function LeaderByteDetailPage({ params }: LeaderBytePageProps) {
   const { slug } = await params;
   let item = null;
   let related: Awaited<ReturnType<typeof getPressBitsFromDb>> = [];
@@ -58,7 +58,7 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
   // Old long URLs redirect to the short SEO slug.
   const requested = slugifyPressBit(slug, 120);
   if (requested && item.slug && requested !== item.slug) {
-    permanentRedirect(`/events/press-bytes/${item.slug}`);
+    permanentRedirect(`/events/leader-bytes/${item.slug}`);
   }
 
   const youtubeId = extractYoutubeId(item.videoUrl);
@@ -79,17 +79,17 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
               <Link className="events-filter-pill" href="/events/sponsors">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill is-active" href="/events/press-bytes" aria-current="page">
-                Press Bytes
+              <Link className="events-filter-pill is-active" href="/events/leader-bytes" aria-current="page">
+                Leader Bytes
               </Link>
             </nav>
           </div>
         </div>
 
-        <section className="press-byte-detail" aria-labelledby="press-byte-heading">
+        <section className="press-byte-detail" aria-labelledby="leader-byte-heading">
           <div className="container">
-            <Link href="/events/press-bytes" className="press-byte-back">
-              ‚Üê All Press Bytes
+            <Link href="/events/leader-bytes" className="press-byte-back">
+              ? All Leader Bytes
             </Link>
 
             <div className="press-byte-stage">
@@ -114,8 +114,8 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
               </div>
 
               <div className="press-byte-copy">
-                <p className="press-byte-kicker text-uppercase mb-2">Press Bytes</p>
-                <h1 id="press-byte-heading" className="press-byte-title serif-headline">
+                <p className="press-byte-kicker text-uppercase mb-2">Leader Bytes</p>
+                <h1 id="leader-byte-heading" className="press-byte-title serif-headline">
                   {item.title}
                 </h1>
                 <div className="press-byte-meta">
@@ -130,13 +130,13 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
         {related.length > 0 ? (
           <div className="container pb-5">
             <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4 text-center">
-              More Press Bytes
+              More Leader Bytes
             </h2>
             <div className="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 g-lg-4 justify-content-center">
               {related.slice(0, 4).map((row) => (
                 <div key={row.id} className="col">
                   <Link
-                    href={`/events/press-bytes/${row.slug}`}
+                    href={`/events/leader-bytes/${row.slug}`}
                     className="events-press-bit-card h-100 d-flex flex-column text-decoration-none"
                   >
                     <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">
@@ -145,7 +145,7 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
                     <div className="pt-3 d-flex flex-column flex-grow-1">
                       <h3 className="events-press-bit-title mb-1">{row.title}</h3>
                       <p className="events-press-bit-meta small mb-0">
-                        {row.year} ¬∑ {row.category}
+                        {row.year} ∑ {row.category}
                       </p>
                     </div>
                   </Link>

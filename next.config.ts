@@ -15,12 +15,22 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/events/press-bits",
-        destination: "/events/press-bytes",
+        destination: "/events/leader-bytes",
         permanent: true,
       },
       {
         source: "/events/press-bits/:path*",
-        destination: "/events/press-bytes/:path*",
+        destination: "/events/leader-bytes/:path*",
+        permanent: true,
+      },
+      {
+        source: "/events/press-bytes",
+        destination: "/events/leader-bytes",
+        permanent: true,
+      },
+      {
+        source: "/events/press-bytes/:path*",
+        destination: "/events/leader-bytes/:path*",
         permanent: true,
       },
     ];

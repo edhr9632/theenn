@@ -162,13 +162,13 @@ export const PAGE_SEO = {
     ],
   },
   pressBits: {
-    title: "Press Bytes — Educators Summit Reels & Event Videos",
+    title: "Leader Bytes — Educators Summit Reels & Event Videos",
     description:
-      "Short Press Bytes and event reels from educators’ summits and education conferences — highlights from Education News Network events.",
+      "Short Leader Bytes and event reels from educators’ summits and education conferences — highlights from Education News Network events.",
     keywords: [
       "educators summit videos",
       "education event reels",
-      "press bytes education",
+      "leader bytes education",
       "summit highlights",
       ...BRAND_KEYWORDS,
     ],

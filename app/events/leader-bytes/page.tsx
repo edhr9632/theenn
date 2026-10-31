@@ -81,7 +81,7 @@ export default function PressBitsPage() {
               Convene. Discuss. Build.
             </h1>
             <p className="events-hero-deck mb-0">
-              Short press bytes and reel highlights from ENN summits, awards, and leadership events.
+              Short Leader Bytes and reel highlights from ENN summits, awards, and leadership events.
             </p>
           </div>
         </section>
@@ -98,8 +98,8 @@ export default function PressBitsPage() {
               <Link className="events-filter-pill" href="/events/sponsors">
                 Sponsors
               </Link>
-              <Link className="events-filter-pill is-active" href="/events/press-bytes" aria-current="page">
-                Press Bytes
+              <Link className="events-filter-pill is-active" href="/events/leader-bytes" aria-current="page">
+                Leader Bytes
               </Link>
             </nav>
           </div>
@@ -116,7 +116,7 @@ export default function PressBitsPage() {
                   setYearFilter(e.target.value);
                   setCategoryFilter("All");
                 }}
-                aria-label="Filter press bytes by year"
+                aria-label="Filter Leader Bytes by year"
               >
                 {years.map((year) => (
                   <option key={year} value={year}>
@@ -132,7 +132,7 @@ export default function PressBitsPage() {
                 className="events-subfilter-select form-select"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                aria-label="Filter press bytes by category"
+                aria-label="Filter Leader Bytes by category"
               >
                 {categories.map((category) => (
                   <option key={category} value={category}>
@@ -143,21 +143,21 @@ export default function PressBitsPage() {
             </div>
           </div>
 
-          <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4">Press Bytes</h2>
+          <h2 className="events-grid-section-title serif-headline mb-3 mb-lg-4">Leader Bytes</h2>
 
           {loading ? (
-            <p className="text-secondary mb-0">Loading press bytes…</p>
+            <p className="text-secondary mb-0">Loading Leader Bytes…</p>
           ) : items.length === 0 ? (
             <ComingSoonBlock
-              title="Press Bytes coming soon"
-              message="Add press byte reels in Admin → Events → Press Bytes — they will appear here automatically."
+              title="Leader Bytes coming soon"
+              message="Add Leader Byte reels in Admin → Events → Leader Bytes — they will appear here automatically."
             />
           ) : (
             <div className="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 g-lg-4">
               {items.map((item) => (
                 <div key={item.id} className="col">
                   <Link
-                    href={`/events/press-bytes/${item.slug}`}
+                    href={`/events/leader-bytes/${item.slug}`}
                     className="events-press-bit-card h-100 d-flex flex-column text-decoration-none"
                   >
                     <div className="events-press-bit-thumb position-relative overflow-hidden rounded-3">

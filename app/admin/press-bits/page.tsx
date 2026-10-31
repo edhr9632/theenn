@@ -205,29 +205,29 @@ export default function AdminPressBitsPage() {
       });
       const data = (await response.json()) as { error?: string };
       if (!response.ok) {
-        window.alert(data.error ?? "Could not save press byte.");
+        window.alert(data.error ?? "Could not save Leader Byte.");
         return;
       }
-      flash(editingId ? "Press byte updated" : "Press byte added");
+      flash(editingId ? "Leader Byte updated" : "Leader Byte added");
       resetForm();
       await loadItems();
     } catch {
-      window.alert("Network error. Could not save press byte.");
+      window.alert("Network error. Could not save Leader Byte.");
     } finally {
       setSaving(false);
     }
   };
 
   const removeItem = async (id: string) => {
-    if (!window.confirm("Delete this press byte?")) return;
+    if (!window.confirm("Delete this Leader Byte?")) return;
     try {
       const response = await fetch(`/api/admin/press-bits/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!response.ok) {
-        window.alert("Could not delete press byte.");
+        window.alert("Could not delete Leader Byte.");
         return;
       }
       if (editingId === id) resetForm();
-      flash("Press byte deleted");
+      flash("Leader Byte deleted");
       await loadItems();
     } catch {
       window.alert("Network error while deleting.");
@@ -245,7 +245,7 @@ export default function AdminPressBitsPage() {
         window.alert("Could not update Live/Hidden status.");
         return;
       }
-      flash(!item.enabled ? "Now Live on Press Bytes page" : "Hidden from Press Bytes page");
+      flash(!item.enabled ? "Now Live on Leader Bytes page" : "Hidden from Leader Bytes page");
       await loadItems();
     } catch {
       window.alert("Network error while updating status.");
@@ -259,14 +259,14 @@ export default function AdminPressBitsPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Press Bytes"
-        description="Event reel videos for Events → Press Bytes. Add a YouTube/Shorts URL or upload a video file. Filterable by year and category."
+        title="Leader Bytes"
+        description="Event reel videos for Events → Leader Bytes. Add a YouTube/Shorts URL or upload a video file. Filterable by year and category."
       />
 
       {message ? <p className="admin-flash mb-3">{message}</p> : null}
 
       <div className="admin-panel mb-4">
-        <h2 className="h6 mb-3">{editingId ? "Edit press byte" : "Add press byte"}</h2>
+        <h2 className="h6 mb-3">{editingId ? "Edit Leader Byte" : "Add Leader Byte"}</h2>
         <form className="admin-form-grid" onSubmit={onSubmit}>
           <label className="admin-field-label admin-field-span">
             Title
@@ -274,7 +274,7 @@ export default function AdminPressBitsPage() {
               className="admin-field"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Reel / press byte title"
+              placeholder="Reel / Leader Byte title"
               required
             />
           </label>
@@ -395,7 +395,7 @@ export default function AdminPressBitsPage() {
           </label>
           <label className="admin-field-label admin-check-row admin-field-span">
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-            Live on website (unchecked = Hidden — will not appear on /events/press-bytes)
+            Live on website (unchecked = Hidden — will not appear on /events/leader-bytes)
           </label>
 
           <div className="admin-field-label admin-field-span">
@@ -453,7 +453,7 @@ export default function AdminPressBitsPage() {
 
           <div className="admin-field-span d-flex flex-wrap gap-2">
             <button type="submit" className="btn admin-btn-primary" disabled={saving || uploadingVideo}>
-              {saving ? "Saving…" : editingId ? "Update press byte" : "Add press byte"}
+              {saving ? "Saving…" : editingId ? "Update Leader Byte" : "Add Leader Byte"}
             </button>
             {editingId ? (
               <button type="button" className="btn admin-btn-ghost" onClick={resetForm}>
@@ -469,7 +469,7 @@ export default function AdminPressBitsPage() {
           {loading ? (
             <tr>
               <td colSpan={8}>
-                <p className="mb-0 text-muted py-3">Loading press bytes…</p>
+                <p className="mb-0 text-muted py-3">Loading Leader Bytes…</p>
               </td>
             </tr>
           ) : items.length ? (
@@ -493,7 +493,7 @@ export default function AdminPressBitsPage() {
                 <td>
                   <p className="admin-cell-title mb-0">{item.title}</p>
                   <p className="admin-cell-sub mb-0">
-                    /events/press-bytes/{item.slug || "…"} · Order {item.sortOrder}
+                    /events/leader-bytes/{item.slug || "…"} · Order {item.sortOrder}
                   </p>
                 </td>
                 <td>
@@ -519,7 +519,7 @@ export default function AdminPressBitsPage() {
                 </td>
                 <td>
                   <a
-                    href={item.slug ? `/events/press-bytes/${item.slug}` : item.videoUrl}
+                    href={item.slug ? `/events/leader-bytes/${item.slug}` : item.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="admin-link-btn"
@@ -536,7 +536,7 @@ export default function AdminPressBitsPage() {
             <tr>
               <td colSpan={8}>
                 <p className="mb-0 text-muted py-3">
-                  No press bytes yet. Paste a YouTube/Shorts URL or upload an MP4 reel above.
+                  No Leader Bytes yet. Paste a YouTube/Shorts URL or upload an MP4 reel above.
                 </p>
               </td>
             </tr>
