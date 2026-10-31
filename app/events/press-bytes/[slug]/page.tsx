@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: PressBytePageProps) {
       });
     }
     return buildPageMetadata({
-      title: `${item.title} — Leader Bytes`,
-      description: `${item.title} · ${item.year} · ${item.category} — Leader Bytes from Education News Network events.`,
+      title: `${item.title} - Leader Bytes`,
+      description: `${item.title} | ${item.year} | ${item.category} - Leader Bytes from Education News Network events.`,
       path: `/events/press-bytes/${item.slug}`,
       image: item.image || undefined,
     });
@@ -88,7 +88,7 @@ export default async function PressByteDetailPage({ params }: PressBytePageProps
         <section className="press-byte-detail" aria-labelledby="press-byte-heading">
           <div className="container">
             <Link href="/events/press-bytes" className="press-byte-back">
-              ? All Leader Bytes
+              Back to all Leader Bytes
             </Link>
 
             <div className="press-byte-stage">
