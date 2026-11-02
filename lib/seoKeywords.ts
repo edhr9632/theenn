@@ -161,7 +161,7 @@ export const PAGE_SEO = {
       ...BRAND_KEYWORDS,
     ],
   },
-  pressBits: {
+  leaderBytes: {
     title: "Leader Bytes — Educators Summit Reels & Event Videos",
     description:
       "Short Leader Bytes and event reels from educators’ summits and education conferences — highlights from Education News Network events.",

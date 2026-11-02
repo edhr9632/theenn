@@ -13,7 +13,7 @@ type PressBitsResponse = {
   categoriesByYear?: Record<number, string[]>;
 };
 
-export default function PressBitsPage() {
+export default function LeaderBytesPage() {
   const [items, setItems] = useState<PressBit[]>([]);
   const [yearsFromApi, setYearsFromApi] = useState<number[]>([]);
   const [categoriesByYear, setCategoriesByYear] = useState<Record<number, string[]>>({});
