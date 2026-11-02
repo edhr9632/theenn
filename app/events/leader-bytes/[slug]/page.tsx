@@ -144,7 +144,7 @@ export default async function LeaderByteDetailPage({ params }: LeaderBytePagePro
                     <div className="pt-3 d-flex flex-column flex-grow-1">
                       <h3 className="events-press-bit-title mb-1">{row.title}</h3>
                       <p className="events-press-bit-meta small mb-0">
-                        {row.year} · {row.category}
+                        {row.year} | {row.category}
                       </p>
                     </div>
                   </Link>
