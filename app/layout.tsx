@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Playfair_Display, Roboto } from "next/font/google";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.css";
@@ -8,8 +9,10 @@ import AskEnnOverlay from "@/components/AskEnnOverlay";
 import EnnAssistant from "@/components/EnnAssistant";
 import FloatingNowPlayingLoader from "@/components/FloatingNowPlayingLoader";
 import FestivalPopup from "@/components/FestivalPopup";
+import FestiveScrollEffects from "@/components/FestiveScrollEffects";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seoKeywords";
+import { THEME_BOOTSTRAP_SCRIPT } from "@/components/ThemeToggle";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -93,6 +96,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${roboto.variable} ${playfair.variable}`} suppressHydrationWarning>
+        <Script id="enn-theme-bootstrap" strategy="beforeInteractive">
+          {THEME_BOOTSTRAP_SCRIPT}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -102,6 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ConditionalSiteFooter />
         <FloatingNowPlayingLoader />
         <FestivalPopup />
+        <FestiveScrollEffects />
         <AskEnnOverlay />
         <EnnAssistant />
       </body>
