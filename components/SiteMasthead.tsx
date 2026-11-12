@@ -7,7 +7,6 @@ import SiteSearchButton from "./SiteSearchButton";
 import FestivalTopBarTicker from "./FestivalTopBarTicker";
 import SiteAskEnnBar from "./SiteAskEnnBar";
 import NavDropdown from "./NavDropdown";
-import HappyDiwaliBar from "./HappyDiwaliBar";
 import ThemeToggle from "./ThemeToggle";
 
 type SiteMastheadProps = {
@@ -27,7 +26,6 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
       </div>
 
       <div className="site-masthead-sticky sticky-top">
-        <HappyDiwaliBar />
         <div className="top-bar text-white py-2">
           <div className="container-fluid px-3 px-lg-4">
             <div className="d-flex flex-column flex-md-row align-items-center justify-content-md-between gap-2 gap-md-3">
@@ -56,34 +54,6 @@ export default function SiteMasthead({ activeNav, newsActive, breakingItems = []
         </div>
 
         <header className="main-header border-bottom">
-          <span className="diwali-header-corner diwali-header-corner--left" aria-hidden="true">
-            <span className="diwali-mini-kandil">
-              <span className="diwali-mini-kandil-cord" />
-              <span className="diwali-mini-kandil-cap" />
-              <span className="diwali-mini-kandil-body" />
-              <span className="diwali-mini-kandil-fringe" />
-            </span>
-            <span className="diwali-mini-kandil diwali-mini-kandil--alt">
-              <span className="diwali-mini-kandil-cord" />
-              <span className="diwali-mini-kandil-cap" />
-              <span className="diwali-mini-kandil-body" />
-              <span className="diwali-mini-kandil-fringe" />
-            </span>
-          </span>
-          <span className="diwali-header-corner diwali-header-corner--right" aria-hidden="true">
-            <span className="diwali-mini-kandil">
-              <span className="diwali-mini-kandil-cord" />
-              <span className="diwali-mini-kandil-cap" />
-              <span className="diwali-mini-kandil-body" />
-              <span className="diwali-mini-kandil-fringe" />
-            </span>
-            <span className="diwali-mini-kandil diwali-mini-kandil--alt">
-              <span className="diwali-mini-kandil-cord" />
-              <span className="diwali-mini-kandil-cap" />
-              <span className="diwali-mini-kandil-body" />
-              <span className="diwali-mini-kandil-fringe" />
-            </span>
-          </span>
           <nav className="navbar navbar-expand-lg navbar-light py-2 py-lg-3">
             <div className="container">
               <Link className="navbar-brand site-brand-lockup py-0 me-lg-4" href="/" aria-label="Education News Network home">

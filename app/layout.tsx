@@ -9,7 +9,6 @@ import AskEnnOverlay from "@/components/AskEnnOverlay";
 import EnnAssistant from "@/components/EnnAssistant";
 import FloatingNowPlayingLoader from "@/components/FloatingNowPlayingLoader";
 import FestivalPopup from "@/components/FestivalPopup";
-import FestiveScrollEffects from "@/components/FestiveScrollEffects";
 import { buildPageMetadata, siteSeo } from "@/lib/seo";
 import { PAGE_SEO } from "@/lib/seoKeywords";
 import { THEME_BOOTSTRAP_SCRIPT } from "@/components/ThemeToggle";
@@ -108,7 +107,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ConditionalSiteFooter />
         <FloatingNowPlayingLoader />
         <FestivalPopup />
-        <FestiveScrollEffects />
         <AskEnnOverlay />
         <EnnAssistant />
       </body>

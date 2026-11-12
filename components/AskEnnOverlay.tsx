@@ -354,7 +354,7 @@ export default function AskEnnOverlay() {
                 </span>
               </h1>
               <p className="ask-enn-fp-lead mb-0">
-                Get news and articles with accuracy from Education News Network journalism.
+                Get news and articles with accuracy from Education News Network.
               </p>
             </div>
 
